@@ -1,0 +1,57 @@
+# Makefile for pam_afs_session
+
+srcdir		= @srcdir@
+VPATH		= @srcdir@
+
+PACKAGE		= @PACKAGE_TARNAME@
+VERSION		= @PACKAGE_VERSION@
+TARDIR		= $(PACKAGE)-$(VERSION)
+TARNAME		= $(TARDIR).tar
+
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+libdir		= @libdir@
+pamdir		= $(libdir)/security
+datarootdir	= @datarootdir@
+mandir		= @mandir@
+
+CC		= @CC@
+CFLAGS		= @CFLAGS@ -fPIC
+CPPFLAGS	= -I. -I$(srcdir) @CPPFLAGS@
+LDFLAGS		= -shared @LDFLAGS@
+LIBS		= -lpam @LIBS@
+
+INSTALL		= @INSTALL@
+INSTALL_DATA	= @INSTALL_DATA@
+
+SOURCES		= logging.c options.c public.c tokens.c
+OBJECTS		= $(SOURCES:.c=.o)
+
+all: pam_afs_session.so
+
+pam_afs_session.so: $(OBJECTS)
+	$(CC) -o $@ $(LDFLAGS) $(OBJECTS) $(LIBS)
+
+install: pam_afs_session.so
+	$(INSTALL) -d $(pamdir)
+	$(INSTALL_DATA) pam_afs_session.so $(pamdir)/pam_afs_session.so
+
+# This target only works when builddir == srcdir, at least for now.
+dist:
+	rm -rf $(TARDIR) $(TARNAME).gz
+	mkdir $(TARDIR)
+	bzr log --short > CHANGES
+	rsync -C --exclude /debian/ -a ./ $(TARDIR)/
+	cd $(TARDIR) && ./autogen
+	tar cf $(TARNAME) $(TARDIR)
+	gzip -9 $(TARNAME)
+
+clean:
+	rm -f *.so *.o
+
+distclean: clean
+	rm -f Makefile config.cache config.h config.log config.status
+	rm -rf $(TARDIR)
+
+maintclean maintainer-clean: distclean
+	rm -f CHANGES config.h.in config.h.in~ configure $(TARNAME).gz
