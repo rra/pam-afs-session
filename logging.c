@@ -50,13 +50,3 @@ pamafs_debug(struct pam_args *pargs, const char *fmt, ...)
     va_end(args);
     syslog(LOG_DEBUG, "(pam_afs_session): %s", msg);
 }
-
-
-/*
- * Log a PAM failure if debugging is enabled.
- */
-void
-pamafs_debug_pam(struct pam_args *args, const char *msg, int status)
-{
-    pamafs_debug(ctx, args, "%s: %s", msg, pam_strerror(ctx->pamh, status));
-}

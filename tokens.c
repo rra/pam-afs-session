@@ -15,13 +15,14 @@
 #include <pwd.h>
 #include <security/pam_modules.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-#ifdef HAVE_KAFS_H
+#if HAVE_KAFS_H
 # include <kafs.h>
-#elif
+#elif HAVE_KOPENAFS_H
 # include <kopenafs.h>
 #else
 int k_unlog(void);
@@ -43,10 +44,9 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
         return 1;
     }
     if (args->minimum_uid > 0 && pwd->pw_uid < args->minimum_uid) {
-        pamk5_debug(ctx, args, "ignoring low-UID user (%lu < %d)",
+        pamafs_debug(args, "ignoring low-UID user (%lu < %d)",
                     (unsigned long) pwd->pw_uid, args->minimum_uid);
-            return 1;
-        }
+        return 1;
     }
     return 0;
 }
@@ -58,12 +58,23 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
  * PAM_SESSION_ERR.
  */
 static int
-pamafs_run_aklog(struct pam_args *args, uid_t uid)
+pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, uid_t uid)
 {
-    int status, result;
+    int result;
     char **env;
     pid_t child;
 
+    /* Sanity check that we have some program to run. */
+    if (args->program == NULL) {
+        pamafs_error("no token program set in PAM arguments");
+        return PAM_SESSION_ERR;
+    }
+
+    /*
+     * Run the program.  Be sure to use _exit instead of exit in the
+     * subprocess so that we won't run exit handlers or double-flush stdio
+     * buffers in the child process.
+     */
     pamafs_debug(args, "running %s as UID %lu", args->program,
                  (unsigned long) uid);
     env = pam_getenvlist(pamh);
@@ -71,7 +82,7 @@ pamafs_run_aklog(struct pam_args *args, uid_t uid)
     if (child < 0)
         return PAM_SESSION_ERR;
     else if (child == 0) {
-        if (setuid(pwd->pw_uid) < 0) {
+        if (setuid(uid) < 0) {
             pamafs_error("cannot setuid to UID %lu: %s",
                          (unsigned long) uid, strerror(errno));
             _exit(1);
@@ -98,20 +109,19 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
 {
     int status;
     const char *user, *cache;
-    const void *dummy;
     struct passwd *pwd;
 
     /* Don't try to get a token unless we have a K5 ticket cache. */
     cache = pam_getenv(pamh, "KRB5CCNAME");
     if (cache == NULL) {
-        pamafs_debug("skipping, no Kerberos ticket cache");
+        pamafs_debug(args, "skipping, no Kerberos ticket cache");
         return PAM_SUCCESS;
     }
 
     /* Get the user, look them up, and see if we should skip this user. */
     status = pam_get_user(pamh, &user, NULL);
     if (status != PAM_SUCCESS || user == NULL) {
-        pamafs_error("no user set: %s", pam_strerror(status));
+        pamafs_error("no user set: %s", pam_strerror(pamh, status));
         return PAM_SESSION_ERR;
     }
     pwd = getpwnam(user);
@@ -121,11 +131,12 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
     }
     if (pamafs_should_ignore(args, pwd))
         return PAM_SUCCESS;
-    status = pamafs_run_aklog(args, pwd->pw_uid);
+    status = pamafs_run_aklog(pamh, args, pwd->pw_uid);
     if (status == PAM_SUCCESS) {
         status = pam_set_data(pamh, "pam_afs_session", "yes", NULL);
         if (status != PAM_SUCCESS) {
-            pamafs_error("cannot set success data: %s", pam_strerror(status));
+            pamafs_error("cannot set success data: %s",
+                         pam_strerror(pamh, status));
             status = PAM_SESSION_ERR;
         }
     } else
@@ -141,15 +152,14 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
 int
 pamafs_token_delete(pam_handle_t *pamh, struct pam_args *args)
 {
-    int pamret;
+    const void *dummy;
 
     /*
      * Do nothing if open_session (or setcred) didn't run.  Otherwise, we may
      * be wiping out some other token that we aren't responsible for.
      */
-    status = pam_get_data(pamh, "pam_afs_session", &dummy);
-    if (status != PAM_SUCCESS) {
-        pamafs_debug("skipping, no open session");
+    if (pam_get_data(pamh, "pam_afs_session", &dummy) != PAM_SUCCESS) {
+        pamafs_debug(args, "skipping, no open session");
         return PAM_SUCCESS;
     }
 

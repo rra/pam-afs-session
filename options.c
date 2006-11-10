@@ -48,11 +48,12 @@ pamafs_args_free(struct pam_args *args)
  * from krb5.conf, but that requires linking with Kerberos libraries.
  */
 struct pam_args *
-pamk5_args_parse(int flags, int argc, const char **argv)
+pamafs_args_parse(int flags, int argc, const char **argv)
 {
     struct pam_args *args;
+    int i;
 
-    args = pamk5_args_new();
+    args = pamafs_args_new();
     if (args == NULL)
         return NULL;
 
@@ -65,10 +66,12 @@ pamk5_args_parse(int flags, int argc, const char **argv)
             args->minimum_uid = atoi(&argv[i][strlen("minimum_uid=")]);
         else if (strcmp(argv[i], "nopag") == 0)
             args->nopag = 1;
+        else if (strncmp(argv[i], "program=", 8) == 0)
+            args->program = strdup(&argv[i][strlen("program=")]);
         else if (strcmp(argv[i], "retain_after_close") == 0)
             args->retain = 1;
         else
-            pamk5_error(NULL, "unknown option %s", argv[i]);
+            pamafs_error(NULL, "unknown option %s", argv[i]);
     }
 	
     if (flags & PAM_SILENT)

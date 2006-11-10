@@ -25,12 +25,13 @@ INSTALL		= @INSTALL@
 INSTALL_DATA	= @INSTALL_DATA@
 
 SOURCES		= logging.c options.c public.c tokens.c
-OBJECTS		= $(SOURCES:.c=.o)
+OBJECTS		= $(SOURCES:.c=.o) @LIBOBJS@
 
 all: pam_afs_session.so
 
 pam_afs_session.so: $(OBJECTS)
 	$(CC) -o $@ $(LDFLAGS) $(OBJECTS) $(LIBS)
+	chmod 644 $@
 
 install: pam_afs_session.so
 	$(INSTALL) -d $(pamdir)

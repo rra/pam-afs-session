@@ -11,18 +11,16 @@
 #include "config.h"
 
 #include <errno.h>
-#include <pwd.h>
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <unistd.h>
 
-#ifdef HAVE_KAFS_H
+#if HAVE_KAFS_H
 # include <kafs.h>
-#elif
+#elif HAVE_KOPENAFS_H
 # include <kopenafs.h>
 #else
 int k_hasafs(void);
@@ -43,10 +41,7 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
 {
     struct pam_args *args;
     int pamret, status;
-    uid_t uid;
-    const char *user, *cache;
     const void *dummy;
-    struct passwd *pwd;
 
     args = pamafs_args_parse(flags, argc, argv);
     if (args == NULL) {
@@ -69,7 +64,7 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
      */
     status = pam_get_data(pamh, "pam_afs_session", &dummy);
     if (status == PAM_SUCCESS) {
-        pamafs_debug("skipping, apparently already ran");
+        pamafs_debug(args, "skipping, apparently already ran");
         pamret = PAM_SUCCESS;
         goto done;
     }
@@ -111,6 +106,7 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
 {
     struct pam_args *args;
     int pamret, status;
+    const void *dummy;
 
     args = pamafs_args_parse(flags, argc, argv);
     if (args == NULL) {
@@ -142,7 +138,7 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
     if (!(flags & (PAM_REINITIALIZE_CRED | PAM_REFRESH_CRED))) {
         status = pam_get_data(pamh, "pam_afs_session", &dummy);
         if (status == PAM_SUCCESS) {
-            pamafs_debug("skipping, apparently already ran");
+            pamafs_debug(args, "skipping, apparently already ran");
             pamret = PAM_SUCCESS;
             goto done;
         }
@@ -171,7 +167,6 @@ pam_sm_close_session(pam_handle_t *pamh, int flags, int argc,
 {
     struct pam_args *args;
     int pamret;
-    const void *dummy;
 
     args = pamafs_args_parse(flags, argc, argv);
     if (args == NULL) {
@@ -183,7 +178,7 @@ pam_sm_close_session(pam_handle_t *pamh, int flags, int argc,
 
     /* Do nothing if so configured. */
     if (args->retain) {
-        pamafs_debug("skipping as configured");
+        pamafs_debug(args, "skipping as configured");
         pamret = PAM_SUCCESS;
         goto done;
     }

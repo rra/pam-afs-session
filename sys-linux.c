@@ -19,7 +19,9 @@
 
 #include "config.h"
 
+#include <errno.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -44,7 +46,7 @@ struct ViceIoctl {
     void *in, *out;
     short in_size;
     short out_size;
-}
+};
 
 /*
  * The workhorse function that does the actual system call.  All the values
@@ -59,7 +61,7 @@ afs_syscall(long syscall, long param1, long param2, long param3, long param4,
             int *rval)
 {
     struct afsprocdata syscall_data;
-    int fd;
+    int fd, oerrno;
 
     fd = open("/proc/fs/openafs/afs_ioctl", O_RDWR);
     if (fd < 0)
@@ -74,7 +76,9 @@ afs_syscall(long syscall, long param1, long param2, long param3, long param4,
     syscall_data.param4 = param4;
     *rval = ioctl(fd, _IOW('C', 1, void *), &syscall_data);
 
+    oerrno = errno;
     close(fd);
+    errno = oerrno;
     return 0;
 }
 
@@ -104,13 +108,14 @@ int
 k_hasafs(void)
 {
     struct ViceIoctl iob;
-    int result;
+    int id, result, err;
 
     iob.in = NULL;
     iob.in_size = 0;
     iob.out = NULL;
     iob.out_size = 0;
-    result = k_pioctl(NULL, _IOW('V', 3, struct ViceIoctl), &iob, 0);
+    id = _IOW('V', 3, struct ViceIoctl);
+    result = afs_syscall(20, 0, id, (long) &iob, 0, &err);
     return (result == 0);
 }
 

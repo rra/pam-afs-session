@@ -23,6 +23,7 @@ struct pam_args {
     int ignore_root;            /* Skip authentication for root. */
     int minimum_uid;            /* Ignore users below this UID. */
     int nopag;                  /* Don't create a new PAG. */
+    char *program;              /* Program to run for tokens. */
     int retain;                 /* Don't destroy the cache on session end. */
 
     /*
@@ -39,17 +40,13 @@ struct pam_args *pamafs_args_parse(int flags, int argc, const char **argv);
 /* Free the pam_args struct when we're done. */
 void pamafs_args_free(struct pam_args *);
 
-/* Returns true if we should ignore this user (root or low UID). */
-int pamafs_should_ignore(struct pam_args *, const struct passwd *pwd);
-
 /* Token manipulation functions. */
 int pamafs_token_get(pam_handle_t *pamh, struct pam_args *args);
 int pamafs_token_delete(pam_handle_t *pamh, struct pam_args *args);
 
 /* Error reporting and debugging functions. */
-void pamafs_error(struct context *, const char *, ...);
-void pamafs_debug(struct context *, struct pam_args *, const char *, ...);
-void pamafs_debug_pam(struct context *, struct pam_args *, const char *, int);
+void pamafs_error(const char *, ...);
+void pamafs_debug(struct pam_args *, const char *, ...);
 
 /* Macros to record entry and exit from the main PAM functions. */
 #define ENTRY(args, flags) \
