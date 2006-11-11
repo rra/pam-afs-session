@@ -1,0 +1,9 @@
+                   User-Visible pam-afs-session Changes
+
+pam-afs-session 0.1 (2006-11-10)
+
+    Initial beta release.
+
+    Supports libkafs and libkopenafs in theory, but only the internal
+    syscall layer has been tested.  No man page yet, and the program to
+    run to obtain tokens must be specified in the PAM options.

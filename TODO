@@ -1,0 +1,37 @@
+                        pam-afs-session To-Do List
+
+ * Write a man page that documents all of the configuration options.
+
+ * When logging on using OpenSSH with GSSAPI authentication, the
+   open_session function is run properly but at the end of the connection,
+   OpenSSH apparently runs pam_setcred(PAM_DELETE_CRED) to clean up and
+   pam-afs-session doesn't think that it had created a token initially.
+   Dig into this and try to understand what's going on.
+
+ * Provide a compile-time default for the external program to run to
+   obtain tokens so that program doesn't always have to be specified.
+   We'll probably then also need a way to say not to obtain tokens and
+   only create PAGs.
+
+ * Support using the libkafs functions to obtain tokens rather than
+   spawning an external aklog.  This will require some additional
+   configuration options to control which cells in which to get tokens
+   (aklog handles that for us).
+
+ * Support systems that don't handle transitive shared library
+   dependencies by figuring out the dependencies of libkafs and linking
+   with them explicitly (and adding --enable-reduced-depends to say to not
+   do this for packaging).
+
+ * Support linking with Kerberos libraries to get the appdefault functions
+   and using them to read options out of krb5.conf rather than only from
+   the PAM configuration.
+
+ * Review the AFS-related PAM options in the Sourceforge PAM module and
+   support the ones that make sense here.
+
+ * Port to Solaris.
+
+ * Possibly port to HP-UX, which requires reworking how the aklog
+   environment is handled since HP-UX pam doesn't support the
+   pam_getenvlist function.  pam_afs2 has code to handle this.

@@ -1,0 +1,171 @@
+                           pam-afs-session 0.1
+                   (PAM module for AFS PAGs and tokens)
+
+                Written by Russ Allbery <rra@stanford.edu>
+
+  Copyright 2006 Board of Trustees, Leland Stanford Jr. University.  This
+  software is distributed under a BSD-style license.  Please see the
+  section LICENSE below for more information.
+
+  This module should be considered beta-release code and still needs
+  improvement.  For a list of known issues, see the TODO file that also
+  comes with the distribution.
+
+BLURB
+
+  pam-afs-session is a PAM module intended for use with a Kerberos v5 PAM
+  module to obtain an AFS PAG and AFS tokens on login.  It puts every new
+  session in a PAG regardless of whether it was authenticated with
+  Kerberos and runs a configurable external program to obtain tokens.  It
+  supports using Heimdal's libkafs for the AFS interface and falls back to
+  an internal Linux-only implementation if libkafs isn't available.
+
+DESCRIPTION
+
+  pam-afs-session is a PAM module that isolates each login in a separate
+  AFS PAG (so that they will not trample on each other's AFS tokens) and
+  supports running an external program to obtain AFS tokens from a
+  Kerberos v5 ticket cache.  It does not obtain tickets itself and must be
+  used in conjunction with a Kerberos v5 PAM module to obtain tokens
+  (setting up PAGs can be done without any Kerberos implementations).  It
+  provides only the setcred and session PAM functions.
+
+  For the AFS system call layer, pam-afs-session supports linking with the
+  Heimdal libkafs library or the libkopenafs library that will ship with
+  later versions of OpenAFS and provides a similar interface.  As a
+  fallback, and to support a low-dependency build on Linux systems, it
+  also comes with a simple AFS system call implementation for Linux only.
+  To use the built-in system call interface, the system must run a new
+  enough version of OpenAFS or Arla to support AFS system calls through
+  ioctl on a file in proc.
+
+  Right now, this module will probably only work on Linux and definitely
+  requires gcc.  Solaris will require some porting and support for Solaris
+  is planned for the future.  Other PAM implementations will likely
+  require even more work.
+
+  Using the Heimdal libkafs interface should work but hasn't been tested
+  yet.  Only the built-in Linux-only system call layer has been tested so
+  far.
+
+COMPILING AND INSTALLING
+
+  To build the module on a Linux system, just run:
+
+      ./configure
+      make
+
+  To install the module into /usr/local/lib/security and the man page into
+  /usr/local/share/man/man8, run:
+
+      make install
+
+  You can change the installation locations with the --prefix, --mandir,
+  and --libdir options to configure.  The module will be installed in a
+  subdirectory of $libdir named security.  Alternately, you can simply
+  copy pam_krb5.so to whatever directory you use for PAM modules.
+
+CONFIGURING
+
+  Just installing the module does not enable it or change anything about
+  your system authentication configuration.  To use it in conjunction with
+  pam_krb5 on a Debian system, put something like:
+
+      auth  [success=ok default=1]  pam_krb5.so
+      auth  [default=done]          pam_afs_session.so program=/usr/bin/aklog
+      auth  required                pam_unix.so try_first_pass nullok_secure
+
+  in /etc/pam.d/common-auth and something like:
+
+      session  optional  pam_krb5.so
+      session  required  pam_afs_session.so program=/usr/bin/aklog
+
+  in /etc/pam.d/common-session.  You may want to stack your Kerberos v5
+  PAM module and the Unix module differently, but note that this module
+  should always run after the Kerberos v5 PAM module.  If there is no
+  ticket cache available in the PAM environment, it will succeed silently.
+
+  Note that this is not an authentication module and will always return
+  success to any authentication attempt, so never make this module
+  sufficient in your authentication stack.  It's only listed as an auth
+  module because it provides a pam_setcred implementation and some
+  programs need to call pam_setcred rather than pam_open_session (screen
+  savers, for instance, to refresh credentials).
+
+  Currently, the program to run to obtain tokens must be explicitly given
+  as a PAM argument or only PAGs will be created.  Eventually, there may
+  be a compile-time default.
+
+  On Red Hat systems, modify /etc/pam.d/system-auth instead; it contains
+  all of the configuration for the different stacks.
+
+IMPLEMENTATION NOTES
+
+  pam-afs-session supports three basic usage patterns: creating a new
+  session using either pam_open_session or pam_setcred(PAM_ESTABLISH_CRED)
+  (or both), closing a session with pam_close_session or
+  pam_setcred(PAM_DELETE_CRED), and refreshing credentials with
+  pam_setcred(PAM_REINITIALIZE_CRED).  In general, the same behavior
+  occurs whether using the pam_*_session interface or the pam_setcred
+  interface, since some PAM-using programs call one and some call the
+  other.  In all cases, pam-afs-session will log an error and then
+  successfully exit if AFS doesn't appear to be running (checked with the
+  k_hasafs interface).
+
+  pam-afs-session stores a PAM data key named "pam_afs_session" once it
+  has successfully created a PAG and a token.  If this key is present in
+  the PAM data when pam_open_session or pam_setcred with the
+  PAM_ESTABLISH_CRED flag is called, it will successfully do nothing to
+  keep from doing duplicate work.  Otherwise, it will always create a PAG
+  and then will run an external program to obtain tokens provided that the
+  environment variable KRB5CCNAME is set in the PAM environment.
+
+  When pam_close_session or pam_setcred(PAM_DELETE_CRED) is called,
+  pam-afs-session will destroy the user's tokens only if the PAM data key
+  "pam_afs_session" is present (meaning that pam-afs-session previously
+  obtained tokens).  This check is present to avoid deleting tokens when
+  session initialization failed, since in that case no new PAG may have
+  been created and we may be deleting tokens that are not ours to delete.
+
+  pam_setcred(PAM_REINITIALIZE_CRED) is treated similarly to the opening
+  of a new session except that no PAG is created.  Instead, only the
+  program to obtain tokens is run, provided that KRB5CCNAME is set in the
+  PAM environment.  This interface is used by programs such as screen
+  savers and lockers to refresh a user's credentials.
+
+  pam-afs-session requires that the user (obtained via pam_get_user)
+  exists in the local passwd file or equivalent (using getpwnam) and runs
+  the external program under that user's UID and primary GID.
+
+THANKS
+
+  Some of the ideas behind this PAM module (although not the code) are
+  taken from the libpam-openafs-session Debian package written by Sam
+  Hartman and the pam_afs2 module written by Douglas Engart.  Thanks to
+  both of them for their previous work.  Any errors in this implementation
+  are mine.
+
+  The Linux system call layer was based on inspection of the code in
+  OpenAFS and on discussions with Jeffrey Hutzelman on how best to
+  implement an AFS system call layer and on how the pieces work.  I
+  couldn't have written this code without his explanations.
+
+LICENSE
+
+  Copyright 2006 Board of Trustees, Leland Stanford Jr. University.  All
+  rights reserved.
+    
+  Permission to use, copy, modify, and distribute this software and its
+  documentation for any purpose and without fee is hereby granted,
+  provided that the above copyright notice appear in all copies and that
+  both that copyright notice and this permission notice appear in
+  supporting documentation, and that the name of Stanford University not
+  be used in advertising or publicity pertaining to distribution of the
+  software without specific, written prior permission.  Stanford
+  University makes no representations about the suitability of this
+  software for any purpose.  It is provided "as is" without express or
+  implied warranty.
+
+  THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
+  WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
