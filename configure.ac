@@ -33,7 +33,9 @@ AC_SEARCH_LIBS([k_hasafs], [kafs kopenafs],
              [AC_MSG_ERROR([No suitable kafs implementation found])])
          ;;
      esac])
+
 AC_CHECK_HEADERS([sys/ioccom.h])
+AC_TYPE_SIGNAL
 
 dnl If and only if we're on Linux, make sure that all the symbols in the
 dnl module are resolved.  More platforms could be handled here.
