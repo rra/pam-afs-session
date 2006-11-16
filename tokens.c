@@ -12,6 +12,7 @@
 #include "config.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <security/pam_modules.h>
 #include <stdio.h>
@@ -87,6 +88,10 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, uid_t uid)
                          (unsigned long) uid, strerror(errno));
             _exit(1);
         }
+        close(1);
+        close(2);
+        open("/dev/null", O_WRONLY);
+        open("/dev/null", O_WRONLY);
         execle(args->program, args->program, NULL, env);
         pamafs_error("cannot exec %s: %s", args->program, strerror(errno));
         _exit(1);

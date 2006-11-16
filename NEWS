@@ -1,5 +1,10 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 0.2 (unreleased)
+
+    Reopen stdout and stderr to /dev/null before running aklog so that any
+    error messages from aklog don't confuse the calling program.
+
 pam-afs-session 0.1 (2006-11-10)
 
     Initial beta release.
