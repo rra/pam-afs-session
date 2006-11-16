@@ -128,7 +128,7 @@ k_setpag(void)
 {
     int err, rval;
 
-    rval = afs_syscall(21, 0, 0, 0, 0, &err);
+    rval = pamafs_syscall(21, 0, 0, 0, 0, &err);
     if (rval != 0)
         err = rval;
     return err;
