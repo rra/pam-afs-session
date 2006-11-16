@@ -141,6 +141,18 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
     }
     if (pamafs_should_ignore(args, pwd))
         return PAM_SUCCESS;
+
+    /*
+     * Always return success even if aklog failed.  An argument could be made
+     * for failing if aklog fails, but that may cause the user to be kicked
+     * out of their session when their home directory may not even be in AFS.
+     * Continuing when aklog failed should at worst result in errors of being
+     * unable to access their home directory; this isn't the authentication
+     * module and isn't responsible for ensuring the user should have access.
+     *
+     * This could be made an option later if necessary, but I'd rather avoid
+     * too many options.
+     */
     status = pamafs_run_aklog(pamh, args, pwd);
     if (status == PAM_SUCCESS) {
         status = pam_set_data(pamh, "pam_afs_session", "yes", NULL);
@@ -150,7 +162,7 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
             status = PAM_SESSION_ERR;
         }
     } else
-        status = PAM_SESSION_ERR;
+        status = PAM_SUCCESS;
     return status;
 }
 

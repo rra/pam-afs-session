@@ -13,6 +13,11 @@ pam-afs-session 0.2 (unreleased)
     Reopen stdout and stderr to /dev/null before running aklog so that any
     error messages from aklog don't confuse the calling program.
 
+    Log a message if aklog fails, but return PAM_SUCCESS from the module
+    whether aklog succeeded or not.  If we fail, the user may be kicked
+    out of their session even though AFS tokens may not be necessary and
+    only obtained as a convenience.  Obtaining a PAG is still required.
+
 pam-afs-session 0.1 (2006-11-10)
 
     Initial beta release.
