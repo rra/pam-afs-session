@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pwd.h>
+#include <security/pam_appl.h>
 #include <security/pam_modules.h>
 #include <stdio.h>
 #include <string.h>
@@ -118,7 +119,7 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
 
     /* Don't try to get a token unless we have a K5 ticket cache. */
     cache = pam_getenv(pamh, "KRB5CCNAME");
-    if (cache == NULL) {
+    if (cache == NULL && !args->always_aklog) {
         pamafs_debug(args, "skipping, no Kerberos ticket cache");
         return PAM_SUCCESS;
     }

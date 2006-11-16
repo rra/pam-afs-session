@@ -58,7 +58,9 @@ pamafs_args_parse(int flags, int argc, const char **argv)
         return NULL;
 
     for (i = 0; i < argc; i++) {
-        if (strcmp(argv[i], "debug") == 0)
+        if (strcmp(argv[i], "always_aklog") == 0)
+            args->always_aklog = 1;
+        else if (strcmp(argv[i], "debug") == 0)
             args->debug = 1;
         else if (strcmp(argv[i], "ignore_root") == 0)
             args->ignore_root = 1;

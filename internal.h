@@ -9,6 +9,7 @@
 
 #include "config.h"
 
+#include <security/pam_appl.h>
 #include <security/pam_modules.h>
 #include <stdarg.h>
 
@@ -19,6 +20,7 @@ struct passwd;
  * Filled in by pamafs_args_parse.
  */
 struct pam_args {
+    int always_aklog;           /* Always run aklog even w/o KRB5CCNAME. */
     int debug;                  /* Log debugging information. */
     int ignore_root;            /* Skip authentication for root. */
     int minimum_uid;            /* Ignore users below this UID. */
