@@ -2,6 +2,11 @@
 
 pam-afs-session 0.2 (unreleased)
 
+    Add a fallback implementation of the AFS system call for platforms
+    that use syscall, and add the signal handler protection for the
+    k_hasafs probe for those platforms.  The PAM module should now build
+    on Solaris without requiring libkafs or libkopenafs.
+
     Add an always_aklog option saying to always run aklog even if the user
     doesn't appear to have a ticket cache.
 

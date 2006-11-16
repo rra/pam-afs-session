@@ -19,16 +19,21 @@ dnl internal implementation; otherwise, we have to have a library.
 dnl
 dnl For right now, we require libraries and an Os that can figure out their
 dnl own transitive dependencies.  Eventually, this should be fixed.
-AC_SEARCH_LIBS([k_hasafs], [kafs kopenafs], ,
+AC_SEARCH_LIBS([k_hasafs], [kafs kopenafs],
+    [AC_CHECK_HEADERS([kafs.h], , [AC_CHECK_HEADERS([kopenafs.h])])],
     [case "$host" in
      *-linux*)
+         AC_LIBOBJ([sys-api])
          AC_LIBOBJ([sys-linux])
          ;;
      *)
-         AC_MSG_ERROR([No suitable kafs implementation found])
+         AC_CHECK_HEADERS([afs/param.h],
+             [AC_LIBOBJ([sys-api])
+              AC_LIBOBJ([sys-syscall])],
+             [AC_MSG_ERROR([No suitable kafs implementation found])])
          ;;
      esac])
-AC_CHECK_HEADERS([kafs.h], , [AC_CHECK_HEADERS([kopenafs.h])])
+AC_CHECK_HEADERS([sys/ioccom.h])
 
 dnl If and only if we're on Linux, make sure that all the symbols in the
 dnl module are resolved.  More platforms could be handled here.
