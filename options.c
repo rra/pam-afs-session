@@ -58,7 +58,9 @@ pamafs_args_parse(int flags, int argc, const char **argv)
         return NULL;
 
     for (i = 0; i < argc; i++) {
-        if (strcmp(argv[i], "always_aklog") == 0)
+        if (strcmp(argv[i], "aklog_homedir") == 0)
+            args->aklog_homedir = 1;
+        else if (strcmp(argv[i], "always_aklog") == 0)
             args->always_aklog = 1;
         else if (strcmp(argv[i], "debug") == 0)
             args->debug = 1;

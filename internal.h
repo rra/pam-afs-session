@@ -20,6 +20,7 @@ struct passwd;
  * Filled in by pamafs_args_parse.
  */
 struct pam_args {
+    int aklog_homedir;          /* Pass -p <homedir> to aklog. */
     int always_aklog;           /* Always run aklog even w/o KRB5CCNAME. */
     int debug;                  /* Log debugging information. */
     int ignore_root;            /* Skip authentication for root. */

@@ -60,7 +60,7 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
  * PAM_SESSION_ERR.
  */
 static int
-pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, uid_t uid)
+pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
 {
     int result;
     char **env;
@@ -78,22 +78,26 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, uid_t uid)
      * buffers in the child process.
      */
     pamafs_debug(args, "running %s as UID %lu", args->program,
-                 (unsigned long) uid);
+                 (unsigned long) pwd->pw_uid);
     env = pam_getenvlist(pamh);
     child = fork();
     if (child < 0)
         return PAM_SESSION_ERR;
     else if (child == 0) {
-        if (setuid(uid) < 0) {
+        if (setuid(pwd->pw_uid) < 0) {
             pamafs_error("cannot setuid to UID %lu: %s",
-                         (unsigned long) uid, strerror(errno));
+                         (unsigned long) pwd->pw_uid, strerror(errno));
             _exit(1);
         }
         close(1);
         close(2);
         open("/dev/null", O_WRONLY);
         open("/dev/null", O_WRONLY);
-        execle(args->program, args->program, NULL, env);
+        if (args->aklog_homedir) {
+            execle(args->program, args->program, "-p", pwd->pw_dir, NULL, env);
+        } else {
+            execle(args->program, args->program, NULL, env);
+        }
         pamafs_error("cannot exec %s: %s", args->program, strerror(errno));
         _exit(1);
     }
@@ -137,7 +141,7 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
     }
     if (pamafs_should_ignore(args, pwd))
         return PAM_SUCCESS;
-    status = pamafs_run_aklog(pamh, args, pwd->pw_uid);
+    status = pamafs_run_aklog(pamh, args, pwd);
     if (status == PAM_SUCCESS) {
         status = pam_set_data(pamh, "pam_afs_session", "yes", NULL);
         if (status != PAM_SUCCESS) {

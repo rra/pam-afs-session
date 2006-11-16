@@ -5,6 +5,11 @@ pam-afs-session 0.2 (unreleased)
     Add an always_aklog option saying to always run aklog even if the user
     doesn't appear to have a ticket cache.
 
+    Add an aklog_homedir option saying to pass -p <homedir> to aklog.
+    This will obtain tokens in whatever AFS cells are required to access
+    the user's home directory and can be used when something more complex
+    than obtaining tokens in the local default cell is needed.
+
     Reopen stdout and stderr to /dev/null before running aklog so that any
     error messages from aklog don't confuse the calling program.
 
