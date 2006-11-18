@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 /* 
  * The struct passed to ioctl to do an AFS system call.  Definition taken from
