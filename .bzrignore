@@ -8,3 +8,4 @@ config.log
 config.status
 configure
 pam-afs-session-*
+pam_afs_session.5

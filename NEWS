@@ -2,6 +2,8 @@
 
 pam-afs-session 0.2 (unreleased)
 
+    Add a man page.
+
     Add a fallback implementation of the AFS system call for platforms
     that use syscall, and add the signal handler protection for the
     k_hasafs probe for those platforms.  The PAM module should now build
