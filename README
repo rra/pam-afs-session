@@ -33,16 +33,17 @@ DESCRIPTION
   For the AFS system call layer, pam-afs-session supports linking with the
   Heimdal libkafs library or the libkopenafs library that will ship with
   later versions of OpenAFS and provides a similar interface.  As a
-  fallback, and to support a low-dependency build on Linux systems, it
-  also comes with a simple AFS system call implementation for Linux only.
-  To use the built-in system call interface, the system must run a new
-  enough version of OpenAFS or Arla to support AFS system calls through
-  ioctl on a file in proc.
+  fallback, and to support a low-dependency build, it also comes with a
+  simple AFS system call implementation for either Linux or platforms that
+  use syscall to call AFS functions.  To use the built-in system call
+  interface on Linux, the system must run a new enough version of OpenAFS
+  or Arla to support AFS system calls through ioctl on a file in proc.  On
+  other systems, configure must be able to find the AFS header afs/param.h
+  in order to get the system call numbers for that platform.
 
-  Right now, this module will probably only work on Linux and definitely
-  requires gcc.  Solaris will require some porting and support for Solaris
-  is planned for the future.  Other PAM implementations will likely
-  require even more work.
+  Right now, this module will probably only work on Linux and Solaris and
+  definitely requires gcc.  Other PAM implementations will likely require
+  some porting work.
 
   Using the Heimdal libkafs interface should work but hasn't been tested
   yet.  Only the built-in Linux-only system call layer has been tested so
@@ -56,14 +57,24 @@ COMPILING AND INSTALLING
       make
 
   To install the module into /usr/local/lib/security and the man page into
-  /usr/local/share/man/man8, run:
+  /usr/local/share/man/man5, run:
 
       make install
 
   You can change the installation locations with the --prefix, --mandir,
   and --libdir options to configure.  The module will be installed in a
   subdirectory of $libdir named security.  Alternately, you can simply
-  copy pam_krb5.so to whatever directory you use for PAM modules.
+  copy pam_afs_session.so to whatever directory you use for PAM modules.
+
+  If you are building this module without libkafs on a platform other than
+  Linux, configure needs to find the AFS header afs/param.h.  If this is
+  not in the normal include path, pass the CPPFLAGS option to configure to
+  point the compiler at the correct path.  For example, if your AFS
+  headers are in /usr/afsws/include, run:
+
+      ./configure CPPFLAGS=-I/usr/afsws/include
+
+  instead.
 
 CONFIGURING
 
@@ -149,6 +160,10 @@ THANKS
   OpenAFS and on discussions with Jeffrey Hutzelman on how best to
   implement an AFS system call layer and on how the pieces work.  I
   couldn't have written this code without his explanations.
+
+  Thanks to Douglas Engart for an initial code review, for Solaris
+  porting, for suggesting the always_aklog and aklog_homedir options, and
+  for catching various other problems and missing features.
 
 LICENSE
 

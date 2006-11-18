@@ -1,7 +1,5 @@
                         pam-afs-session To-Do List
 
- * Write a man page that documents all of the configuration options.
-
  * When logging on using OpenSSH with GSSAPI authentication, the
    open_session function is run properly but at the end of the connection,
    OpenSSH apparently runs pam_setcred(PAM_DELETE_CRED) to clean up and
@@ -29,8 +27,6 @@
 
  * Review the AFS-related PAM options in the Sourceforge PAM module and
    support the ones that make sense here.
-
- * Port to Solaris.
 
  * Possibly port to HP-UX, which requires reworking how the aklog
    environment is handled since HP-UX pam doesn't support the
