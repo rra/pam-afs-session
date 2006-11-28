@@ -129,7 +129,12 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
         return PAM_SUCCESS;
     }
 
-    /* Get the user, look them up, and see if we should skip this user. */
+    /* 
+     * Get the user, look them up, and see if we should skip this user.  (This
+     * will produce warnings on Solaris 8 because pam_get_user is defined to
+     * take a char * instead of const char * on that platform, but this should
+     * be harmless.)
+     */
     status = pam_get_user(pamh, &user, NULL);
     if (status != PAM_SUCCESS || user == NULL) {
         pamafs_error("no user set: %s", pam_strerror(pamh, status));
