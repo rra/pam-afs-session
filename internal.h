@@ -51,11 +51,20 @@ int pamafs_token_delete(pam_handle_t *pamh, struct pam_args *args);
 void pamafs_error(const char *, ...);
 void pamafs_debug(struct pam_args *, const char *, ...);
 
+/* __func__ is C99, but not provided by all implementations. */
+#if __STDC_VERSION__ < 199901L
+# if __GNUC__ >= 2
+#  define __func__ __FUNCTION__
+# else
+#  define __func__ "<unknown>"
+# endif
+#endif
+
 /* Macros to record entry and exit from the main PAM functions. */
 #define ENTRY(args, flags) \
-    pamafs_debug((args), "%s: entry (0x%x)", __FUNCTION__, (flags))
+    pamafs_debug((args), "%s: entry (0x%x)", __func__, (flags))
 #define EXIT(args, pamret) \
-    pamafs_debug((args), "%s: exit (%s)", __FUNCTION__, \
+    pamafs_debug((args), "%s: exit (%s)", __func__, \
                 ((pamret) == PAM_SUCCESS) ? "success" : "failure")
 
 #endif /* INTERNAL_H */
