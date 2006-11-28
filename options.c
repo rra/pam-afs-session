@@ -77,6 +77,11 @@ pamafs_args_parse(int flags, int argc, const char **argv)
         else
             pamafs_error(NULL, "unknown option %s", argv[i]);
     }
+
+#ifdef PATH_AKLOG
+    if (args->program == NULL)
+        args->program = PATH_AKLOG;
+#endif
 	
     if (flags & PAM_SILENT)
         args->quiet++;

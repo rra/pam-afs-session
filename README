@@ -52,6 +52,15 @@ COMPILING AND INSTALLING
       ./configure
       make
 
+  By default, the first aklog program found on the PATH will be compiled
+  into the module as the default aklog program to run.  This can be
+  overridden by the program PAM option.  To specify an explicit path to
+  aklog, use:
+
+      ./configure --with-aklog=/path/to/aklog
+
+  instead.
+
   On Solaris, expect a warning about a type mismatch for pam_get_user.
   This warning should be harmless.
 
@@ -91,10 +100,14 @@ CONFIGURING
       session  optional  pam_krb5.so
       session  required  pam_afs_session.so program=/usr/bin/aklog
 
-  in /etc/pam.d/common-session.  You may want to stack your Kerberos v5
-  PAM module and the Unix module differently, but note that this module
-  should always run after the Kerberos v5 PAM module.  If there is no
-  ticket cache available in the PAM environment, it will succeed silently.
+  in /etc/pam.d/common-session.  The program= setting is optional if
+  /usr/bin/aklog was in your path when the module was compiled or was
+  specified via the --with-aklog option to configure.
+
+  You may want to stack your Kerberos v5 PAM module and the Unix module
+  differently, but note that this module should always run after the
+  Kerberos v5 PAM module.  If there is no ticket cache available in the
+  PAM environment, it will succeed silently.
 
   Note that this is not an authentication module and will always return
   success to any authentication attempt, so never make this module
@@ -102,10 +115,6 @@ CONFIGURING
   module because it provides a pam_setcred implementation and some
   programs need to call pam_setcred rather than pam_open_session (screen
   savers, for instance, to refresh credentials).
-
-  Currently, the program to run to obtain tokens must be explicitly given
-  as a PAM argument or only PAGs will be created.  Eventually, there may
-  be a compile-time default.
 
   On Red Hat systems, modify /etc/pam.d/system-auth instead; it contains
   all of the configuration for the different stacks.  For Solaris, see the

@@ -8,6 +8,20 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_CANONICAL_HOST
 
+dnl Determine the path to aklog.  If we can't figure it out, the user will
+dnl have to set program in the PAM options.
+AC_ARG_WITH([aklog],
+    AC_HELP_STRING([--with-aklog=PATH],
+        [Path to aklog or other Kerberos v5 AFS token program]),
+    [if test x"$withval" != xno ; then
+        PATH_AKLOG=$withval
+    fi],
+    [AC_PATH_PROGS([PATH_AKLOG], [aklog])])
+if test -n "$PATH_AKLOG" ; then
+    AC_DEFINE_UNQUOTED([PATH_AKLOG], ["$PATH_AKLOG"],
+        [Full path to aklog binary.])
+fi
+
 dnl Crank up the warnings if we're using GCC.
 if test "$GCC" = "yes" ; then
     CFLAGS="-Wall $CFLAGS"

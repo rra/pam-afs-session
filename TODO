@@ -6,10 +6,7 @@
    pam-afs-session doesn't think that it had created a token initially.
    Dig into this and try to understand what's going on.
 
- * Provide a compile-time default for the external program to run to
-   obtain tokens so that program doesn't always have to be specified.
-   We'll probably then also need a way to say not to obtain tokens and
-   only create PAGs.
+ * Provide a way to say not to obtain tokens and only create PAGs.
 
  * Support using the libkafs functions to obtain tokens rather than
    spawning an external aklog.  This will require some additional

@@ -137,7 +137,10 @@ if this option is used.
 
 =item program=I<path>
 
-The path to the B<aklog> program to run.  This option must be set.
+The path to the B<aklog> program to run.  If this option is not set, a
+default path to B<aklog> determined at compile time (the first B<aklog>
+found on the compiler's path by default) is used.  If no B<aklog> could be
+found at compile time, this option must be set.
 
 =item retain_after_close
 
