@@ -6,6 +6,11 @@ pam-afs-session 0.3 (unreleased)
     versions of gcc and for systems that support neither.  Should fix
     compilation issues with Sun's C compiler.
 
+    On platforms where we know the appropriate compiler flags, try to
+    build the module so that symbols are resolved within the module in
+    preference to any externally available symbols.  Also add the
+    hopefully correct compiler flags for Sun's C compiler.
+
 pam-afs-session 0.2 (2006-11-17)
 
     Add a man page.
