@@ -80,7 +80,7 @@ pamafs_args_parse(int flags, int argc, const char **argv)
 
 #ifdef PATH_AKLOG
     if (args->program == NULL)
-        args->program = PATH_AKLOG;
+        args->program = strdup(PATH_AKLOG);
 #endif
 	
     if (flags & PAM_SILENT)
