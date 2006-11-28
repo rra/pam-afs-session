@@ -41,20 +41,19 @@ DESCRIPTION
   other systems, configure must be able to find the AFS header afs/param.h
   in order to get the system call numbers for that platform.
 
-  Right now, this module will probably only work on Linux and Solaris and
-  definitely requires gcc.  Other PAM implementations will likely require
-  some porting work.
-
-  Using the Heimdal libkafs interface should work but hasn't been tested
-  yet.  Only the built-in Linux-only system call layer has been tested so
-  far.
+  Right now, this module will probably only work on Linux and Solaris, and
+  will require gcc to even attempt to build on any other platform.  Other
+  PAM implementations will likely require some porting work.
 
 COMPILING AND INSTALLING
 
-  To build the module on a Linux system, just run:
+  To build the module, just run:
 
       ./configure
       make
+
+  On Solaris, expect a warning about a type mismatch for pam_get_user.
+  This warning should be harmless.
 
   To install the module into /usr/local/lib/security and the man page into
   /usr/local/share/man/man5, run:
@@ -65,6 +64,7 @@ COMPILING AND INSTALLING
   and --libdir options to configure.  The module will be installed in a
   subdirectory of $libdir named security.  Alternately, you can simply
   copy pam_afs_session.so to whatever directory you use for PAM modules.
+  On Solaris, you will need to make the module executable.
 
   If you are building this module without libkafs on a platform other than
   Linux, configure needs to find the AFS header afs/param.h.  If this is
@@ -108,7 +108,8 @@ CONFIGURING
   be a compile-time default.
 
   On Red Hat systems, modify /etc/pam.d/system-auth instead; it contains
-  all of the configuration for the different stacks.
+  all of the configuration for the different stacks.  For Solaris, see the
+  man page for pam.conf for configuration information.
 
 IMPLEMENTATION NOTES
 
@@ -164,6 +165,9 @@ THANKS
   Thanks to Douglas Engart for an initial code review, for Solaris
   porting, for suggesting the always_aklog and aklog_homedir options, and
   for catching various other problems and missing features.
+
+  Thanks to Sean O'Malley for additional Solaris porting information and
+  for testing with the Sun C compiler.
 
 LICENSE
 
