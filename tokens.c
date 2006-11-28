@@ -94,9 +94,10 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
         open("/dev/null", O_WRONLY);
         open("/dev/null", O_WRONLY);
         if (args->aklog_homedir) {
-            execle(args->program, args->program, "-p", pwd->pw_dir, NULL, env);
+            execle(args->program, args->program, "-p", pwd->pw_dir,
+                   (char *) 0, env);
         } else {
-            execle(args->program, args->program, NULL, env);
+            execle(args->program, args->program, (char *) 0, env);
         }
         pamafs_error("cannot exec %s: %s", args->program, strerror(errno));
         _exit(1);
