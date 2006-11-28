@@ -187,4 +187,4 @@ SIGSYS handlers or similar application actions.
 
 aklog(1), pam(7), syslog(3), unlog(1)
 
-=back
+=cut
