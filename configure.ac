@@ -1,7 +1,7 @@
 dnl Process this file with Autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([pam-afs-session], [0.2], [rra@stanford.edu])
+AC_INIT([pam-afs-session], [0.3], [rra@stanford.edu])
 
 AC_PROG_CC
 AC_PROG_INSTALL

@@ -1,6 +1,6 @@
                    User-Visible pam-afs-session Changes
 
-pam-afs-session 0.3 (unreleased)
+pam-afs-session 0.3 (2006-11-28)
 
     Compile in a default path to aklog if configure can find it on the
     path or if told the path with the --with-aklog option.  In this case,
