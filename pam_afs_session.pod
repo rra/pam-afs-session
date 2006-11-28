@@ -142,11 +142,11 @@ The path to the B<aklog> program to run.  This option must be set.
 =item retain_after_close
 
 If this option is set, pam_close_session will do nothing (successfully)
-rather than deleting tokens.  Normally, the system will automatically
-clean up tokens once every process in that PAG has terminated.  This
-option may be necessary on some systems that call pam_close_session at
-inappropriate times (Solaris 8, for instance, appears to call
-pam_close_session during login before spawning the user's shell).
+rather than deleting tokens.  This will allow programs started in the
+user's PAG that are still running when the log out to continue to use the
+user's tokens until they expire.  Normally, the AFS kernel module will
+automatically clean up tokens once every process in that PAG has
+terminated.
 
 =back
 
