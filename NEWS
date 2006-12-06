@@ -2,7 +2,16 @@
 
 pam-afs-session 1.0 (unreleased)
 
+    Add --with-afs-headers to configure so that the user doesn't have to
+    know the right syntax for setting CPPFLAGS.
+
+    When using gcc, link with -fPIC as well as compiling with it per the
+    gcc documentation.
+
     Add additional configuration information for Solaris.
+
+    Support building on Mac OS X.  The resulting module isn't tested and
+    may not work.  Thanks, Sebastian Hagedorn.
 
 pam-afs-session 0.3 (2006-11-28)
 

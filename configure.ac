@@ -22,6 +22,14 @@ if test -n "$PATH_AKLOG" ; then
         [Full path to aklog binary.])
 fi
 
+dnl Let the user tell us where their AFS headers are.
+AC_ARG_WITH([afs-headers],
+    AC_HELP_STRING([--with-afs-headers=PATH],
+        [Path to OpenAFS headers (for syscall number)]),
+    [if test x"$withval" != xno ; then
+        CPPFLAGS="-I$withval $CPPFLAGS"
+    fi])
+
 dnl Crank up the warnings if we're using GCC.
 if test "$GCC" = "yes" ; then
     CFLAGS="-Wall $CFLAGS"
@@ -51,6 +59,11 @@ AC_SEARCH_LIBS([k_hasafs], [kafs kopenafs],
 AC_CHECK_HEADERS([sys/ioccom.h])
 AC_TYPE_SIGNAL
 
+dnl Mac OS X calls its PAM headers something different than everyone else.
+AC_CHECK_HEADERS([security/pam_appl.h], ,
+    [AC_CHECK_HEADERS([pam/pam_appl.h], ,
+        [AC_MSG_ERROR([No PAM header files found])])])
+
 dnl Try to add the compiler flags for position-independent code and try to
 dnl specify the binding so that any references within the PAM module are
 dnl resolved to the functions in that module in preference to any external
@@ -59,14 +72,21 @@ dnl symbols in the module are resolved.
 dnl
 dnl More platforms could be handled here.  Contributions welcome.
 case "$host" in
+*-darwin*)
+    if test "$GCC" = "yes" ; then
+        LDFLAGS="-bundle $LDFLAGS"
+    else
+        AC_MSG_ERROR([Only know compiler flags for gcc on this platform])
+    fi
+    ;;
 *-linux*)
     CFLAGS="-fPIC $CFLAGS"
-    LDFLAGS="-shared -Wl,-z,defs -Wl,-Bsymbolic $LDFLAGS"
+    LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $LDFLAGS"
     ;;
 *-solaris2*)
     if test "$GCC" = "yes" ; then
         CFLAGS="-fPIC $CFLAGS"
-        LDFLAGS="-shared -Wl,-Bsymbolic $LDFLAGS"
+        LDFLAGS="-fPIC -shared -Wl,-Bsymbolic $LDFLAGS"
     else
         CFLAGS="-KPIC $CFLAGS"
         LDFLAGS="-G -xldscope=symbolic $LDFLAGS"
@@ -75,7 +95,7 @@ case "$host" in
 *)
     if test "$GCC" = "yes" ; then
         CFLAGS="-fPIC $CFLAGS"
-        LDFLAGS="-shared $LDFLAGS"
+        LDFLAGS="-fPIC -shared $LDFLAGS"
     else
         AC_MSG_ERROR([Only know compiler flags for gcc on this platform])
     fi

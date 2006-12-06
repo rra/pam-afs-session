@@ -77,11 +77,11 @@ COMPILING AND INSTALLING
 
   If you are building this module without libkafs on a platform other than
   Linux, configure needs to find the AFS header afs/param.h.  If this is
-  not in the normal include path, pass the CPPFLAGS option to configure to
-  point the compiler at the correct path.  For example, if your AFS
-  headers are in /usr/afsws/include, run:
+  not in the normal include path, pass the --with-afs-headers option to
+  configure to point the compiler at the correct path.  For example, if
+  your AFS headers are in /usr/afsws/include, run:
 
-      ./configure CPPFLAGS=-I/usr/afsws/include
+      ./configure --with-afs-headers=/usr/afsws/include
 
   instead.
 
