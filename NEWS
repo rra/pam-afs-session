@@ -1,5 +1,9 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 1.0 (unreleased)
+
+    Add additional configuration information for Solaris.
+
 pam-afs-session 0.3 (2006-11-28)
 
     Compile in a default path to aklog if configure can find it on the

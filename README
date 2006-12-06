@@ -117,8 +117,20 @@ CONFIGURING
   savers, for instance, to refresh credentials).
 
   On Red Hat systems, modify /etc/pam.d/system-auth instead; it contains
-  all of the configuration for the different stacks.  For Solaris, see the
-  man page for pam.conf for configuration information.
+  all of the configuration for the different stacks.  For Solaris console
+  login, add something like:
+
+      login session required /usr/local/lib/security/pam_afs_session.so 
+          minimum_uid=100 retain_after_close
+
+  (all on one line) in /etc/pam.conf.  Note that, on Solaris, if you want
+  authentication to first try Kerberos v5 and then fall back to regular
+  Unix authentication, you probably cannot include this module in the auth
+  stack (for pam_setcred).  Solaris doesn't support the [] keywords that
+  Linux PAM does.  However, including it in the session stack should be
+  sufficient; most well-behaved applications will open a session as well
+  as calling pam-setcred.  See the man page for pam.conf on Solaris for
+  more configuration information.
 
 IMPLEMENTATION NOTES
 
