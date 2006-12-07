@@ -7,10 +7,6 @@
   software is distributed under a BSD-style license.  Please see the
   section LICENSE below for more information.
 
-  This module should be considered beta-release code and still needs
-  improvement.  For a list of known issues, see the TODO file that also
-  comes with the distribution.
-
 BLURB
 
   pam-afs-session is a PAM module intended for use with a Kerberos v5 PAM
