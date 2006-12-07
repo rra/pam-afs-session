@@ -13,11 +13,6 @@
    configuration options to control which cells in which to get tokens
    (aklog handles that for us).
 
- * Support systems that don't handle transitive shared library
-   dependencies by figuring out the dependencies of libkafs and linking
-   with them explicitly (and adding --enable-reduced-depends to say to not
-   do this for packaging).
-
  * Support linking with Kerberos libraries to get the appdefault functions
    and using them to read options out of krb5.conf rather than only from
    the PAM configuration.

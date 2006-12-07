@@ -10,6 +10,12 @@ pam-afs-session 1.0 (unreleased)
 
     Add additional configuration information for Solaris.
 
+    Link explicitly against the Kerberos libraries by default when linking
+    with libkafs, only relying on transitive shared library dependencies
+    when --enable-reduced-depends is passed to configure.  This should not
+    be necessary on any of the currently supported platforms but may make
+    porting easier to systems with deficient shared library support.
+
     Support building on Mac OS X.  The resulting module isn't tested and
     may not work.  Thanks, Sebastian Hagedorn.
 
