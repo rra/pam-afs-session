@@ -58,9 +58,13 @@ save_LIBS=$LIBS
 if test x"$reduced_depends" != xtrue ; then
     RRA_LIB_KRB5
 fi
-AC_CHECK_LIB([kafs], [k_hasafs], [AC_CHECK_HEADERS([kafs.h])],
+AC_CHECK_LIB([kafs], [k_hasafs],
+    [LIBS="-lkafs $LIBS"
+     AC_CHECK_HEADERS([kafs.h])],
     [LIBS=$save_LIBS
-     AC_CHECK_LIB([kopenafs], [k_hasafs], [AC_CHECK_HEADERS([kopenafs.h])],
+     AC_CHECK_LIB([kopenafs], [k_hasafs],
+        [LIBS="-lkopenafs $LIBS"
+         AC_CHECK_HEADERS([kopenafs.h])],
         [case "$host" in
          *-linux*)
              AC_LIBOBJ([sys-api])
