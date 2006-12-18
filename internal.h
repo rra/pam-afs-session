@@ -29,17 +29,11 @@ struct pam_args {
     int always_aklog;           /* Always run aklog even w/o KRB5CCNAME. */
     int debug;                  /* Log debugging information. */
     int ignore_root;            /* Skip authentication for root. */
+    int kdestroy;               /* Destroy ticket cache after aklog. */
     int minimum_uid;            /* Ignore users below this UID. */
     int nopag;                  /* Don't create a new PAG. */
     char *program;              /* Program to run for tokens. */
     int retain;                 /* Don't destroy the cache on session end. */
-
-    /*
-     * This isn't really an arg, but instead flags whether PAM_SILENT was
-     * included in the flags.  If set, don't report some messages back to the
-     * user (currently only error messages from password changing).
-     */
-    int quiet;
 };
 
 /* Parse the PAM flags and arguments and fill out pam_args. */

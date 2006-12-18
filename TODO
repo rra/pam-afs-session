@@ -13,15 +13,15 @@
    configuration options to control which cells in which to get tokens
    (aklog handles that for us).
 
- * Support linking with Kerberos libraries to get the appdefault functions
-   and using them to read options out of krb5.conf rather than only from
-   the PAM configuration.
-
  * Review the AFS-related PAM options in the Sourceforge PAM module and
    support the ones that make sense here.
 
  * Add a --without-libkafs option to configure to tell it not to probe for
    the libkafs or libkopenafs libraries.
+
+ * When built with Kerberos support, if creating a Kerberos context fails,
+   report a useful error message.  Likewise, report a useful error message
+   if destroying the ticket cache fails with kdestroy.
 
  * Possibly port to HP-UX, which requires reworking how the aklog
    environment is handled since HP-UX pam doesn't support the

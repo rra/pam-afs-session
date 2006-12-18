@@ -35,6 +35,10 @@
 int k_unlog(void);
 #endif
 
+#ifdef HAVE_KERBEROS
+# include <krb5.h>
+#endif
+
 #include "internal.h"
 
 /*
@@ -114,6 +118,33 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
 }
 
 /*
+ * If the kdestroy option is set and we were built with Kerberos support,
+ * destroy the ticket cache after we successfully got tokens.
+ */
+#ifdef HAVE_KERBEROS
+static void
+maybe_destroy_cache(struct pam_args *args, const char *cache)
+{
+    krb5_context c;
+    krb5_ccache ccache;
+
+    if (!args->kdestroy)
+        return;
+    if (krb5_init_context(&c) != 0)
+        return;
+    if (krb5_cc_resolve(c, cache, &ccache) != 0)
+        return;
+    krb5_cc_destroy(c, ccache);
+}
+#else /* !HAVE_KERBEROS */
+static void
+maybe_destroy_cache(struct pam_args *args, const char *cache)
+{
+    return;
+}
+#endif /* !HAVE_KERBEROS */
+
+/*
  * Obtain AFS tokens, currently always by running aklog but eventually via the
  * kafs interface as well.  Does various sanity checks first, ensuring that we
  * have a K5 ticket cache, that we can resolve the username, and that we're
@@ -172,6 +203,8 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
                          pam_strerror(pamh, status));
             status = PAM_SESSION_ERR;
         }
+        if (status == PAM_SUCCESS)
+            maybe_destroy_cache(args, cache);
     } else
         status = PAM_SUCCESS;
     return status;

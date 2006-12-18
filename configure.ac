@@ -48,6 +48,21 @@ AC_ARG_ENABLE([reduced-depends],
         reduced_depends=true
     fi])
 
+dnl We can optionally build with Kerberos libraries so that we can use
+dnl Kerberos calls to get configuration information.
+KRBROOT=
+kerberos=false
+AC_ARG_WITH([kerberos],
+    AC_HELP_STRING([--with-kerberos@<:@=DIR@:>@],
+        [Compile with Kerberos v5 for configuration]),
+    [if test x"$withval" != xno ; then
+        kerberos=true
+        if test x"$withval" != xyes ; then
+            KRBROOT="$withval"
+        fi
+        AC_DEFINE([HAVE_KERBEROS], 1, [Define to enable Kerberos features.])
+     fi])
+
 dnl Figure out how we're going to get the kafs functions.  We only need
 dnl k_hasafs, k_setpag, and k_unlog.  On Linux only, we can fall back to our
 dnl internal implementation; otherwise, we have to have a library.
@@ -55,13 +70,15 @@ dnl
 dnl libkafs may require the Kerberos libraries, so we have to do this annoying
 dnl dance where we check for them first just in case we need them.
 save_LIBS=$LIBS
-if test x"$reduced_depends" != xtrue ; then
+if test x"$reduced_depends" != xtrue || test x"$kerberos" = xtrue ; then
     RRA_LIB_KRB5
 fi
 AC_CHECK_LIB([kafs], [k_hasafs],
     [LIBS="-lkafs $LIBS"
      AC_CHECK_HEADERS([kafs.h])],
-    [LIBS=$save_LIBS
+    [if test x"$kerberos" != xtrue ; then
+         LIBS=$save_LIBS
+     fi
      AC_CHECK_LIB([kopenafs], [k_hasafs],
         [LIBS="-lkopenafs $LIBS"
          AC_CHECK_HEADERS([kopenafs.h])],

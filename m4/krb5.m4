@@ -32,18 +32,12 @@ AC_DEFUN([_RRA_LIB_KRB5_KRB5],
         [$KRB5EXTRA])],
     [-lasn1 -lroken -lcrypto -lcom_err])])
 
-dnl The main macro.
+dnl The main macro.  Normally, I would provide --with-kerberos here, but since
+dnl building with Kerberos is generally optional, that flag is back in the
+dnl main configure.ac and sets KRBROOT.  Start with handling the reduced
+dnl depends case.
 AC_DEFUN([RRA_LIB_KRB5],
-[KRBROOT=
-AC_ARG_WITH([kerberos],
-    AC_HELP_STRING([--with-kerberos=DIR],
-        [Location of Kerberos headers and libraries]),
-    [if test x"$withval" != xno ; then
-        KRBROOT="$withval"
-     fi])
-
-dnl Handle the reduced depends case, which is much simpler.
-if test x"$reduced_depends" = xtrue ; then
+[if test x"$reduced_depends" = xtrue ; then
     if test x"$KRBROOT" != x ; then
         if test x"$KRBROOT" != x/usr ; then
             CPPFLAGS="$CPPFLAGS -I$KRBROOT/include"

@@ -2,7 +2,15 @@
 
 pam-afs-session 1.1 (unreleased)
 
+    Add optional support for linking with the Kerberos libraries and
+    obtaining configuration from the system krb5.conf file.
+
+    Add the kdestroy option which, if built with Kerberos support, removes
+    the ticket cache after successfully running aklog.
+
     Actually link with libkafs if we detect it at configure time.
+
+    Fix a bug in reporting unknown options.
 
 pam-afs-session 1.0 (2006-12-06)
 

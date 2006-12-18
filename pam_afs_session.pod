@@ -83,10 +83,39 @@ pam_setcred.
 
 The AFS session PAM module supports the following configuration options,
 which may be set in the PAM configuration as arguments listed after
-C<pam_afs_session.so>.  Some of them take arguments, in which case the
-argument will be given after C<=>.  The rest are binary options; the
-option will be turned on if the option is present in the configuration and
-turned off otherwise.
+C<pam_afs_session.so> or in the system F<krb5.conf>.
+
+Some of them take arguments, in which case the argument will be given
+after C<=>.  The rest are boolean options.  To set a boolean option in the
+PAM configuration, just give the name of the option in the arguments.  To
+set an option that takes an argument, follow the option name with an equal
+sign (C<=>) and the value, with no separating whitespace.  Whitespace in
+option arguments is not supported in the PAM configuration.
+
+To set an option for the PAM module in the system F<krb5.conf> file, put
+that option in the [appdefaults] section.  The AFS session PAM module will
+look for options either at the top level of the [appdefaults] section or
+in a subsection named C<pam-afs-session> (currently, realm-specific
+configuration is not checked).  For example, the following fragment of a
+F<krb5.conf> file would set I<aklog_homedir> to true and I<minimum_uid> to
+100.
+
+    [appdefaults]
+        aklog_homedir = true
+        pam-afs-session = {
+            minimum_uid = 100
+        }
+
+There is no difference to the PAM module whether options are specified at
+the top level or in a C<pam-afs-session> section; the C<pam-afs-session>
+section is supported in case there are options that should be set for the
+PAM module but not for other applications.  For more information on the
+syntax of F<krb5.conf>, see krb5.conf(5).
+
+If the same option is set in F<krb5.conf> and in the PAM configuration,
+the latter takes precedent.  Note, however, that due to the configuration
+syntax, there's no way to turn off a boolean option in the PAM
+configuration that was turned on in F<krb5.conf>.
 
 =over 4
 
@@ -120,6 +149,18 @@ syslog with priority LOG_DEBUG.
 If this option is set, the AFS session PAM module won't take any action
 (and will exit successfully) if the account for which the session is being
 established is named C<root>.
+
+=item kdestroy
+
+If this option is set and the AFS session PAM module was built with
+Kerberos support, the user's ticket cache will be destroyed after B<aklog>
+is run successfully.  If B<aklog> does not complete successfully, the
+ticket cache will be left intact.  Please note that this is not properly a
+security feature, since the ticket cache will still be written to disk
+between the time the Kerberos PAM module authenticates the user and the
+time the AFS session PAM module is run.  It can, however, be used to
+reduce the window during which Kerberos ticket caches are lying about if
+the only use one has for ticket caches is to obtain AFS tokens.
 
 =item minimum_uid=I<uid>
 
