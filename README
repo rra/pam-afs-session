@@ -14,7 +14,7 @@ BLURB
   session in a PAG regardless of whether it was authenticated with
   Kerberos and runs a configurable external program to obtain tokens.  It
   supports using Heimdal's libkafs for the AFS interface and falls back to
-  an internal Linux-only implementation if libkafs isn't available.
+  an internal implementation if libkafs isn't available.
 
 DESCRIPTION
 
