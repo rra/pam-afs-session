@@ -41,12 +41,21 @@ DESCRIPTION
   will require gcc to even attempt to build on any other platform.  Other
   PAM implementations will likely require some porting work.
 
+  The module can optionally be linked with Kerberos libraries to obtain
+  configuration information from krb5.conf and to support the kdestroy
+  option.  Either MIT Kerberos or Heimdal should work.
+
 COMPILING AND INSTALLING
 
   To build the module, just run:
 
       ./configure
       make
+
+  If you have Kerberos libraries available and want pam-afs-session to be
+  able to read options from krb5.conf, add the --with-kerberos option to
+  configure (optionally followed by the root of your Kerberos installation
+  if krb5-config isn't on your PATH).
 
   By default, the first aklog program found on the PATH will be compiled
   into the module as the default aklog program to run.  This can be
@@ -139,6 +148,11 @@ CONFIGURING
   sufficient; most well-behaved applications will open a session as well
   as calling pam-setcred.  See the man page for pam.conf on Solaris for
   more configuration information.
+
+  If configured with --with-kerberos, configuration options may also be
+  put in the krb5.conf file used by your Kerberos libraries (usually
+  /etc/krb5.conf or /usr/local/etc/krb5.conf) instead or in addition to
+  the PAM configuration.  See the man page for more details.
 
 IMPLEMENTATION NOTES
 
