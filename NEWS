@@ -1,5 +1,10 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 1.2 (unreleased)
+
+    Fix installation of the man page when building outside of the source
+    directory.
+
 pam-afs-session 1.1 (2006-12-18)
 
     Add optional support for linking with the Kerberos libraries and
