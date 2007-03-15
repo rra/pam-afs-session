@@ -2,6 +2,9 @@
 
 pam-afs-session 1.2 (unreleased)
 
+    Don't fail during configure if Kerberos libraries couldn't be found
+    unless --with-kerberos was explicitly requested.
+
     Fix installation of the man page when building outside of the source
     directory.
 

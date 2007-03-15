@@ -68,10 +68,15 @@ dnl k_hasafs, k_setpag, and k_unlog.  On Linux only, we can fall back to our
 dnl internal implementation; otherwise, we have to have a library.
 dnl
 dnl libkafs may require the Kerberos libraries, so we have to do this annoying
-dnl dance where we check for them first just in case we need them.
+dnl dance where we check for them first just in case we need them.  The first
+dnl parameter says whether to fail if Kerberos isn't found.
 save_LIBS=$LIBS
-if test x"$reduced_depends" != xtrue || test x"$kerberos" = xtrue ; then
-    RRA_LIB_KRB5
+if test x"$kerberos" = xtrue ; then
+    RRA_LIB_KRB5([true])
+else
+    if test x"$reduced_depends" != xtrue ; then
+        RRA_LIB_KRB5([false])
+    fi
 fi
 AC_CHECK_LIB([kafs], [k_hasafs],
     [LIBS="-lkafs $LIBS"

@@ -10,9 +10,13 @@ dnl RRA_LIB_KRB5.
 dnl Does the appropriate library checks for reduced-dependency krb5 linkage.
 AC_DEFUN([_RRA_LIB_KRB5_KRB5_REDUCED],
 [AC_CHECK_LIB([krb5], [krb5_init_context], [KRB5_LIBS="-lkrb5"],
-    [AC_MSG_ERROR([cannot find usable Kerberos v5 library])])
+    [if test x"$1" = xtrue ; then
+         AC_MSG_ERROR([cannot find usable Kerberos v5 library])
+     fi])
 AC_CHECK_LIB([com_err], [com_err], [KRB5_LIBS="$KRB5_LIBS -lcom_err"],
-    [AC_MSG_ERROR([cannot find usable com_err library])])])
+    [if test x"$1" = xtrue ; then
+         AC_MSG_ERROR([cannot find usable com_err library])
+     fi])])
 
 dnl Does the appropriate library checks for krb5 linkage.  Note that we have
 dnl to check for a different function the second time since the Heimdal and
@@ -28,14 +32,17 @@ AC_DEFUN([_RRA_LIB_KRB5_KRB5],
             [KRB5EXTRA="$KRB5EXTRA -lkrb5support"])])
      AC_CHECK_LIB([krb5], [krb5_cc_default],
         [KRB5_LIBS="-lkrb5 $KRB5EXTRA"],
-        [AC_MSG_ERROR([cannot find usable Kerberos v5 library])],
+        [if test x"$1" = xtrue ; then
+             AC_MSG_ERROR([cannot find usable Kerberos v5 library])
+         fi],
         [$KRB5EXTRA])],
     [-lasn1 -lroken -lcrypto -lcom_err])])
 
 dnl The main macro.  Normally, I would provide --with-kerberos here, but since
 dnl building with Kerberos is generally optional, that flag is back in the
-dnl main configure.ac and sets KRBROOT.  Start with handling the reduced
-dnl depends case.
+dnl main configure.ac and sets KRBROOT.  Takes a parameter which is true if we
+dnl should fail if no Kerberos libraries are found and false otherwise.  Start
+dnl with handling the reduced depends case.
 AC_DEFUN([RRA_LIB_KRB5],
 [if test x"$reduced_depends" = xtrue ; then
     if test x"$KRBROOT" != x ; then
@@ -44,7 +51,7 @@ AC_DEFUN([RRA_LIB_KRB5],
         fi
         LDFLAGS="$LDFLAGS -L$KRBROOT/lib"
     fi
-    _RRA_LIB_KRB5_KRB5_REDUCED
+    _RRA_LIB_KRB5_KRB5_REDUCED([$1])
 fi
 
 dnl Checking for the neworking libraries shouldn't be necessary for the
@@ -88,7 +95,7 @@ if test x"$reduced_depends" != xtrue ; then
         AC_SEARCH_LIBS([res_search], [resolv], ,
             [AC_SEARCH_LIBS([__res_search], [resolv])])
         AC_SEARCH_LIBS([crypt], [crypt])
-        _RRA_LIB_KRB5_KRB5
+        _RRA_LIB_KRB5_KRB5([$1])
     fi
     if test x"$KRB5_CPPFLAGS" != x ; then
         CPPFLAGS="$CPPFLAGS $KRB5_CPPFLAGS"
