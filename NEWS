@@ -2,6 +2,10 @@
 
 pam-afs-session 1.2 (unreleased)
 
+    When retain_after_close is set, don't destroy tokens on DELETE_CRED
+    either.  OpenSSH calls this when the session dies.  Thanks to Thomas
+    Kula for the patch.
+
     Don't fail during configure if Kerberos libraries couldn't be found
     unless --with-kerberos was explicitly requested.
 

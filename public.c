@@ -130,7 +130,12 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
 
     /* If DELETE_CRED was specified, delete the tokens (if any). */
     if (flags & PAM_DELETE_CRED) {
-        pamret = pamafs_token_delete(pamh, args);
+        if (args->retain) {
+            pamafs_debug(args, "skipping as configured");
+            pamret = PAM_SUCCESS;
+        } else {
+            pamret = pamafs_token_delete(pamh, args);
+        }
         goto done;
     }
 
