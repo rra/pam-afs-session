@@ -70,36 +70,49 @@ dnl
 dnl libkafs may require the Kerberos libraries, so we have to do this annoying
 dnl dance where we check for them first just in case we need them.  The first
 dnl parameter says whether to fail if Kerberos isn't found.
-save_LIBS=$LIBS
-if test x"$kerberos" = xtrue ; then
-    RRA_LIB_KRB5([true])
-else
-    if test x"$reduced_depends" != xtrue ; then
-        RRA_LIB_KRB5([false])
+libkafs=true
+AC_ARG_WITH([libkafs],
+    AC_HELP_STRING([--without-libkafs],
+        [Always use internal AFS syscall code]),
+    [if test x"$withval" = xno ; then
+        libkafs=false
+     fi])
+if test x"$libkafs" != xfalse ; then
+    save_LIBS=$LIBS
+    if test x"$kerberos" = xtrue ; then
+        RRA_LIB_KRB5([true])
+    else
+        if test x"$reduced_depends" != xtrue ; then
+            RRA_LIB_KRB5([false])
+        fi
     fi
+    AC_CHECK_LIB([kafs], [k_hasafs],
+        [LIBS="-lkafs $LIBS"
+         AC_CHECK_HEADERS([kafs.h])],
+        [if test x"$kerberos" != xtrue ; then
+             LIBS=$save_LIBS
+         fi
+         AC_CHECK_LIB([kopenafs], [k_hasafs],
+            [LIBS="-lkopenafs $LIBS"
+             AC_CHECK_HEADERS([kopenafs.h])],
+            [libkafs=false])])
 fi
-AC_CHECK_LIB([kafs], [k_hasafs],
-    [LIBS="-lkafs $LIBS"
-     AC_CHECK_HEADERS([kafs.h])],
-    [if test x"$kerberos" != xtrue ; then
-         LIBS=$save_LIBS
-     fi
-     AC_CHECK_LIB([kopenafs], [k_hasafs],
-        [LIBS="-lkopenafs $LIBS"
-         AC_CHECK_HEADERS([kopenafs.h])],
-        [case "$host" in
-         *-linux*)
-             AC_LIBOBJ([sys-api])
-             AC_LIBOBJ([sys-linux])
-             ;;
-         *)
-             AC_CHECK_HEADERS([afs/param.h],
-                 [AC_LIBOBJ([sys-api])
-                  AC_LIBOBJ([sys-syscall])],
-                 [AC_MSG_ERROR([No suitable kafs implementation found])])
-             ;;
-         esac])])
+if test x"$libkafs" = xfalse ; then
+    case "$host" in
+    *-linux*)
+        AC_LIBOBJ([sys-api])
+        AC_LIBOBJ([sys-linux])
+        ;;
+    *)
+        AC_CHECK_HEADERS([afs/param.h],
+            [AC_LIBOBJ([sys-api])
+             AC_LIBOBJ([sys-syscall])],
+            [AC_MSG_ERROR([No suitable kafs implementation found])])
+        ;;
+    esac
+fi
 
+dnl Other portability checks.
 AC_CHECK_HEADERS([sys/ioccom.h])
 AC_TYPE_SIGNAL
 

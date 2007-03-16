@@ -16,9 +16,6 @@
  * Review the AFS-related PAM options in the Sourceforge PAM module and
    support the ones that make sense here.
 
- * Add a --without-libkafs option to configure to tell it not to probe for
-   the libkafs or libkopenafs libraries.
-
  * When built with Kerberos support, if creating a Kerberos context fails,
    report a useful error message.  Likewise, report a useful error message
    if destroying the ticket cache fails with kdestroy.

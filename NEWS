@@ -9,6 +9,10 @@ pam-afs-session 1.2 (unreleased)
     Don't fail during configure if Kerberos libraries couldn't be found
     unless --with-kerberos was explicitly requested.
 
+    Added --without-libkafs to force using the internal AFS syscall
+    implementation and not link with libkafs or libkopenafs, even if the
+    libraries are available.
+
     Fix installation of the man page when building outside of the source
     directory.
 

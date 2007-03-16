@@ -80,6 +80,12 @@ COMPILING AND INSTALLING
   copy pam_afs_session.so to whatever directory you use for PAM modules.
   On Solaris, you will need to make the module executable.
 
+  By default, if libkafs or libkopenafs are available, pam-afs-session
+  will use them in preference to its own system call implementation.  If
+  for some reason you want to build pam-afs-session without a dependency
+  on those libraries even though you have them installed, pass the
+  --without-libkafs flag to configure.
+
   If you are building this module without libkafs on a platform other than
   Linux, configure needs to find the AFS header afs/param.h.  If this is
   not in the normal include path, pass the --with-afs-headers option to
