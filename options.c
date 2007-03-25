@@ -104,8 +104,10 @@ load_krb5_config(struct pam_args *args)
     krb5_error_code retval;
 
     retval = krb5_init_context(&c);
-    if (retval != 0)
+    if (retval != 0) {
+        pamafs_error_krb5(NULL, "cannot initialize Kerberos", retval);
         return;
+    }
     default_boolean(c, "aklog_homedir", 0, &args->aklog_homedir);
     default_boolean(c, "always_aklog", 0, &args->always_aklog);
     default_boolean(c, "debug", 0, &args->debug);

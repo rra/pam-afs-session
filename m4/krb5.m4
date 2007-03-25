@@ -38,6 +38,13 @@ AC_DEFUN([_RRA_LIB_KRB5_KRB5],
         [$KRB5EXTRA])],
     [-lasn1 -lroken -lcrypto -lcom_err])])
 
+dnl Additional checks for portability between MIT and Heimdal if krb5
+dnl libraries were requested.
+AC_DEFUN([_RRA_LIB_KRB5_KRB5_EXTRA],
+[AC_CHECK_HEADERS([et/com_err.h])
+AC_CHECK_FUNCS([krb5_get_error_message krb5_free_error_message \
+                krb5_get_err_text])])
+
 dnl The main macro.  Normally, I would provide --with-kerberos here, but since
 dnl building with Kerberos is generally optional, that flag is back in the
 dnl main configure.ac and sets KRBROOT.  Takes a parameter which is true if we
@@ -105,4 +112,6 @@ fi
 dnl Generate the final library list and put it into the standard variables.
 LIBS="$KRB5_LIBS $LIBS"
 CPPFLAGS=`echo "$CPPFLAGS" | sed 's/^  *//'`
-LDFLAGS=`echo "$LDFLAGS" | sed 's/^  *//'`])
+LDFLAGS=`echo "$LDFLAGS" | sed 's/^  *//'`
+_RRA_LIB_KRB5_KRB5_EXTRA
+])

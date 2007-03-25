@@ -127,7 +127,7 @@ static int
 pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
               const char *cachename, struct passwd *pwd)
 {
-    krb5_error_code result;
+    krb5_error_code ret;
     krb5_context ctx;
     krb5_ccache cache;
 
@@ -135,26 +135,25 @@ pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
         pamafs_debug(args, "skipping, no Kerberos ticket cache");
         return PAM_SUCCESS;
     }
-    result = krb5_init_context(&ctx);
-    if (result != 0) {
-        pamafs_error("cannot create Kerberos context");
+    ret = krb5_init_context(&ctx);
+    if (ret != 0) {
+        pamafs_error_krb5(NULL, "cannot initialize Kerberos", ret);
         return PAM_SESSION_ERR;
     }
-    result = krb5_cc_resolve(ctx, cachename, &cache);
-    if (result != 0) {
-        pamafs_error("cannot open Kerberos ticket cache");
+    ret = krb5_cc_resolve(ctx, cachename, &cache);
+    if (ret != 0) {
+        pamafs_error_krb5(ctx, "cannot open Kerberos ticket cache", ret);
         return PAM_SESSION_ERR;
     }
     if (args->aklog_homedir)
-        result = krb5_afslog_uid_home(ctx, cache, NULL, NULL, pwd->pw_uid,
+        ret = krb5_afslog_uid_home(ctx, cache, NULL, NULL, pwd->pw_uid,
                                       pwd->pw_dir);
     else
-        result = krb5_afslog_uid(ctx, cache, NULL, NULL, pwd->pw_uid);
-    if (result == 0)
+        ret = krb5_afslog_uid(ctx, cache, NULL, NULL, pwd->pw_uid);
+    if (ret == 0)
         return PAM_SUCCESS;
     else {
-        pamafs_error("unable to obtain tokens: %d", result);
-        krb5_warn(ctx, result, "unable to obtain tokens");
+        pamafs_error_krb5(ctx, "cannot obtain tokens", ret);
         return PAM_SESSION_ERR;
     }
 }
@@ -168,16 +167,25 @@ pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
 static void
 maybe_destroy_cache(struct pam_args *args, const char *cache)
 {
+    krb5_error_code ret;
     krb5_context c;
     krb5_ccache ccache;
 
     if (!args->kdestroy)
         return;
-    if (krb5_init_context(&c) != 0)
+    ret = krb5_init_context(&c);
+    if (ret != 0) {
+        pamafs_error_krb5(NULL, "cannot initialize Kerberos", ret);
         return;
-    if (krb5_cc_resolve(c, cache, &ccache) != 0)
+    }
+    ret = krb5_cc_resolve(c, cache, &ccache);
+    if (ret != 0) {
+        pamafs_error_krb5(c, "cannot open Kerberos ticket cache", ret);
         return;
-    krb5_cc_destroy(c, ccache);
+    }
+    ret = krb5_cc_destroy(c, ccache);
+    if (ret != 0)
+        pamafs_error_krb5(c, "cannot destroy Kerberos ticket cache", ret);
 }
 #else /* !HAVE_KERBEROS */
 static void

@@ -18,6 +18,10 @@
 #endif
 #include <stdarg.h>
 
+#ifdef HAVE_KERBEROS
+# include <krb5.h>
+#endif
+
 struct passwd;
 
 /*
@@ -49,6 +53,11 @@ int pamafs_token_delete(pam_handle_t *pamh, struct pam_args *args);
 /* Error reporting and debugging functions. */
 void pamafs_error(const char *, ...);
 void pamafs_debug(struct pam_args *, const char *, ...);
+
+/* Error reporting for Kerberos v5 code. */
+#ifdef HAVE_KERBEROS
+void pamafs_error_krb5(krb5_context, const char *, int);
+#endif
 
 /* __func__ is C99, but not provided by all implementations. */
 #if __STDC_VERSION__ < 199901L

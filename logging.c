@@ -21,6 +21,15 @@
 #include <stdio.h>
 #include <syslog.h>
 
+#ifdef HAVE_KERBEROS
+# include <krb5.h>
+# ifdef HAVE_ET_COM_ERR_H
+#  include <et/com_err.h>
+# else
+#  include <com_err.h>
+# endif
+#endif
+
 #include "internal.h"
 
 /*
@@ -56,3 +65,52 @@ pamafs_debug(struct pam_args *pargs, const char *fmt, ...)
     va_end(args);
     syslog(LOG_DEBUG, "(pam_afs_session): %s", msg);
 }
+
+
+/*
+ * Log a Kerberos v5 failure with LOG_ERR priority.  We don't free the message
+ * if we have no context under the assumption that no memory would be
+ * allocated in that case.  This is true for the current MIT Kerberos
+ * implementation.
+ *
+ * The error reporting functions keep changing, so we need all sorts of ugly
+ * Autoconf cruft here to get the right ones.
+ */
+#ifdef HAVE_KERBEROS
+static const char *
+pamafs_get_krb5_error(krb5_context c, krb5_error_code code)
+{
+    const char *msg;
+
+# if defined(HAVE_KRB5_GET_ERROR_MESSAGE)
+    msg = krb5_get_error_message(c, code);
+# elif defined(HAVE_KRB5_GET_ERR_TEXT)
+    msg = krb5_get_err_text(c, code);
+# else
+    msg = error_message(code);
+# endif
+    if (msg == NULL)
+        return "unknown error";
+    else
+        return msg;
+}
+
+void
+pamafs_free_krb5_error(krb5_context c, const char *msg)
+{
+# ifdef HAVE_KRB5_FREE_ERROR_MESSAGE
+    krb5_free_error_message(c, msg);
+# endif
+}
+
+void
+pamafs_error_krb5(krb5_context ctx, const char *msg, int status)
+{
+    const char *k5_msg = NULL;
+
+    k5_msg = pamafs_get_krb5_error(ctx, status);
+    pamafs_error("%s: %s", msg, k5_msg);
+    if (ctx == NULL)
+        pamafs_free_krb5_error(ctx, k5_msg);
+}
+#endif /* HAVE_KERBEROS */

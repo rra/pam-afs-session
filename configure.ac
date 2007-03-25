@@ -9,6 +9,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_CANONICAL_HOST
+AC_HEADER_STDC
 
 dnl Determine the path to aklog.  If we can't figure it out, the user will
 dnl have to set program in the PAM options.
