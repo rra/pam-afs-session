@@ -1,10 +1,10 @@
-                           pam-afs-session 1.1
+                           pam-afs-session 1.2
                    (PAM module for AFS PAGs and tokens)
 
                 Written by Russ Allbery <rra@stanford.edu>
 
-  Copyright 2006 Board of Trustees, Leland Stanford Jr. University.  This
-  software is distributed under a BSD-style license.  Please see the
+  Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University.
+  This software is distributed under a BSD-style license.  Please see the
   section LICENSE below for more information.
 
 BLURB
@@ -253,8 +253,8 @@ THANKS
 
 LICENSE
 
-  Copyright 2006 Board of Trustees, Leland Stanford Jr. University.  All
-  rights reserved.
+  Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University.
+  All rights reserved.
     
   Permission to use, copy, modify, and distribute this software and its
   documentation for any purpose and without fee is hereby granted,
