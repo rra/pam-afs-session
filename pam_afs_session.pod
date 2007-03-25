@@ -39,21 +39,22 @@ When a new session is opened, this module will first check to see if AFS
 is running on the system.  If not, it will log a message and exit
 successfully.  If AFS is running, it will place the user's session in a
 new PAG (Process Authentication Group, often implemented as supplemental
-groups, which limits user tokens to only processes in that PAG) and then
-will attempt to run an external B<aklog> program to obtain tokens as
-configured below.  If PAG creation fails, the module will fail; if
-B<aklog> fails, the module will log a warning but still return success.
+groups, which limits user tokens to only processes in that PAG).  It will
+then attempt to obtain tokens, either directly if built with the Heimdal
+libkafs library and Kerberos support or by running an external B<aklog>
+program.  If PAG creation fails, the module will fail; if obtainint tokens
+fails, the module will log a warning but still return success.
 
-The module will only attempt to obtain tokens via B<aklog> if the
-environment variable KRB5CCNAME is set in the environment, unless
-otherwise configured (see the always_aklog option).  It will always create
-a new PAG, however.
+The module will only attempt to obtain tokens if the environment variable
+KRB5CCNAME is set in the environment, unless otherwise configured (see the
+always_aklog option).  It will always create a new PAG, however.
 
 =item pam_close_session
 
 If and only if pam_open_session successfully obtained AFS tokens and AFS
 is still running on the system, pam_close_session will delete the tokens
-in the current PAG (equivalent to running B<unlog>).
+in the current PAG (equivalent to running B<unlog>).  To leave the tokens
+after session close, set the retain_after_close option.
 
 =item pam_setcred
 
@@ -61,9 +62,9 @@ When pam_setcred is called with the PAM_ESTABLISH_CRED flag, it will do
 the same as if pam_open_session was called.  When pam_setcred is called
 with the PAM_DELETE_CRED flag, it will do the same as if pam_close_session
 was called.  When called with the PAM_REINITIALIZE_CRED flag or the
-PAM_REFRESH_CRED flag, it won't create a new PAG but instead will only run
-B<aklog> to get new tokens (still skipping this unless KRB5CCNAME is set
-in the environment or always_aklog is set).
+PAM_REFRESH_CRED flag, it won't create a new PAG but instead will only
+attempt to get new tokens (still skipping this unless KRB5CCNAME is set in
+the environment or always_aklog is set).
 
 =back
 
@@ -121,21 +122,30 @@ configuration that was turned on in F<krb5.conf>.
 
 =item aklog_homedir
 
-Normally, B<aklog> is called without any options.  If this option is
-given, B<aklog> will be called with B<-p> I<home-directory> where
-I<home-directory> is the home directory of the local user for which the
-session is being opened or refreshed (retrieved via getpwnam()).  This
-generally will tell B<aklog> to check that path, find all AFS cells
-involved in access to that path, and attempt to obtain tokens for each
-one.  Note that this means that if the user's home directory is not in
-AFS, no tokens will be obtained.
+Try to obtain the necessary tokens to access the user's home directory.
+If the libkafs token-obtaining API is used, setting this will cause the
+AFS session PAM module to pass the user's home directory into that API and
+request that the appropriate tokens be obtained.  If running an external
+B<aklog> program, B<aklog> will be called with B<-p> I<home-directory>
+where I<home-directory> is the home directory of the local user for which
+the session is being opened or refreshed.  This generally will tell
+B<aklog> to check that path, find all AFS cells involved in access to that
+path, and attempt to obtain tokens for each one.  Note that this means
+that if the user's home directory is not in AFS, no tokens will be
+obtained.
+
+In either case, the user's home directory is obtained via getpwnam() based
+on the username PAM says we are authenticating.
 
 =item always_aklog
 
-Normally, B<aklog> is only run if KRB5CCNAME is set in the PAM
-environment.  If this option is set, B<aklog> will always be run.  This
-can be used if your environment doesn't correctly set KRB5CCNAME in the
-environment for some reason, or if your B<aklog> doesn't rely on a
+Normally, the AFS session PAM module only tries to obtain tokens if
+KRB5CCNAME is set in the PAM environment.  If this option is set, it will
+always attempt to obtain tokens.  This is only useful if it is configured
+to run an external B<aklog> program.
+
+This can be used if your environment doesn't correctly set KRB5CCNAME in
+the environment for some reason, or if your B<aklog> doesn't rely on a
 Kerberos ticket cache to obtain tokens (or can find the cache on its own
 via some other means).
 
@@ -153,8 +163,8 @@ established is named C<root>.
 =item kdestroy
 
 If this option is set and the AFS session PAM module was built with
-Kerberos support, the user's ticket cache will be destroyed after B<aklog>
-is run successfully.  If B<aklog> does not complete successfully, the
+Kerberos support, the user's ticket cache will be destroyed after tokens
+are obtained successfully.  If tokens are not obtained successfully, the
 ticket cache will be left intact.  Please note that this is not properly a
 security feature, since the ticket cache will still be written to disk
 between the time the Kerberos PAM module authenticates the user and the
@@ -178,10 +188,15 @@ if this option is used.
 
 =item program=I<path>
 
-The path to the B<aklog> program to run.  If this option is not set, a
-default path to B<aklog> determined at compile time (the first B<aklog>
-found on the compiler's path by default) is used.  If no B<aklog> could be
-found at compile time, this option must be set.
+The path to the B<aklog> program to run.  Setting this option tells the
+AFS session PAM module to always run an external program to obtain tokens
+and never use the libkafs interface, even if the latter is available.
+
+If this option is not set, the default behavior is to call the libkafs
+function to obtain tokens, if available, and otherwise to use a default
+path to B<aklog> determined at compile time (the first B<aklog> found on
+the compiler's path by default).  If no B<aklog> could be found at compile
+time and libkafs isn't used, this option must be set.
 
 =item retain_after_close
 
@@ -227,8 +242,29 @@ threads shouldn't be an issue, but be aware that the PAM module is doing
 this behind the back of the application and may interfere with unusual
 SIGSYS handlers or similar application actions.
 
+=head1 NOTES
+
+When using the libkafs interface to obtain tokens, be sure that it is
+configured properly for the type of AFS tokens expected at your site.  As
+of Heimdal 0.7, the default behavior is to contact the krb524 service to
+translate Kerberos v5 tickets into Kerberos v4 tickets to use as tokens.
+AFS cells running current server software no longer need this, and if your
+site doesn't run the krb524 service, this may break token acquisition.
+
+Sites running AFS servers that understand Kerberos-v5-derived tokens
+should add configuration like:
+
+    libkafs = {
+        EXAMPLE.ORG = {
+            afs-use-524 = no
+        }
+    }
+
+to the [appdefaults] section of their F<krb5.conf> files to disable use of
+the krb524 service.  See the Heimdal kafs man page for more information.
+
 =head1 SEE ALSO
 
-aklog(1), pam(7), syslog(3), unlog(1)
+aklog(1), kafs(3), pam(7), syslog(3), unlog(1)
 
 =cut

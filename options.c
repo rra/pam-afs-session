@@ -165,7 +165,7 @@ pamafs_args_parse(int flags, int argc, const char **argv)
             pamafs_error("unknown option %s", argv[i]);
     }
 
-#ifdef PATH_AKLOG
+#if defined(PATH_AKLOG) && !defined(HAVE_KRB5_AFSLOG)
     if (args->program == NULL)
         args->program = strdup(PATH_AKLOG);
 #endif

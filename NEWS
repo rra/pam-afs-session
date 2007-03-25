@@ -2,6 +2,11 @@
 
 pam-afs-session 1.2 (unreleased)
 
+    Add support for calling the Heimdal libkafs functions for obtaining
+    AFS tokens rather than running an external aklog program.  This
+    support is the default if libkafs and the Kerberos v5 functions were
+    found at build time and --with-kerberos was passed to configure.
+
     When retain_after_close is set, don't destroy tokens on DELETE_CRED
     either.  OpenSSH calls this when the session dies.  Thanks to Thomas
     Kula for the patch.

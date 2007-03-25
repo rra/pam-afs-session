@@ -97,7 +97,11 @@ if test x"$libkafs" != xfalse ; then
              AC_CHECK_HEADERS([kopenafs.h])],
             [libkafs=false])])
 fi
-if test x"$libkafs" = xfalse ; then
+if test x"$libkafs" = xtrue ; then
+    if test x"$kerberos" = xtrue ; then
+        AC_CHECK_FUNCS([krb5_afslog])
+    fi
+else
     case "$host" in
     *-linux*)
         AC_LIBOBJ([sys-api])

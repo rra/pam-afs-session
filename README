@@ -12,19 +12,39 @@ BLURB
   pam-afs-session is a PAM module intended for use with a Kerberos v5 PAM
   module to obtain an AFS PAG and AFS tokens on login.  It puts every new
   session in a PAG regardless of whether it was authenticated with
-  Kerberos and runs a configurable external program to obtain tokens.  It
-  supports using Heimdal's libkafs for the AFS interface and falls back to
-  an internal implementation if libkafs isn't available.
+  Kerberos and either uses Heimdal's libkafs or runs a configurable
+  external program to obtain tokens.  It supports using Heimdal's libkafs
+  for the AFS interface and falls back to an internal implementation if
+  libkafs isn't available.
 
 DESCRIPTION
 
   pam-afs-session is a PAM module that isolates each login in a separate
   AFS PAG (so that they will not trample on each other's AFS tokens) and
-  supports running an external program to obtain AFS tokens from a
-  Kerberos v5 ticket cache.  It does not obtain tickets itself and must be
-  used in conjunction with a Kerberos v5 PAM module to obtain tokens
-  (setting up PAGs can be done without any Kerberos implementations).  It
-  provides only the setcred and session PAM functions.
+  supports either running an external program to obtain AFS tokens from a
+  Kerberos v5 ticket cache or using Heimdal's libkafs library.  It does
+  not obtain tickets itself and must be used in conjunction with a
+  Kerberos v5 PAM module to obtain tokens (setting up PAGs can be done
+  without any Kerberos implementations).  It provides only the setcred and
+  session PAM functions.
+
+  There are two ways this module can obtain tokens:
+
+   * If you have Heimdal's libkafs library available and build this module
+     with Kerberos support (passing --with-kerberos to configure), the
+     module can call libkafs's krb5_afslog function to obtain tokens
+     directly.  If you are using Heimdal and obtaining tokens from
+     Kerberos tickets, this is the recommended configuration, since it
+     means the PAM module doesn't have to fork an external process.  If
+     built in the fashion described above, this will be the default unless
+     program is set in the module configuration.
+
+   * Otherwise, the module will run an arbitrary external program to
+     obtain tokens.  This is the most flexible option, works with MIT
+     Kerberos in conjunction with the aklog program from OpenAFS or the
+     afslog program from Heimdal, and can support programs that obtain AFS
+     tokens via some means other than a Kerberos ticket cache created on
+     login.
 
   For the AFS system call layer, pam-afs-session supports linking with the
   Heimdal libkafs library or the libkopenafs library that will ship with
@@ -42,8 +62,9 @@ DESCRIPTION
   PAM implementations will likely require some porting work.
 
   The module can optionally be linked with Kerberos libraries to obtain
-  configuration information from krb5.conf and to support the kdestroy
-  option.  Either MIT Kerberos or Heimdal should work.
+  configuration information from krb5.conf, to support the kdestroy
+  option, and to use libkafs's functions for obtaining tokens.  Either MIT
+  Kerberos or Heimdal should work.
 
 COMPILING AND INSTALLING
 
@@ -53,9 +74,11 @@ COMPILING AND INSTALLING
       make
 
   If you have Kerberos libraries available and want pam-afs-session to be
-  able to read options from krb5.conf, add the --with-kerberos option to
-  configure (optionally followed by the root of your Kerberos installation
-  if krb5-config isn't on your PATH).
+  able to read options from krb5.conf, or if you want to use libkafs's
+  internal functions for obtaining tokens (recommended if you have it
+  available), add the --with-kerberos option to configure (optionally
+  followed by the root of your Kerberos installation if krb5-config isn't
+  on your PATH).
 
   By default, the first aklog program found on the PATH will be compiled
   into the module as the default aklog program to run.  This can be
@@ -178,8 +201,16 @@ IMPLEMENTATION NOTES
   the PAM data when pam_open_session or pam_setcred with the
   PAM_ESTABLISH_CRED flag is called, it will successfully do nothing to
   keep from doing duplicate work.  Otherwise, it will always create a PAG
-  and then will run an external program to obtain tokens provided that the
-  environment variable KRB5CCNAME is set in the PAM environment.
+  and then will either call krb5_afslog or run an external program to
+  obtain tokens provided that the environment variable KRB5CCNAME is set
+  in the PAM environment.
+
+  If built with Kerberos (--with-kerberos) support, if libkafs was found
+  and used at compile time, and if krb5_afslog is available, the default
+  is to run krb5_afslog to obtain tokens.  Otherwise, the default is to
+  run whatever aklog program was found at compile time.  If program is set
+  explicitly in the configuration, pam-afs-session will always run that
+  program rather than calling krb5_afslog.
 
   When pam_close_session or pam_setcred(PAM_DELETE_CRED) is called,
   pam-afs-session will destroy the user's tokens only if the PAM data key
@@ -195,8 +226,10 @@ IMPLEMENTATION NOTES
   savers and lockers to refresh a user's credentials.
 
   pam-afs-session requires that the user (obtained via pam_get_user)
-  exists in the local passwd file or equivalent (using getpwnam) and runs
-  the external program under that user's UID and primary GID.
+  exists in the local passwd file or equivalent (using getpwnam).  If
+  running an external program, the program is run under that user's UID
+  and primary GID.  If calling krb5_afslog, that user's UID is used for
+  the "AFS ID" field in the tokens display (which is entirely cosmetic).
 
 THANKS
 

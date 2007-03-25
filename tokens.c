@@ -27,16 +27,16 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#ifdef HAVE_KERBEROS
+# include <krb5.h>
+#endif
+
 #if HAVE_KAFS_H
 # include <kafs.h>
 #elif HAVE_KOPENAFS_H
 # include <kopenafs.h>
 #else
 int k_unlog(void);
-#endif
-
-#ifdef HAVE_KERBEROS
-# include <krb5.h>
 #endif
 
 #include "internal.h"
@@ -64,8 +64,8 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
 
 /*
  * Call aklog with the appropriate environment.  Takes the PAM handle (so that
- * we can get the environment), the path to aklog, and the path to the ticket
- * cache (possibly a template).  Returns either PAM_SUCCESS or
+ * we can get the environment), the arguments, and a struct passwd entry for
+ * the user we're authenticating as.  Returns either PAM_SUCCESS or
  * PAM_SESSION_ERR.
  */
 static int
@@ -116,6 +116,49 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
     else
         return PAM_SESSION_ERR;
 }
+
+/*
+ * Call the appropriate krb5_afslog function to get tokens directly without
+ * running an external aklog binary.  Returns either PAM_SUCCESS or
+ * PAM_SESSION_ERR.
+ */
+#ifdef HAVE_KRB5_AFSLOG
+static int
+pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
+              const char *cachename, struct passwd *pwd)
+{
+    krb5_error_code result;
+    krb5_context ctx;
+    krb5_ccache cache;
+
+    if (cachename == NULL) {
+        pamafs_debug(args, "skipping, no Kerberos ticket cache");
+        return PAM_SUCCESS;
+    }
+    result = krb5_init_context(&ctx);
+    if (result != 0) {
+        pamafs_error("cannot create Kerberos context");
+        return PAM_SESSION_ERR;
+    }
+    result = krb5_cc_resolve(ctx, cachename, &cache);
+    if (result != 0) {
+        pamafs_error("cannot open Kerberos ticket cache");
+        return PAM_SESSION_ERR;
+    }
+    if (args->aklog_homedir)
+        result = krb5_afslog_uid_home(ctx, cache, NULL, NULL, pwd->pw_uid,
+                                      pwd->pw_dir);
+    else
+        result = krb5_afslog_uid(ctx, cache, NULL, NULL, pwd->pw_uid);
+    if (result == 0)
+        return PAM_SUCCESS;
+    else {
+        pamafs_error("unable to obtain tokens: %d", result);
+        krb5_warn(ctx, result, "unable to obtain tokens");
+        return PAM_SESSION_ERR;
+    }
+}
+#endif
 
 /*
  * If the kdestroy option is set and we were built with Kerberos support,
@@ -185,17 +228,28 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
         return PAM_SUCCESS;
 
     /*
-     * Always return success even if aklog failed.  An argument could be made
-     * for failing if aklog fails, but that may cause the user to be kicked
-     * out of their session when their home directory may not even be in AFS.
-     * Continuing when aklog failed should at worst result in errors of being
-     * unable to access their home directory; this isn't the authentication
-     * module and isn't responsible for ensuring the user should have access.
+     * If we have krb5_afslog and no program was specifically set, call it.
+     * Otherwise, run aklog.
+     *
+     * Always return success even if obtaining tokens failed.  An argument
+     * could be made for failing if getting tokens fails, but that may cause
+     * the user to be kicked out of their session when their home directory
+     * may not even be in AFS.  Continuing without tokens should at worst
+     * result in errors of being unable to access their home directory; this
+     * isn't the authentication module and isn't responsible for ensuring the
+     * user should have access.
      *
      * This could be made an option later if necessary, but I'd rather avoid
      * too many options.
      */
+#ifdef HAVE_KRB5_AFSLOG
+    if (args->program == NULL)
+        status = pamafs_afslog(pamh, args, cache, pwd);
+    else
+        status = pamafs_run_aklog(pamh, args, pwd);
+#else
     status = pamafs_run_aklog(pamh, args, pwd);
+#endif
     if (status == PAM_SUCCESS) {
         status = pam_set_data(pamh, "pam_afs_session", "yes", NULL);
         if (status != PAM_SUCCESS) {
