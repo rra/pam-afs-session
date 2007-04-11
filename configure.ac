@@ -1,7 +1,7 @@
 dnl Process this file with Autoconf to produce a configure script.
 
 AC_PREREQ([2.57])
-AC_INIT([pam-afs-session], [1.2], [rra@stanford.edu])
+AC_INIT([pam-afs-session], [1.3], [rra@stanford.edu])
 
 m4_include([m4/krb5.m4])
 
