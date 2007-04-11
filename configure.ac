@@ -63,6 +63,9 @@ AC_ARG_WITH([kerberos],
         fi
         AC_DEFINE([HAVE_KERBEROS], 1, [Define to enable Kerberos features.])
      fi])
+if test x"$kerberos" = xtrue ; then
+    RRA_LIB_KRB5([true])
+fi
 
 dnl Figure out how we're going to get the kafs functions.  We only need
 dnl k_hasafs, k_setpag, and k_unlog.  On Linux only, we can fall back to our
@@ -80,9 +83,7 @@ AC_ARG_WITH([libkafs],
      fi])
 if test x"$libkafs" != xfalse ; then
     save_LIBS=$LIBS
-    if test x"$kerberos" = xtrue ; then
-        RRA_LIB_KRB5([true])
-    else
+    if test x"$kerberos" != xtrue ; then
         if test x"$reduced_depends" != xtrue ; then
             RRA_LIB_KRB5([false])
         fi
@@ -90,9 +91,7 @@ if test x"$libkafs" != xfalse ; then
     AC_CHECK_LIB([kafs], [k_hasafs],
         [LIBS="-lkafs $LIBS"
          AC_CHECK_HEADERS([kafs.h])],
-        [if test x"$kerberos" != xtrue ; then
-             LIBS=$save_LIBS
-         fi
+        [LIBS=$save_LIBS
          AC_CHECK_LIB([kopenafs], [k_hasafs],
             [LIBS="-lkopenafs $LIBS"
              AC_CHECK_HEADERS([kopenafs.h])],
