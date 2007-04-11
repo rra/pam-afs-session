@@ -1,5 +1,9 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 1.4 (unreleased)
+
+    Support DESTDIR for make install.
+
 pam-afs-session 1.3 (2007-04-11)
 
     Add a notokens configuration option which, when set, tells the module
