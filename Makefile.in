@@ -64,3 +64,12 @@ distclean: clean
 maintclean maintainer-clean: distclean
 	rm -f CHANGES config.h.in config.h.in~ configure pam_afs_session.5
 	rm -f $(TARNAME).gz
+
+# Dependencies, set by hand for right now.
+logging.o: logging.c config.h internal.h
+options.o: options.c config.h internal.h
+public.o: public.c config.h internal.h
+sys-api.o: sys-api.c config.h
+sys-linux.o: sys-linux.c config.h
+sys-syscall.o: sys-syscall.c config.h
+tokens.o: tokens.c config.h internal.h
