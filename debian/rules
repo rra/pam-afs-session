@@ -24,10 +24,11 @@ else
     CFLAGS += -O2
 endif
 
+# Fix the prefix setting after we have DESTDIR support.
 configure-stamp:
 	dh_testdir
-	CFLAGS="$(CFLAGS)" ./configure $(SYSTEM) --prefix=/usr \
-	    --mandir=\$${prefix}/share/man --libdir=/lib \
+	CFLAGS="$(CFLAGS)" ./configure $(SYSTEM) --prefix=/ \
+	    --mandir=\$${prefix}/usr/share/man --libdir=/lib \
 	    --enable-reduced-depends --with-kerberos --without-libkafs \
 	    --with-aklog=/usr/bin/aklog
 	touch configure-stamp
@@ -52,7 +53,7 @@ install-stamp: build-stamp
 	dh_testdir
 	dh_testroot
 	dh_clean
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/libpam-afs-session
+	$(MAKE) install prefix=$(CURDIR)/debian/libpam-afs-session
 	touch install-stamp
 
 binary: binary-arch binary-indep
