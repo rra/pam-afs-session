@@ -1,0 +1,11 @@
+CHANGES
+Makefile
+autom4te.cache
+config.cache
+config.h
+config.h.in
+config.log
+config.status
+configure
+pam-afs-session-*
+pam_afs_session.5

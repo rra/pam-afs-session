@@ -1,0 +1,49 @@
+libpam-afs-session for Debian
+-----------------------------
+
+After installing this package, you must modify your PAM configuration
+for full AFS PAM support.  If you only need AFS integration for regular
+logins, adding:
+
+    session  required  pam_afs_session.so
+
+to /etc/pam.d/common-session is sufficient.  Note that you will need to
+have already configured a Kerberos PAM module; see the documentation of,
+for instance, libpam-krb5 or libpam-heimdal for more information.
+
+This configuration will only obtain tokens for interactive sessions,
+however; if you also want to obtain tokens for scp and similar
+non-interactive logins, you will also need to modify
+/etc/pam.d/common-auth to contain something like this:
+
+    auth     sufficient                pam_unix.so nullok_secure
+    auth     [success=ok default=die]  pam_krb5.so use_first_pass
+    auth     [default=done]            pam_afs_session.so
+
+See the PAM documentation (in the libpam-doc Debian package, for example)
+for more information about the extended [] configuration and the possible
+options.  The above recipe checks local Unix passwords first and then
+falls back on Kerberos authentication; if you want to try Kerberos first,
+instead use:
+
+    auth     [success=ok default=1]  pam_krb5.so
+    auth     [default=done]          pam_afs_session.so
+    auth     required                pam_unix.so try_first_pass nullok_secure
+
+Be very careful to never put this module in the auth stack marked as
+sufficient or as a final required module.  pam_afs_session.so implements
+only a stub for user authentication and is included in the auth stack
+solely so that it is called on pam_setcred.  If you mark this module as
+sufficient, it will allow any user to log in without a password.
+
+For Debian, this module is built with Kerberos support so that it can read
+configuration options from /etc/krb5.conf and so that the kdestroy option
+is supported.  It is built without Heimdal libkafs support and therefore
+always runs an external aklog program to obtain tokens.  Unless the path
+is modified with the program option, the default aklog binary to run is
+/usr/bin/aklog (so Heimdal afslog users will want to set the program
+option).
+
+For more information, see the pam_afs_session man page.
+
+ -- Russ Allbery <rra@debian.org>, Wed, 11 Apr 2007 14:02:29 z
