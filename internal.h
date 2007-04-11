@@ -36,6 +36,7 @@ struct pam_args {
     int kdestroy;               /* Destroy ticket cache after aklog. */
     int minimum_uid;            /* Ignore users below this UID. */
     int nopag;                  /* Don't create a new PAG. */
+    int notokens;               /* Only create a PAG, don't obtain tokens. */
     char *program;              /* Program to run for tokens. */
     int retain;                 /* Don't destroy the cache on session end. */
 };

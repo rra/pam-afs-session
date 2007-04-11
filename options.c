@@ -115,6 +115,7 @@ load_krb5_config(struct pam_args *args)
     default_boolean(c, "kdestroy", 0, &args->kdestroy);
     default_number(c, "minimum_uid", 0, &args->minimum_uid);
     default_boolean(c, "nopag", 0, &args->nopag);
+    default_boolean(c, "notokens", 0, &args->notokens);
     default_string(c, "program", NULL, &args->program);
     default_boolean(c, "retain_after_close", 0, &args->retain);
 }
@@ -159,6 +160,8 @@ pamafs_args_parse(int flags, int argc, const char **argv)
             args->minimum_uid = atoi(&argv[i][strlen("minimum_uid=")]);
         else if (strcmp(argv[i], "nopag") == 0)
             args->nopag = 1;
+        else if (strcmp(argv[i], "notokens") == 0)
+            args->notokens = 1;
         else if (strncmp(argv[i], "program=", 8) == 0)
             args->program = strdup(&argv[i][strlen("program=")]);
         else if (strcmp(argv[i], "retain_after_close") == 0)

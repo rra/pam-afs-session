@@ -2,6 +2,10 @@
 
 pam-afs-session 1.3 (unreleased)
 
+    Add a notokens configuration option which, when set, tells the module
+    to only create a PAG and not to try to obtain tokens.  Based on a
+    patch from Jason McCormick.
+
     When forking an external aklog, also close standard input and reopen
     it to /dev/null.  Normal aklog programs won't try to read from
     standard input, but don't connect their standard input to any stray

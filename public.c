@@ -45,7 +45,8 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
                     const char *argv[])
 {
     struct pam_args *args;
-    int pamret, status;
+    int status;
+    int pamret = PAM_SUCCESS;
     const void *dummy;
 
     args = pamafs_args_parse(flags, argc, argv);
@@ -59,7 +60,6 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
     /* Do nothing unless AFS is available. */
     if (!k_hasafs()) {
         pamafs_error("skipping, AFS apparently not available");
-        pamret = PAM_SUCCESS;
         goto done;
     }
 
@@ -70,7 +70,6 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
     status = pam_get_data(pamh, "pam_afs_session", &dummy);
     if (status == PAM_SUCCESS) {
         pamafs_debug(args, "skipping, apparently already ran");
-        pamret = PAM_SUCCESS;
         goto done;
     }
     if (!args->nopag && k_setpag() != 0) {
@@ -80,7 +79,8 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
     }
 
     /* Get tokens. */
-    pamret = pamafs_token_get(pamh, args);
+    if (!args->notokens)
+        pamret = pamafs_token_get(pamh, args);
 
 done:
     EXIT(args, pamret);
@@ -110,7 +110,8 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
                const char *argv[])
 {
     struct pam_args *args;
-    int pamret, status;
+    int status;
+    int pamret = PAM_SUCCESS;
     const void *dummy;
 
     args = pamafs_args_parse(flags, argc, argv);
@@ -124,18 +125,15 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
     /* Do nothing unless AFS is available. */
     if (!k_hasafs()) {
         pamafs_error("skipping, AFS apparently not available");
-        pamret = PAM_SUCCESS;
         goto done;
     }
 
     /* If DELETE_CRED was specified, delete the tokens (if any). */
     if (flags & PAM_DELETE_CRED) {
-        if (args->retain) {
+        if (args->retain || args->notokens)
             pamafs_debug(args, "skipping as configured");
-            pamret = PAM_SUCCESS;
-        } else {
+        else
             pamret = pamafs_token_delete(pamh, args);
-        }
         goto done;
     }
 
@@ -149,7 +147,6 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
         status = pam_get_data(pamh, "pam_afs_session", &dummy);
         if (status == PAM_SUCCESS) {
             pamafs_debug(args, "skipping, apparently already ran");
-            pamret = PAM_SUCCESS;
             goto done;
         }
         if (!args->nopag && k_setpag() != 0) {
@@ -158,7 +155,8 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
             goto done;
         }
     }
-    pamret = pamafs_token_get(pamh, args);
+    if (!args->notokens)
+        pamret = pamafs_token_get(pamh, args);
 
 done:
     EXIT(args, pamret);
@@ -176,7 +174,7 @@ pam_sm_close_session(pam_handle_t *pamh, int flags, int argc,
                      const char *argv[])
 {
     struct pam_args *args;
-    int pamret;
+    int pamret = PAM_SUCCESS;
 
     args = pamafs_args_parse(flags, argc, argv);
     if (args == NULL) {
@@ -187,16 +185,14 @@ pam_sm_close_session(pam_handle_t *pamh, int flags, int argc,
     ENTRY(args, flags);
 
     /* Do nothing if so configured. */
-    if (args->retain) {
+    if (args->retain || args->notokens) {
         pamafs_debug(args, "skipping as configured");
-        pamret = PAM_SUCCESS;
         goto done;
     }
 
     /* Do nothing unless AFS is available. */
     if (!k_hasafs()) {
         pamafs_error("skipping, AFS apparently not available");
-        pamret = PAM_SUCCESS;
         goto done;
     }
 

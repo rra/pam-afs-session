@@ -186,6 +186,17 @@ managing the login.  If B<sshd>, for instance, is started in a PAG, every
 user who logs in via ssh will be put in the same PAG and will share tokens
 if this option is used.
 
+=item notokens
+
+If this option is set, the AFS session PAM module will only create a PAG
+and not attempt to obtain tokens.  Setting this option overrides all other
+settings related to acquiring tokens, including always_aklog.  If both
+nopag and notokens are set, the module essentially does nothing.
+
+Setting notokens also implies retain_after_close, meaning that the AFS
+session PAM module will also not attempt to delete tokens when the user's
+session ends.
+
 =item program=I<path>
 
 The path to the B<aklog> program to run.  Setting this option tells the
