@@ -90,16 +90,19 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
                  (unsigned long) pwd->pw_uid);
     env = pam_getenvlist(pamh);
     child = fork();
-    if (child < 0)
+    if (child < 0) {
+        pamafs_error("cannot fork: %s", strerror(errno));
         return PAM_SESSION_ERR;
-    else if (child == 0) {
+    } else if (child == 0) {
         if (setuid(pwd->pw_uid) < 0) {
             pamafs_error("cannot setuid to UID %lu: %s",
                          (unsigned long) pwd->pw_uid, strerror(errno));
             _exit(1);
         }
+        close(0);
         close(1);
         close(2);
+        open("/dev/null", O_RDONLY);
         open("/dev/null", O_WRONLY);
         open("/dev/null", O_WRONLY);
         if (args->aklog_homedir) {
@@ -132,7 +135,7 @@ pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
     krb5_ccache cache;
 
     if (cachename == NULL) {
-        pamafs_debug(args, "skipping, no Kerberos ticket cache");
+        pamafs_debug(args, "skipping tokens, no Kerberos ticket cache");
         return PAM_SUCCESS;
     }
     ret = krb5_init_context(&ctx);
@@ -212,7 +215,7 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
     /* Don't try to get a token unless we have a K5 ticket cache. */
     cache = pam_getenv(pamh, "KRB5CCNAME");
     if (cache == NULL && !args->always_aklog) {
-        pamafs_debug(args, "skipping, no Kerberos ticket cache");
+        pamafs_debug(args, "skipping tokens, no Kerberos ticket cache");
         return PAM_SUCCESS;
     }
 
