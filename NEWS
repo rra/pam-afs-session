@@ -2,6 +2,9 @@
 
 pam-afs-session 1.4 (unreleased)
 
+    Document using the module with Mac OS X, now that it's been confirmed
+    to work with sshd on that platform.
+
     Support DESTDIR for make install.
 
 pam-afs-session 1.3 (2007-04-11)

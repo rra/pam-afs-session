@@ -57,9 +57,10 @@ DESCRIPTION
   other systems, configure must be able to find the AFS header afs/param.h
   in order to get the system call numbers for that platform.
 
-  Right now, this module will probably only work on Linux and Solaris, and
-  will require gcc to even attempt to build on any other platform.  Other
-  PAM implementations will likely require some porting work.
+  Right now, this module will probably only work on Linux, Solaris, and
+  Mac OS X, and will require gcc to even attempt to build on any other
+  platform.  Other PAM implementations will likely require some porting
+  work.
 
   The module can optionally be linked with Kerberos libraries to obtain
   configuration information from krb5.conf, to support the kdestroy
@@ -177,6 +178,12 @@ CONFIGURING
   sufficient; most well-behaved applications will open a session as well
   as calling pam-setcred.  See the man page for pam.conf on Solaris for
   more configuration information.
+
+  For Mac OS X, PAM isn't used for system login and is therefore mostly
+  useful for remote ssh.  To use this module with sshd, add it to the
+  session group of the sshd PAM configuration, and it will then obtain
+  tokens with forwarded tickets via GSSAPI or tickets obtained via
+  KerberosAuthentication.
 
   If configured with --with-kerberos, configuration options may also be
   put in the krb5.conf file used by your Kerberos libraries (usually
