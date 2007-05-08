@@ -2,6 +2,10 @@
 
 pam-afs-session 1.4 (unreleased)
 
+    Ported to HP-UX.  HP-UX's PAM libraries do not support a separate
+    environment used for the new session, so manipulate the regular
+    environment instead.  Thanks to Joe Buehler for the port.
+
     Document using the module with Mac OS X, now that it's been confirmed
     to work with sshd on that platform.
 

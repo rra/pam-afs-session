@@ -22,6 +22,7 @@
 # include <pam/pam_modules.h>
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -37,6 +38,17 @@
 # include <kopenafs.h>
 #else
 int k_unlog(void);
+#endif
+
+/*
+ * HP-UX doesn't have a separate environment maintained in the PAM
+ * environment, so on that platform just use the regular environment.
+ */
+#ifndef HAVE_PAM_GETENVLIST
+# define pam_getenvlist(p)      (environ)
+#endif
+#ifndef HAVE_PAM_GETENV
+# define pam_getenv(p, e)       getenv(e)
 #endif
 
 #include "internal.h"

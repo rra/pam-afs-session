@@ -9,7 +9,3 @@
  * Add configuration to specify which cells in which to get tokens and
    pass this into either aklog or libkafs as appropriate.  Should be
    called afs_cells for compatibility with the Sourceforge PAM module.
-
- * Possibly port to HP-UX, which requires reworking how the aklog
-   environment is handled since HP-UX pam doesn't support the
-   pam_getenvlist function.  pam_afs2 has code to handle this.

@@ -18,8 +18,9 @@ mandir		= @mandir@
 CC		= @CC@
 CFLAGS		= @CFLAGS@
 CPPFLAGS	= -I. -I$(srcdir) @CPPFLAGS@
+LD		= @LD@
 LDFLAGS		= @LDFLAGS@
-LIBS		= -lpam @LIBS@
+LIBS		= @LIBS@
 
 INSTALL		= @INSTALL@
 INSTALL_DATA	= @INSTALL_DATA@
@@ -30,7 +31,7 @@ OBJECTS		= $(SOURCES:.c=.o) @LIBOBJS@
 all: pam_afs_session.so $(srcdir)/pam_afs_session.5
 
 pam_afs_session.so: $(OBJECTS)
-	$(CC) -o $@ $(LDFLAGS) $(OBJECTS) $(LIBS)
+	$(LD) -o $@ $(LDFLAGS) $(OBJECTS) $(LIBS)
 	chmod 644 $@
 
 $(srcdir)/pam_afs_session.5: $(srcdir)/pam_afs_session.pod
