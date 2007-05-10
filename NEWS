@@ -2,6 +2,9 @@
 
 pam-afs-session 1.4 (unreleased)
 
+    Added the afs_cells configuration option which specifies the list of
+    cells in which to get tokens.
+
     Ported to HP-UX.  HP-UX's PAM libraries do not support a separate
     environment used for the new session, so manipulate the regular
     environment instead.  Thanks to Joe Buehler for the port.
