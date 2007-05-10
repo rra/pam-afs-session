@@ -1,6 +1,6 @@
                    User-Visible pam-afs-session Changes
 
-pam-afs-session 1.4 (unreleased)
+pam-afs-session 1.4 (2007-05-10)
 
     Added the afs_cells configuration option which specifies the list of
     cells in which to get tokens.
