@@ -190,7 +190,7 @@ pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
     }
     if (args->cells != NULL) {
         for (i = 0; i < args->cell_count; i++) {
-            ret = krb5_afslog_uid(ctx, cache, args->cells[i], NULL, NULL,
+            ret = krb5_afslog_uid(ctx, cache, args->cells[i], NULL,
                                   pwd->pw_uid);
             if (ret != 0)
                 pamafs_error_krb5(ctx, "cannot obtain tokens for cell", ret);
