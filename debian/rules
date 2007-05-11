@@ -28,7 +28,7 @@ endif
 configure-stamp:
 	dh_testdir
 	CFLAGS="$(CFLAGS)" ./configure $(SYSTEM) --prefix=/ \
-	    --datarootdir=/usr/share/man --enable-reduced-depends \
+	    --datarootdir=/usr/share --enable-reduced-depends \
 	    --with-kerberos --without-libkafs --with-aklog=/usr/bin/aklog
 	touch configure-stamp
 
