@@ -1,4 +1,4 @@
-                           pam-afs-session 1.3
+                           pam-afs-session 1.4
                    (PAM module for AFS PAGs and tokens)
 
                 Written by Russ Allbery <rra@stanford.edu>
@@ -57,9 +57,10 @@ DESCRIPTION
   other systems, configure must be able to find the AFS header afs/param.h
   in order to get the system call numbers for that platform.
 
-  Right now, this module will probably only work on Linux and Solaris, and
-  will require gcc to even attempt to build on any other platform.  Other
-  PAM implementations will likely require some porting work.
+  Right now, this module will probably only work on Linux, Solaris, HP-UX,
+  and Mac OS X, and will require gcc to even attempt to build on any other
+  platform.  Other PAM implementations will likely require some porting
+  work.
 
   The module can optionally be linked with Kerberos libraries to obtain
   configuration information from krb5.conf, to support the kdestroy
@@ -134,17 +135,35 @@ COMPILING AND INSTALLING
 CONFIGURING
 
   Just installing the module does not enable it or change anything about
-  your system authentication configuration.  To use it in conjunction with
-  pam_krb5 on a Debian system, put something like:
+  your system authentication configuration.  You have to add the module to
+  your PAM configuration, generally in the session group and possibly in
+  the auth group as well.  See the platform-specific instructions below.
 
-      auth  [success=ok default=1]  pam_krb5.so
-      auth  [default=done]          pam_afs_session.so program=/usr/bin/aklog
-      auth  required                pam_unix.so try_first_pass nullok_secure
+  On all platforms, options can be put after the module name in the PAM
+  configuration file.  This is useful if you don't have Kerberos libraries
+  available or if you want different configurations for different
+  services.
+
+  If configured with --with-kerberos, configuration options may also be
+  put in the krb5.conf file used by your Kerberos libraries (usually
+  /etc/krb5.conf or /usr/local/etc/krb5.conf) instead or in addition to
+  the PAM configuration.  See the man page for more details.  This is
+  recommended for general system configuration, since the krb5.conf
+  configuration syntax is a little nicer and more flexible.
+
+ Linux
+
+  To use it in conjunction with pam_krb5 on a Debian system, put something
+  like:
+
+      auth [success=ok default=1] pam_krb5.so
+      auth [default=done]         pam_afs_session.so program=/usr/bin/aklog
+      auth required               pam_unix.so try_first_pass nullok_secure
 
   in /etc/pam.d/common-auth and something like:
 
-      session  optional  pam_krb5.so
-      session  required  pam_afs_session.so program=/usr/bin/aklog
+      session optional pam_krb5.so
+      session required pam_afs_session.so program=/usr/bin/aklog
 
   in /etc/pam.d/common-session.  The program= setting is optional if
   /usr/bin/aklog was in your path when the module was compiled or was
@@ -163,8 +182,11 @@ CONFIGURING
   savers, for instance, to refresh credentials).
 
   On Red Hat systems, modify /etc/pam.d/system-auth instead; it contains
-  all of the configuration for the different stacks.  For Solaris console
-  login, add something like:
+  all of the configuration for the different stacks.
+
+ Solaris
+
+  For Solaris console login, add something like:
 
       login session required /usr/local/lib/security/pam_afs_session.so 
           minimum_uid=100 retain_after_close
@@ -175,13 +197,30 @@ CONFIGURING
   stack (for pam_setcred).  Solaris doesn't support the [] keywords that
   Linux PAM does.  However, including it in the session stack should be
   sufficient; most well-behaved applications will open a session as well
-  as calling pam-setcred.  See the man page for pam.conf on Solaris for
-  more configuration information.
+  as calling pam-setcred.
 
-  If configured with --with-kerberos, configuration options may also be
-  put in the krb5.conf file used by your Kerberos libraries (usually
-  /etc/krb5.conf or /usr/local/etc/krb5.conf) instead or in addition to
-  the PAM configuration.  See the man page for more details.
+  See the man page for pam.conf on Solaris for more configuration
+  information.  You may need to add additional lines for graphical login,
+  ssh, or for "other" as a catch-all depending on which services you use.
+
+ HP-UX
+
+  HP-UX configuration is very similar to Solaris.  Something like:
+
+      dtaction session required /usr/lib/security/pam_afs_session.so
+      dtlogin  session required /usr/lib/security/pam_afs_session.so
+      login    session required /usr/lib/security/pam_afs_session.so
+      OTHER    session required /usr/lib/security/pam_afs_session.so
+
+  will use pam-afs-session for most login sessions.
+
+ Mac OS X
+
+  For Mac OS X, PAM isn't used for system login and is therefore mostly
+  useful for remote ssh.  To use this module with sshd, add it to the
+  session group of the sshd PAM configuration, and it will then obtain
+  tokens with forwarded tickets via GSSAPI or tickets obtained via
+  KerberosAuthentication.
 
 IMPLEMENTATION NOTES
 
@@ -250,6 +289,8 @@ THANKS
 
   Thanks to Sean O'Malley for additional Solaris porting information and
   for testing with the Sun C compiler.
+
+  Thanks to Joe Buehler for porting and testing on HP-UX.
 
 LICENSE
 

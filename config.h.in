@@ -33,6 +33,12 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* Define to 1 if you have the `pam_getenv' function. */
+#undef HAVE_PAM_GETENV
+
+/* Define to 1 if you have the `pam_getenvlist' function. */
+#undef HAVE_PAM_GETENVLIST
+
 /* Define to 1 if you have the <pam/pam_appl.h> header file. */
 #undef HAVE_PAM_PAM_APPL_H
 
@@ -86,3 +92,6 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* Define to 1 on Linux to get full prototypes. */
+#undef _GNU_SOURCE

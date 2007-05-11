@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "PAM_AFS_SESSION 5"
-.TH PAM_AFS_SESSION 5 "2007-04-11" "1.3" "PAM Modules"
+.TH PAM_AFS_SESSION 5 "2007-05-10" "1.4" "PAM Modules"
 .SH "NAME"
 pam_afs_session \- AFS PAG and token PAM module
 .SH "SYNOPSIS"
@@ -242,6 +242,18 @@ If the same option is set in \fIkrb5.conf\fR and in the \s-1PAM\s0 configuration
 the latter takes precedent.  Note, however, that due to the configuration
 syntax, there's no way to turn off a boolean option in the \s-1PAM\s0
 configuration that was turned on in \fIkrb5.conf\fR.
+.IP "afs_cells=\fIcell\fR[,\fIcell\fR...]" 4
+.IX Item "afs_cells=cell[,cell...]"
+Obtain tokens for the listed cells instead of the default local cell.  If
+more than one cell is listed, try to obtain tokens for each cell.  If
+specified in \fIkrb5.conf\fR, the cells can be separated by any combination
+of spaces and commas; if specified in the \s-1PAM\s0 configuration, they must be
+separated by commas.
+.Sp
+If the \s-1AFS\s0 session \s-1PAM\s0 module is running an external program, this option
+is implemented by passing a \fB\-c\fR flag with the cell as its argument for
+each listed cell to that program.  If aklog_homedir is also set, the \fB\-c\fR
+flags and the \fB\-p\fR flag will all be passed to the external program.
 .IP "aklog_homedir" 4
 .IX Item "aklog_homedir"
 Try to obtain the necessary tokens to access the user's home directory.

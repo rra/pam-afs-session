@@ -9,6 +9,7 @@
 
 #include "config.h"
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -40,6 +41,10 @@ void
 pamafs_args_free(struct pam_args *args)
 {
     if (args != NULL) {
+        if (args->afs_cells != NULL)
+            free(args->afs_cells);
+        if (args->cells != NULL)
+            free(args->cells);
         if (args->program != NULL)
             free(args->program);
         free(args);
@@ -108,6 +113,7 @@ load_krb5_config(struct pam_args *args)
         pamafs_error_krb5(NULL, "cannot initialize Kerberos", retval);
         return;
     }
+    default_string(c, "afs_cells", NULL, &args->afs_cells);
     default_boolean(c, "aklog_homedir", 0, &args->aklog_homedir);
     default_boolean(c, "always_aklog", 0, &args->always_aklog);
     default_boolean(c, "debug", 0, &args->debug);
@@ -146,7 +152,12 @@ pamafs_args_parse(int flags, int argc, const char **argv)
 #endif
 
     for (i = 0; i < argc; i++) {
-        if (strcmp(argv[i], "aklog_homedir") == 0)
+        if (strncmp(argv[i], "afs_cells=", strlen("afs_cells=")) == 0) {
+            if (args->afs_cells != NULL)
+                free(args->afs_cells);
+            args->afs_cells = strdup(&argv[i][strlen("afs_cells=")]);
+        }
+        else if (strcmp(argv[i], "aklog_homedir") == 0)
             args->aklog_homedir = 1;
         else if (strcmp(argv[i], "always_aklog") == 0)
             args->always_aklog = 1;
@@ -162,8 +173,11 @@ pamafs_args_parse(int flags, int argc, const char **argv)
             args->nopag = 1;
         else if (strcmp(argv[i], "notokens") == 0)
             args->notokens = 1;
-        else if (strncmp(argv[i], "program=", 8) == 0)
+        else if (strncmp(argv[i], "program=", 8) == 0) {
+            if (args->program != NULL)
+                free(args->program);
             args->program = strdup(&argv[i][strlen("program=")]);
+        }
         else if (strcmp(argv[i], "retain_after_close") == 0)
             args->retain = 1;
         else
@@ -181,5 +195,43 @@ pamafs_args_parse(int flags, int argc, const char **argv)
         pamafs_error("kdestroy specified but not built with Kerberos support");
 #endif
 
+    /*
+     * Turn afs_cells, which may be space and/or comma-separated, into a more
+     * useful null-terminated array of cells.
+     */
+    if (args->afs_cells != NULL) {
+        size_t count, i;
+        char **new_cells;
+        char *p = args->afs_cells;
+
+        i = 0;
+        count = 2;
+        args->cells = malloc(count * sizeof(char *));
+        if (args->cells == NULL)
+            goto fail;
+        while (*p != '\0') {
+            while ((isspace((unsigned char) *p) || *p == ',') && *p != '\0') {
+                *p = '\0';
+                p++;
+            }
+            if (i >= count - 1) {
+                count++;
+                new_cells = realloc(args->cells, count * sizeof(char *));
+                if (new_cells == NULL)
+                    goto fail;
+                args->cells = new_cells;
+            }
+            args->cells[i++] = p;
+            while (!isspace((unsigned char) *p) && *p != ',' && *p != '\0')
+                p++;
+        }
+        args->cells[i] = NULL;
+        args->cell_count = i;
+    }
+
     return args;
+
+fail:
+    pamafs_args_free(args);
+    return NULL;
 }
