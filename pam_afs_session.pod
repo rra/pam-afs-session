@@ -120,6 +120,19 @@ configuration that was turned on in F<krb5.conf>.
 
 =over 4
 
+=item afs_cells=I<cell>[,I<cell>...]
+
+Obtain tokens for the listed cells instead of the default local cell.  If
+more than one cell is listed, try to obtain tokens for each cell.  If
+specified in F<krb5.conf>, the cells can be separated by any combination
+of spaces and commas; if specified in the PAM configuration, they must be
+separated by commas.
+
+If the AFS session PAM module is running an external program, this option
+is implemented by passing a B<-c> flag with the cell as its argument for
+each listed cell to that program.  If aklog_homedir is also set, the B<-c>
+flags and the B<-p> flag will all be passed to the external program.
+
 =item aklog_homedir
 
 Try to obtain the necessary tokens to access the user's home directory.

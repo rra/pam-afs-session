@@ -28,9 +28,8 @@ endif
 configure-stamp:
 	dh_testdir
 	CFLAGS="$(CFLAGS)" ./configure $(SYSTEM) --prefix=/ \
-	    --mandir=\$${prefix}/usr/share/man --libdir=\$${prefix}/lib \
-	    --enable-reduced-depends --with-kerberos --without-libkafs \
-	    --with-aklog=/usr/bin/aklog
+	    --datarootdir=/usr/share/man --enable-reduced-depends \
+	    --with-kerberos --without-libkafs --with-aklog=/usr/bin/aklog
 	touch configure-stamp
 
 build: build-arch build-indep
@@ -53,7 +52,7 @@ install-stamp: build-stamp
 	dh_testdir
 	dh_testroot
 	dh_clean
-	$(MAKE) install prefix=$(CURDIR)/debian/libpam-afs-session
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/libpam-afs-session
 	touch install-stamp
 
 binary: binary-arch binary-indep

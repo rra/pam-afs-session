@@ -1,3 +1,25 @@
+   57 Russ Allbery	2007-05-10
+      Release 1.4.
+
+   56 Russ Allbery	2007-05-09
+      Fix a syntax error in the libkafs support.
+
+   55 Russ Allbery	2007-05-09
+      Added the afs_cells configuration option which specifies the list of
+      cells in which to get tokens.
+
+   54 Russ Allbery	2007-05-08
+      Ported to HP-UX.  HP-UX's PAM libraries do not support a separate
+      environment used for the new session, so manipulate the regular
+      environment instead.  Thanks to Joe Buehler for the port.
+
+   53 Russ Allbery	2007-05-08
+      Document using the module with Mac OS X, now that it's been confirmed
+      to work with sshd on that platform.
+
+   52 Russ Allbery	2007-04-11
+      Support DESTDIR for make install.
+
    51 Russ Allbery	2007-04-11
       Release 1.3.
 

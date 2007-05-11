@@ -22,6 +22,7 @@
 # include <pam/pam_modules.h>
 #endif
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -37,6 +38,17 @@
 # include <kopenafs.h>
 #else
 int k_unlog(void);
+#endif
+
+/*
+ * HP-UX doesn't have a separate environment maintained in the PAM
+ * environment, so on that platform just use the regular environment.
+ */
+#ifndef HAVE_PAM_GETENVLIST
+# define pam_getenvlist(p)      (environ)
+#endif
+#ifndef HAVE_PAM_GETENV
+# define pam_getenv(p, e)       getenv(e)
 #endif
 
 #include "internal.h"
@@ -71,8 +83,9 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
 static int
 pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
 {
-    int result;
+    int result, argc, arg, i;
     char **env;
+    const char **argv;
     pid_t child;
 
     /* Sanity check that we have some program to run. */
@@ -80,6 +93,27 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
         pamafs_error("no token program set in PAM arguments");
         return PAM_SESSION_ERR;
     }
+
+    /* Build the options for the program. */
+    argc = (args->aklog_homedir ? 2 : 0) + args->cell_count * 2;
+    argv = malloc((argc + 2) * sizeof(char *));
+    if (argv == NULL) {
+        pamafs_error("cannot allocate memory: %s", strerror(errno));
+        return PAM_SESSION_ERR;
+    }
+    argv[0] = args->program;
+    arg = 1;
+    if (args->aklog_homedir) {
+        argv[arg++] = "-p";
+        argv[arg++] = pwd->pw_dir;
+        pamafs_debug(args, "passing -p %s to aklog", pwd->pw_dir);
+    }
+    for (i = 0; i < args->cell_count; i++) {
+        argv[arg++] = "-c";
+        argv[arg++] = args->cells[i];
+        pamafs_debug(args, "passing -c %s to aklog", args->cells[i]);
+    }
+    argv[arg] = NULL;
 
     /*
      * Run the program.  Be sure to use _exit instead of exit in the
@@ -105,12 +139,7 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
         open("/dev/null", O_RDONLY);
         open("/dev/null", O_WRONLY);
         open("/dev/null", O_WRONLY);
-        if (args->aklog_homedir) {
-            execle(args->program, args->program, "-p", pwd->pw_dir,
-                   (char *) 0, env);
-        } else {
-            execle(args->program, args->program, (char *) 0, env);
-        }
+        execve(args->program, (char **) argv, env);
         pamafs_error("cannot exec %s: %s", args->program, strerror(errno));
         _exit(1);
     }
@@ -133,6 +162,7 @@ pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
     krb5_error_code ret;
     krb5_context ctx;
     krb5_ccache cache;
+    int i;
 
     if (cachename == NULL) {
         pamafs_debug(args, "skipping tokens, no Kerberos ticket cache");
@@ -148,17 +178,28 @@ pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
         pamafs_error_krb5(ctx, "cannot open Kerberos ticket cache", ret);
         return PAM_SESSION_ERR;
     }
-    if (args->aklog_homedir)
+    if (args->aklog_homedir) {
         ret = krb5_afslog_uid_home(ctx, cache, NULL, NULL, pwd->pw_uid,
                                       pwd->pw_dir);
-    else
+        if (ret != 0)
+            pamafs_error_krb5(ctx, "cannot obtain tokens for path", ret);
+    } else if (args->cells == NULL) {
         ret = krb5_afslog_uid(ctx, cache, NULL, NULL, pwd->pw_uid);
+        if (ret != 0)
+            pamafs_error_krb5(ctx, "cannot obtain tokens", ret);
+    }
+    if (args->cells != NULL) {
+        for (i = 0; i < args->cell_count; i++) {
+            ret = krb5_afslog_uid(ctx, cache, args->cells[i], NULL,
+                                  pwd->pw_uid);
+            if (ret != 0)
+                pamafs_error_krb5(ctx, "cannot obtain tokens for cell", ret);
+        }
+    }
     if (ret == 0)
         return PAM_SUCCESS;
-    else {
-        pamafs_error_krb5(ctx, "cannot obtain tokens", ret);
+    else
         return PAM_SESSION_ERR;
-    }
 }
 #endif
 

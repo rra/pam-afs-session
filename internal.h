@@ -29,8 +29,11 @@ struct passwd;
  * Filled in by pamafs_args_parse.
  */
 struct pam_args {
+    char *afs_cells;            /* List of AFS cells to get tokens for. */
     int aklog_homedir;          /* Pass -p <homedir> to aklog. */
     int always_aklog;           /* Always run aklog even w/o KRB5CCNAME. */
+    char **cells;               /* Null-terminated array of AFS cells. */
+    int cell_count;             /* Count of cells in cells. */
     int debug;                  /* Log debugging information. */
     int ignore_root;            /* Skip authentication for root. */
     int kdestroy;               /* Destroy ticket cache after aklog. */

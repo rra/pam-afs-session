@@ -1,7 +1,7 @@
 dnl Process this file with Autoconf to produce a configure script.
 
 AC_PREREQ([2.57])
-AC_INIT([pam-afs-session], [1.3], [rra@stanford.edu])
+AC_INIT([pam-afs-session], [1.4], [rra@stanford.edu])
 
 m4_include([m4/krb5.m4])
 
@@ -117,6 +117,8 @@ else
 fi
 
 dnl Other portability checks.
+LIBS="-lpam $LIBS"
+AC_CHECK_FUNCS([pam_getenv pam_getenvlist])
 AC_CHECK_HEADERS([sys/ioccom.h])
 AC_TYPE_SIGNAL
 
@@ -124,6 +126,9 @@ dnl Mac OS X calls its PAM headers something different than everyone else.
 AC_CHECK_HEADERS([security/pam_appl.h], ,
     [AC_CHECK_HEADERS([pam/pam_appl.h], ,
         [AC_MSG_ERROR([No PAM header files found])])])
+
+dnl Needed to get a prototype for environ on Linux.
+AC_DEFINE([_GNU_SOURCE], [1], [Define to 1 on Linux to get full prototypes.])
 
 dnl Try to add the compiler flags for position-independent code and try to
 dnl specify the binding so that any references within the PAM module are
@@ -135,13 +140,25 @@ dnl More platforms could be handled here.  Contributions welcome.
 case "$host" in
 *-darwin*)
     if test "$GCC" = "yes" ; then
+        LD="$CC"
         LDFLAGS="-bundle $LDFLAGS"
     else
         AC_MSG_ERROR([Only know compiler flags for gcc on this platform])
     fi
     ;;
+*-hpux*)
+    if test "$GCC" = "yes" ; then
+        CFLAGS="-fPIC $CFLAGS"
+        LDFLAGS="-fPIC -shared -Wl,-Bsymbolic $LDFLAGS"
+    else
+        CFLAGS="+z $CFLAGS"
+        LD="ld"
+        LDFLAGS="+vshlibunsats -b $LDFLAGS"
+    fi
+    ;;
 *-linux*)
     CFLAGS="-fPIC $CFLAGS"
+    LD="$CC"
     LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $LDFLAGS"
     ;;
 *-solaris2*)
@@ -152,16 +169,19 @@ case "$host" in
         CFLAGS="-KPIC $CFLAGS"
         LDFLAGS="-G -xldscope=symbolic $LDFLAGS"
     fi
+    LD="$CC"
     ;;
 *)
     if test "$GCC" = "yes" ; then
         CFLAGS="-fPIC $CFLAGS"
+        LD="$CC"
         LDFLAGS="-fPIC -shared $LDFLAGS"
     else
         AC_MSG_ERROR([Only know compiler flags for gcc on this platform])
     fi
     ;;
 esac
+AC_SUBST([LD])
 
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_FILES([Makefile])
