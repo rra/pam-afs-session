@@ -1,3 +1,12 @@
+libpam-afs-session (1.4-2) unstable; urgency=low
+
+  * Recommend openafs-client rather than depend on it.  All the module
+    truly requires is that the kernel module be loaded, which isn't what
+    openafs-client provides.  Users may be using a separately built
+    OpenAFS package or Arla.
+
+ -- Russ Allbery <rra@debian.org>  Wed, 06 Jun 2007 18:35:07 -0700
+
 libpam-afs-session (1.4-1) unstable; urgency=low
 
   * New upstream release.

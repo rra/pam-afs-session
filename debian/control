@@ -8,8 +8,9 @@ Build-Depends: debhelper (>= 5), libpam0g-dev, libkrb5-dev, comerr-dev
 
 Package: libpam-afs-session
 Architecture: any
-Depends: ${shlibs:Depends}, openafs-client
-Recommends: openafs-krb5 | heimdal-clients, libpam-krb5 | libpam-heimdal
+Depends: ${shlibs:Depends}
+Recommends: openafs-client, openafs-krb5 | heimdal-clients,
+ libpam-krb5 | libpam-heimdal
 Description: PAM module to set up a PAG and obtain AFS tokens
  AFS is a distributed network file system.  It uses in-kernel credentials
  (AFS tokens) obtained from Kerberos tickets for authentication and access
