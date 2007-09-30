@@ -197,17 +197,23 @@ pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
         return PAM_SESSION_ERR;
     }
     if (args->aklog_homedir) {
+        pamafs_debug(args, "obtaining tokens for UID %lu and directory %s",
+                     (unsigned long) pwd->pw_uid, pwd->pw_dir);
         ret = krb5_afslog_uid_home(ctx, cache, NULL, NULL, pwd->pw_uid,
                                       pwd->pw_dir);
         if (ret != 0)
             pamafs_error_krb5(ctx, "cannot obtain tokens for path", ret);
     } else if (args->cells == NULL) {
+        pamafs_debug(args, "obtaining tokens for UID %lu",
+                     (unsigned long) pwd->pw_uid);
         ret = krb5_afslog_uid(ctx, cache, NULL, NULL, pwd->pw_uid);
         if (ret != 0)
             pamafs_error_krb5(ctx, "cannot obtain tokens", ret);
     }
     if (args->cells != NULL) {
         for (i = 0; i < args->cell_count; i++) {
+            pamafs_debug(args, "obtaining tokens for UID %lu in cell %s",
+                         (unsigned long) pwd->pw_uid, args->cells[i]);
             ret = krb5_afslog_uid(ctx, cache, args->cells[i], NULL,
                                   pwd->pw_uid);
             if (ret != 0)
@@ -245,6 +251,7 @@ maybe_destroy_cache(struct pam_args *args, const char *cache)
         pamafs_error_krb5(c, "cannot open Kerberos ticket cache", ret);
         return;
     }
+    pamafs_debug(args, "destroying ticket cache");
     ret = krb5_cc_destroy(c, ccache);
     if (ret != 0)
         pamafs_error_krb5(c, "cannot destroy Kerberos ticket cache", ret);
@@ -354,6 +361,7 @@ pamafs_token_delete(pam_handle_t *pamh, struct pam_args *args)
     }
 
     /* Okay, go ahead and delete the tokens. */
+    pamafs_debug(args, "destroying tokens");
     if (k_unlog() != 0) {
         pamafs_error("unable to delete credentials: %s", strerror(errno));
         return PAM_SESSION_ERR;

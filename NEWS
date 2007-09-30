@@ -14,6 +14,8 @@ pam-afs-session 1.5 (unreleased)
 
     Fix linker determination when using gcc on HP-UX.
 
+    Add additional debugging output when acquiring or destroying tokens.
+
 pam-afs-session 1.4 (2007-05-10)
 
     Added the afs_cells configuration option which specifies the list of
