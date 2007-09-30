@@ -46,12 +46,28 @@ int k_unlog(void);
  */
 #ifndef HAVE_PAM_GETENVLIST
 # define pam_getenvlist(p)      (environ)
+# define pamafs_free_envlist(e) /* empty */
 #endif
 #ifndef HAVE_PAM_GETENV
 # define pam_getenv(p, e)       getenv(e)
 #endif
 
 #include "internal.h"
+
+/*
+ * Free the results of pam_getenvlist, but only if we have pam_getenvlist.
+ */
+#ifdef HAVE_PAM_GETENVLIST
+static void
+pamafs_free_envlist(char **env)
+{
+    size_t i;
+
+    for (i = 0; env[i] != NULL; i++)
+        free(env[i]);
+    free(env);
+}
+#endif
 
 /*
  * Given the PAM arguments and the passwd struct of the user we're
@@ -143,6 +159,7 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
         pamafs_error("cannot exec %s: %s", args->program, strerror(errno));
         _exit(1);
     }
+    pamafs_free_envlist(env);
     if (waitpid(child, &result, 0) && WIFEXITED(result))
         return PAM_SUCCESS;
     else
