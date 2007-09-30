@@ -5,6 +5,9 @@ pam-afs-session 1.5 (unreleased)
     Free the results of pam_getenvlist and the command-line argument for
     aklog properly.
 
+    Don't de-reference a NULL pointer if memory allocation fails while
+    parsing PAM options.  Thanks, Jason D. McCormick.
+
     Fix linker determination when using gcc on HP-UX.
 
 pam-afs-session 1.4 (2007-05-10)
