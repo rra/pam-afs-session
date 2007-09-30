@@ -1,4 +1,4 @@
-                           pam-afs-session 1.4
+                           pam-afs-session 1.5
                    (PAM module for AFS PAGs and tokens)
 
                 Written by Russ Allbery <rra@stanford.edu>
@@ -100,9 +100,11 @@ COMPILING AND INSTALLING
 
   You can change the installation locations with the --prefix, --mandir,
   and --libdir options to configure.  The module will be installed in a
-  subdirectory of $libdir named security.  Alternately, you can simply
-  copy pam_afs_session.so to whatever directory you use for PAM modules.
-  On Solaris, you will need to make the module executable.
+  subdirectory of $libdir named security and, on x86_64 Linux, $libdir
+  will be changed to lib64 to match the default PAM configuration.
+  Alternately, you can simply copy pam_afs_session.so to whatever
+  directory you use for PAM modules.  On Solaris, you will need to make
+  the module executable.
 
   By default, if libkafs or libkopenafs are available, pam-afs-session
   will use them in preference to its own system call implementation.  If
