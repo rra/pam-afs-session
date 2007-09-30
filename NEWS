@@ -2,7 +2,8 @@
 
 pam-afs-session 1.5 (unreleased)
 
-    Free the results of pam_getenvlist properly.
+    Free the results of pam_getenvlist and the command-line argument for
+    aklog properly.
 
 pam-afs-session 1.4 (2007-05-10)
 

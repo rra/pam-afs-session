@@ -159,6 +159,7 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
         pamafs_error("cannot exec %s: %s", args->program, strerror(errno));
         _exit(1);
     }
+    free(argv);
     pamafs_free_envlist(env);
     if (waitpid(child, &result, 0) && WIFEXITED(result))
         return PAM_SUCCESS;
