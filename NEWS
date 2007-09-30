@@ -5,6 +5,8 @@ pam-afs-session 1.5 (unreleased)
     Free the results of pam_getenvlist and the command-line argument for
     aklog properly.
 
+    Fix linker determination when using gcc on HP-UX.
+
 pam-afs-session 1.4 (2007-05-10)
 
     Added the afs_cells configuration option which specifies the list of

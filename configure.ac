@@ -149,6 +149,7 @@ case "$host" in
 *-hpux*)
     if test "$GCC" = "yes" ; then
         CFLAGS="-fPIC $CFLAGS"
+        LD="$CC"
         LDFLAGS="-fPIC -shared -Wl,-Bsymbolic $LDFLAGS"
     else
         CFLAGS="+z $CFLAGS"
