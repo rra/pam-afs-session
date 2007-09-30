@@ -1,7 +1,14 @@
                         pam-afs-session To-Do List
 
- * When logging on using OpenSSH with GSSAPI authentication, the
-   open_session function is run properly but at the end of the connection,
-   OpenSSH apparently runs pam_setcred(PAM_DELETE_CRED) to clean up and
-   pam-afs-session doesn't think that it had created a token initially.
-   Dig into this and try to understand what's going on.
+ * Providing a way to pass command-line arguments to the aklog program
+   would be nice, even if not strictly necessary.  If set in krb5.conf,
+   one should be able to just use spaces.  PAM options will require some
+   other workaround (maybe using ! to separate arguments or something).
+
+ * All of the option parsing code does not deal clealy with failure to
+   allocate memory.  Generally, we just don't set the parameter.  This may
+   not always be safe, or may lead to unexpected behavior.  We should
+   always check memory allocation failures and abort PAM if we see any.
+   Unfortunately, the profile library doesn't return errors on memory
+   allocation failure, which makes this mostly futile until there's a
+   better profile library API.
