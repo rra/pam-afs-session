@@ -57,7 +57,7 @@ pamafs_debug(struct pam_args *pargs, const char *fmt, ...)
     char msg[256];
     va_list args;
 
-    if (!pargs->debug)
+    if (pargs == NULL || !pargs->debug)
         return;
 
     va_start(args, fmt);
