@@ -52,7 +52,9 @@ install-stamp: build-stamp
 	dh_testdir
 	dh_testroot
 	dh_clean
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/libpam-afs-session
+	dh_installdirs
+	install -m 644 pam_afs_session.so \
+	    $(CURDIR)/debian/libpam-afs-session/lib/security
 	touch install-stamp
 
 binary: binary-arch binary-indep
@@ -77,6 +79,7 @@ binary-arch: build install
 	dh_testroot
 	dh_installchangelogs NEWS
 	dh_installdocs README TODO
+	dh_installman pam_afs_session.5
 	dh_link
 	dh_strip
 	dh_compress
