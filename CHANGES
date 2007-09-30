@@ -1,3 +1,31 @@
+   65 Russ Allbery	2007-09-30
+      Release 1.5.
+
+   64 Russ Allbery	2007-09-30
+      General update.  Removing tokens on session close works fine with
+      a current OpenSSH.
+
+   63 Russ Allbery	2007-09-30
+      Add additional debugging output when acquiring or destroying tokens.
+
+   62 Russ Allbery	2007-09-30
+      Change lib to lib64 on x86_64 Linux to allow for the magical $ISA
+      parameter in Red Hat's PAM configuration.  Hopefully this won't cause
+      problems elsewhere.
+
+   61 Russ Allbery	2007-09-30
+      Don't de-reference a NULL pointer if memory allocation fails while
+      parsing PAM options.  Thanks, Jason D. McCormick.
+
+   60 Russ Allbery	2007-09-29
+      Fix linker determination when using gcc on HP-UX.
+
+   59 Russ Allbery	2007-09-29
+      Also free the command-line arguments for aklog.
+
+   58 Russ Allbery	2007-09-29
+      Free the results of pam_getenvlist properly.
+
    57 Russ Allbery	2007-05-10
       Release 1.4.
 

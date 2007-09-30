@@ -1,7 +1,7 @@
 dnl Process this file with Autoconf to produce a configure script.
 
 AC_PREREQ([2.57])
-AC_INIT([pam-afs-session], [1.4], [rra@stanford.edu])
+AC_INIT([pam-afs-session], [1.5], [rra@stanford.edu])
 
 m4_include([m4/krb5.m4])
 
@@ -149,11 +149,20 @@ case "$host" in
 *-hpux*)
     if test "$GCC" = "yes" ; then
         CFLAGS="-fPIC $CFLAGS"
+        LD="$CC"
         LDFLAGS="-fPIC -shared -Wl,-Bsymbolic $LDFLAGS"
     else
         CFLAGS="+z $CFLAGS"
         LD="ld"
         LDFLAGS="+vshlibunsats -b $LDFLAGS"
+    fi
+    ;;
+x86_64-*-linux*)
+    CFLAGS="-fPIC $CFLAGS"
+    LD="$CC"
+    LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $LDFLAGS"
+    if test x"$libdir" = x'${exec_prefix}/lib' ; then
+        libdir='${exec_prefix}/lib64'
     fi
     ;;
 *-linux*)
