@@ -157,6 +157,14 @@ case "$host" in
         LDFLAGS="+vshlibunsats -b $LDFLAGS"
     fi
     ;;
+x86_64-*-linux*)
+    CFLAGS="-fPIC $CFLAGS"
+    LD="$CC"
+    LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $LDFLAGS"
+    if test x"$libdir" = x'${exec_prefix}/lib' ; then
+        libdir='${exec_prefix}/lib64'
+    fi
+    ;;
 *-linux*)
     CFLAGS="-fPIC $CFLAGS"
     LD="$CC"

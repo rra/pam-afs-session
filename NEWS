@@ -8,6 +8,10 @@ pam-afs-session 1.5 (unreleased)
     Don't de-reference a NULL pointer if memory allocation fails while
     parsing PAM options.  Thanks, Jason D. McCormick.
 
+    Change lib to lib64 on x86_64 Linux to allow for the magical $ISA
+    parameter in Red Hat's PAM configuration.  Hopefully this won't cause
+    problems elsewhere.
+
     Fix linker determination when using gcc on HP-UX.
 
 pam-afs-session 1.4 (2007-05-10)
