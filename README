@@ -188,22 +188,47 @@ CONFIGURING
 
  Solaris
 
-  For Solaris console login, add something like:
+  Solaris doesn't support the [] keywords that Linux PAM does, so if you
+  want to mark the Kerberos v5 PAM module as sufficient and fall back on
+  the Unix module only if it fails, you won't be able to easily run
+  pam_afs_session in the auth group.  For most applications, this isn't a
+  problem; running pam_afs_session only from the session group with
+  something like:
 
-      login session required /usr/local/lib/security/pam_afs_session.so 
+      other session required /usr/local/lib/security/pam_afs_session.so 
           minimum_uid=100 retain_after_close
 
-  (all on one line) in /etc/pam.conf.  Note that, on Solaris, if you want
-  authentication to first try Kerberos v5 and then fall back to regular
-  Unix authentication, you probably cannot include this module in the auth
-  stack (for pam_setcred).  Solaris doesn't support the [] keywords that
-  Linux PAM does.  However, including it in the session stack should be
-  sufficient; most well-behaved applications will open a session as well
-  as calling pam-setcred.
+  (all on one line) in /etc/pam.conf will be sufficient.  Make sure this
+  line is after the Kerberos v5 PAM module's session call.
+
+  However, note that login and dtlogin, at least under Solaris 10,
+  apparently call pam_open_session before pam_setcred, and the
+  open_session function of the native Kerberos v5 PAM module doesn't set
+  up the ticket cache.  This means that calling pam_afs_session only in
+  the session group won't work, since it will be called before the setcred
+  function of the Kerberos v5 PAM module and hence won't have a ticket
+  cache available yet.  There are two possible solutions: replace the
+  native Kerberos v5 PAM module with another module, such as:
+
+      http://www.eyrie.org/~eagle/software/pam-krb5/
+
+  that does the same thing in open_session as in setcred, or call
+  pam_afs_session from the auth group:
+
+      login auth required /usr/local/lib/security/pam_afs_session.so
+          minimum_uid=100
+
+  after the Kerberos v5 PAM module (and likewise for dtlogin).  You should
+  then leave pam_afs_session out of the session group for those services;
+  otherwise, it will try to run aklog without a ticket cache, fail, and
+  then not run it again.  (However, be sure to include pam_afs_session in
+  the session group for ssh-gssapi if using GSS-API with ssh, since it
+  doesn't run the auth group.)  This means that you cannot use sufficient
+  in the auth group for the Kerberos v5 PAM module, since that will then
+  abort the group before pam_afs_session runs.
 
   See the man page for pam.conf on Solaris for more configuration
-  information.  You may need to add additional lines for graphical login,
-  ssh, or for "other" as a catch-all depending on which services you use.
+  information.
 
  HP-UX
 
@@ -221,7 +246,7 @@ CONFIGURING
   For Mac OS X, PAM isn't used for system login and is therefore mostly
   useful for remote ssh.  To use this module with sshd, add it to the
   session group of the sshd PAM configuration, and it will then obtain
-  tokens with forwarded tickets via GSSAPI or tickets obtained via
+  tokens with forwarded tickets via GSS-API or tickets obtained via
   KerberosAuthentication.
 
 IMPLEMENTATION NOTES

@@ -2,6 +2,11 @@
 
 pam-afs-session 1.6 (unreleased)
 
+    Add additional documentation of interactions with the native pam_krb5
+    on Solaris to README.  pam_afs_session needs to be run from the auth
+    group, not the session group, with at least some services when used
+    with the Solaris pam_krb5.
+
     Add compiler and linker flags for AIX.  Thanks, Thomas Williams.
 
 pam-afs-session 1.5 (2007-09-30)
