@@ -153,6 +153,10 @@ CONFIGURING
   recommended for general system configuration, since the krb5.conf
   configuration syntax is a little nicer and more flexible.
 
+  See the files in the examples directory for examples of PAM
+  configuration for various operating systems.  Contributions for
+  additional operating systems are welcome.
+
  Linux
 
   To use it in conjunction with pam_krb5 on a Debian system, put something
