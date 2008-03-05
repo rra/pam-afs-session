@@ -2,6 +2,9 @@
 
 pam-afs-session 1.6 (unreleased)
 
+    Correctly check the exit status of aklog and don't think acquiring
+    tokens was successful when aklog failed.
+
     Add additional documentation of interactions with the native pam_krb5
     on Solaris to README.  pam_afs_session needs to be run from the auth
     group, not the session group, with at least some services when used

@@ -218,20 +218,16 @@ CONFIGURING
 
       http://www.eyrie.org/~eagle/software/pam-krb5/
 
-  that does the same thing in open_session as in setcred, or call
+  that does the same thing in open_session as in setcred, or also call
   pam_afs_session from the auth group:
 
       login auth required /usr/local/lib/security/pam_afs_session.so
           minimum_uid=100
 
-  after the Kerberos v5 PAM module (and likewise for dtlogin).  You should
-  then leave pam_afs_session out of the session group for those services;
-  otherwise, it will try to run aklog without a ticket cache, fail, and
-  then not run it again.  (However, be sure to include pam_afs_session in
-  the session group for ssh-gssapi if using GSS-API with ssh, since it
-  doesn't run the auth group.)  This means that you cannot use sufficient
-  in the auth group for the Kerberos v5 PAM module, since that will then
-  abort the group before pam_afs_session runs.
+  after the Kerberos v5 PAM module (and likewise for dtlogin).  This means
+  that you cannot use sufficient in the auth group for the Kerberos v5 PAM
+  module, since that will then abort the group before pam_afs_session
+  runs.
 
   See the man page for pam.conf on Solaris for more configuration
   information.

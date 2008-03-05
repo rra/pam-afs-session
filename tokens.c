@@ -99,7 +99,7 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
 static int
 pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
 {
-    int result, argc, arg, i;
+    int res, argc, arg, i;
     char **env;
     const char **argv;
     pid_t child;
@@ -161,7 +161,7 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
     }
     free(argv);
     pamafs_free_envlist(env);
-    if (waitpid(child, &result, 0) && WIFEXITED(result))
+    if (waitpid(child, &res, 0) && WIFEXITED(res) && WEXITSTATUS(res) == 0)
         return PAM_SUCCESS;
     else
         return PAM_SESSION_ERR;
