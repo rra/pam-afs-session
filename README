@@ -186,6 +186,12 @@ CONFIGURING
   On Red Hat systems, modify /etc/pam.d/system-auth instead; it contains
   all of the configuration for the different stacks.
 
+  Be careful if your PAM configuration uses pam_keyinit.  This module
+  initializes a new kernel keyring and will remove the keyring created by
+  pam_afs_session to hold your tokens.  When using pam_afs_session, either
+  remove this PAM module or call pam_afs_session after it in the PAM
+  session group.
+
  Solaris
 
   Solaris doesn't support the [] keywords that Linux PAM does, so if you

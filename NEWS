@@ -7,6 +7,8 @@ pam-afs-session 1.6 (unreleased)
     group, not the session group, with at least some services when used
     with the Solaris pam_krb5.
 
+    Document bad interactions with pam_keyinit on Linux in README.
+
     Add compiler and linker flags for AIX.  Thanks, Thomas Williams.
 
 pam-afs-session 1.5 (2007-09-30)
