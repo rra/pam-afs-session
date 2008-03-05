@@ -1,0 +1,11 @@
+# /etc/pam.d/common-account -- Authorization settings common to all services.
+#
+# This file is included from other service-specific PAM config files on
+# Debian, and should contain a list of the authorization modules that define
+# the central access policy for use on the system.
+#
+# Deny service to users whose accounts are expired in /etc/shadow and check
+# krb5_kuserok for logins via Kerberos.
+
+account  required  pam_unix.so
+account  required  pam_krb5.so

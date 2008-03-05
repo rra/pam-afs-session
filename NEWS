@@ -15,6 +15,11 @@ pam-afs-session 1.6 (unreleased)
 
     Document bad interactions with pam_keyinit on Linux in README.
 
+    Add example PAM configurations for Debian, Red Hat, and Solaris based
+    on Stanford's Linux configurations and a Solaris configuration from
+    Maciej Malek.  Hopefully I didn't break anything while merging
+    examples.
+
     Add compiler and linker flags for AIX.  Thanks, Thomas Williams.
 
 pam-afs-session 1.5 (2007-09-30)
