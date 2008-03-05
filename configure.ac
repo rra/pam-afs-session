@@ -130,6 +130,11 @@ AC_CHECK_HEADERS([security/pam_appl.h], ,
 dnl Needed to get a prototype for environ on Linux.
 AC_DEFINE([_GNU_SOURCE], [1], [Define to 1 on Linux to get full prototypes.])
 
+dnl Needed for correct handling of errno with threaded applications on
+dnl Solaris.
+AC_DEFINE([_REENTRANT], [1],
+    [Define to 1 on Solaris for correct errno handling with threads.])
+
 dnl Try to add the compiler flags for position-independent code and try to
 dnl specify the binding so that any references within the PAM module are
 dnl resolved to the functions in that module in preference to any external
