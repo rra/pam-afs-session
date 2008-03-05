@@ -1,5 +1,9 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 1.6 (unreleased)
+
+    Add compiler and linker flags for AIX.  Thanks, Thomas Williams.
+
 pam-afs-session 1.5 (2007-09-30)
 
     Free the results of pam_getenvlist and the command-line argument for

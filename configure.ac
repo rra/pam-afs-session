@@ -138,6 +138,16 @@ dnl symbols in the module are resolved.
 dnl
 dnl More platforms could be handled here.  Contributions welcome.
 case "$host" in
+*-aix*)
+    if test "$GCC" = "yes" ; then
+        CFLAGS="-fPIC $CFLAGS"
+        LD="$CC"
+        LDFLAGS="-fPIC -shared $LDFLAGS"
+    else
+        LD=ld
+        LDFLAGS="-G -bnoentry -bexpall $LDFLAGS"
+    fi
+    ;;
 *-darwin*)
     if test "$GCC" = "yes" ; then
         LD="$CC"
