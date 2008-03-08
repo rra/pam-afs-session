@@ -1,11 +1,12 @@
 /*
- * public.c
- *
- * The public APIs of the pam_afs_session PAM module.
+ * The public APIs of the pam-afs-session PAM module.
  *
  * Provides the public pam_sm_setcred, pam_sm_open_session, and
  * pam_sm_close_session functions, plus whatever other stubs we need to
  * satisfy PAM.
+ *
+ * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #include "config.h"
@@ -87,6 +88,7 @@ done:
     pamafs_args_free(args);
     return pamret;
 }
+
 
 /*
  * Don't do anything for authenticate.  We're only an auth module so that we

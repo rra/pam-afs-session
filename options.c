@@ -1,10 +1,11 @@
 /*
- * options.c
+ * Option handling for pam-afs-session.
  *
- * Option handling for pam_afs_session.
- *
- * Parses the PAM command line for options to pam_afs_session and fills out an
+ * Parses the PAM command line for options to pam-afs-session and fills out an
  * allocated structure with those details.
+ *
+ * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #include "config.h"
@@ -34,6 +35,7 @@ pamafs_args_new(void)
     return args;
 }
 
+
 /*
  * Free the allocated args struct and any memory it points to.
  */
@@ -50,6 +52,7 @@ pamafs_args_free(struct pam_args *args)
         free(args);
     }
 }
+
 
 #ifdef HAVE_KERBEROS
 /*
@@ -69,6 +72,7 @@ default_string(krb5_context c, const char *opt, const char *defval,
     }
 }
 
+
 /*
  * Load a number option from Kerberos appdefaults.  The native interface
  * doesn't support numbers, so we actually read a string and then convert.
@@ -87,6 +91,7 @@ default_number(krb5_context c, const char *opt, int defval, int *result)
         free(tmp);
 }
 
+
 /*
  * Load a boolean option from Kerberos appdefaults.  This is a simple wrapper
  * around the Kerberos library function.
@@ -96,6 +101,7 @@ default_boolean(krb5_context c, const char *opt, int defval, int *result)
 {
     krb5_appdefault_boolean(c, "pam-afs-session", NULL, opt, defval, result);
 }
+
 
 /*
  * Load configuration options from krb5.conf.  This is only done if we were
@@ -126,6 +132,7 @@ load_krb5_config(struct pam_args *args)
     default_boolean(c, "retain_after_close", 0, &args->retain);
 }
 #endif /* HAVE_KERBEROS */
+
 
 /*
  * This is where we parse options.  Currently, only setting options in the PAM

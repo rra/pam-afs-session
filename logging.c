@@ -1,11 +1,12 @@
 /*
- * logging.c
+ * Logging functions for pam-afs-session.
  *
- * Logging functions for pam_afs_session.
- *
- * Logs errors and debugging messages from pam_afs_session functions.  The
+ * Logs errors and debugging messages from pam-afs-session functions.  The
  * debug versions only log anything if debugging was enabled; the error
  * versions always log.
+ *
+ * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #include "config.h"

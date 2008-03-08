@@ -1,12 +1,14 @@
 /*
- * tokens.c
- *
  * Get or delete AFS tokens.
  *
  * Here are the functions to get or delete AFS tokens, called by the various
  * public functions.  The functions to get tokens should run after a PAG is
  * created.  All functions here assume that AFS is running and k_hasafs() has
  * already been called.
+ *
+ * Copyright 2006, 2007, 2008
+ *     Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #include "config.h"
@@ -69,6 +71,7 @@ pamafs_free_envlist(char **env)
 }
 #endif
 
+
 /*
  * Given the PAM arguments and the passwd struct of the user we're
  * authenticating, see if we should ignore that user because they're root or
@@ -89,6 +92,7 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
     }
     return 0;
 }
+
 
 /*
  * Call aklog with the appropriate environment.  Takes the PAM handle (so that
@@ -167,6 +171,7 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
         return PAM_SESSION_ERR;
 }
 
+
 /*
  * Call the appropriate krb5_afslog function to get tokens directly without
  * running an external aklog binary.  Returns either PAM_SUCCESS or
@@ -227,6 +232,7 @@ pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
 }
 #endif
 
+
 /*
  * If the kdestroy option is set and we were built with Kerberos support,
  * destroy the ticket cache after we successfully got tokens.
@@ -263,6 +269,7 @@ maybe_destroy_cache(struct pam_args *args, const char *cache)
     return;
 }
 #endif /* !HAVE_KERBEROS */
+
 
 /*
  * Obtain AFS tokens, currently always by running aklog but eventually via the
@@ -339,6 +346,7 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
     }
     return status;
 }
+
 
 /*
  * Delete AFS tokens by running k_unlog, but only if our flag data item was
