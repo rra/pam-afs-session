@@ -1,7 +1,12 @@
 dnl Process this file with Autoconf to produce a configure script.
+dnl
+dnl Copyright 2006, 2007, 2008
+dnl     Board of Trustees, Leland Stanford Jr. University
+dnl See LICENSE for licensing terms.
 
-AC_PREREQ([2.57])
+AC_PREREQ([2.61])
 AC_INIT([pam-afs-session], [1.5], [rra@stanford.edu])
+AC_CONFIG_AUX_DIR([build-aux])
 
 m4_include([m4/krb5.m4])
 
