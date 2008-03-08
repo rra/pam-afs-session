@@ -307,7 +307,7 @@ THANKS
 
   Some of the ideas behind this PAM module (although not the code) are
   taken from the libpam-openafs-session Debian package written by Sam
-  Hartman and the pam_afs2 module written by Douglas Engart.  Thanks to
+  Hartman and the pam_afs2 module written by Douglas Engert.  Thanks to
   both of them for their previous work.  Any errors in this implementation
   are mine.
 
@@ -316,7 +316,7 @@ THANKS
   implement an AFS system call layer and on how the pieces work.  I
   couldn't have written this code without his explanations.
 
-  Thanks to Douglas Engart for an initial code review, for Solaris
+  Thanks to Douglas Engert for an initial code review, for Solaris
   porting, for suggesting the always_aklog and aklog_homedir options, and
   for catching various other problems and missing features.
 
