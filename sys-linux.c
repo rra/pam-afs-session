@@ -6,6 +6,7 @@
  * exists).  It is for use on systems that don't have libkafs or libkopenafs,
  * or where a dependency on those libraries is not desirable for some reason.
  *
+ * Written by Russ Allbery <rra@stanford.edu>
  * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
  * See LICENSE for licensing terms.
  */

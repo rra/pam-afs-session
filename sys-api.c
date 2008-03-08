@@ -14,6 +14,7 @@
  * module requires, various interface constants and system call numbers are
  * hard-coded here.
  *
+ * Written by Russ Allbery <rra@stanford.edu>
  * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
  * See LICENSE for licensing terms.
  */

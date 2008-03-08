@@ -1,5 +1,6 @@
 dnl Process this file with Autoconf to produce a configure script.
 dnl
+dnl Written by Russ Allbery <rra@stanford.edu>
 dnl Copyright 2006, 2007, 2008
 dnl     Board of Trustees, Leland Stanford Jr. University
 dnl See LICENSE for licensing terms.
