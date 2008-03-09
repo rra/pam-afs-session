@@ -94,9 +94,6 @@ COMPILING AND INSTALLING
 
   instead.
 
-  On Solaris, expect a warning about a type mismatch for pam_get_user.
-  This warning should be harmless.
-
   To install the module into /usr/local/lib/security and the man page into
   /usr/local/share/man/man5, run:
 
@@ -328,3 +325,7 @@ THANKS
   for testing with the Sun C compiler.
 
   Thanks to Joe Buehler for porting and testing on HP-UX.
+
+  Thanks to Markus Moeller for multiple patches and suggestions for
+  improved portability for pam-krb5, from which this module has also
+  benefitted.

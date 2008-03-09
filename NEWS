@@ -19,6 +19,12 @@ pam-afs-session 1.6 (unreleased)
 
     Define _ALL_SOURCE on AIX to get a prototype for vsnprintf.
 
+    Add compiler and linker flags for AIX.  Thanks, Thomas Williams.
+
+    Try to determine whether the PAM headers use const in the prototypes
+    of such things as pam_get_item and adjust accordingly.  This should
+    address compiler warnings on Solaris.  Thanks, Markus Moeller.
+
     Add additional documentation of interactions with the native pam_krb5
     on Solaris to README.  pam_afs_session needs to be run from the auth
     group, not the session group, with at least some services when used
@@ -30,8 +36,6 @@ pam-afs-session 1.6 (unreleased)
     on Stanford's Linux configurations and a Solaris configuration from
     Maciej Malek.  Hopefully I didn't break anything while merging
     examples.
-
-    Add compiler and linker flags for AIX.  Thanks, Thomas Williams.
 
 pam-afs-session 1.5 (2007-09-30)
 

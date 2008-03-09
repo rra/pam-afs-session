@@ -11,6 +11,7 @@ AC_CONFIG_AUX_DIR([build-aux])
 
 m4_include([m4/krb5.m4])
 m4_include([m4/lib-depends.m4])
+m4_include([m4/pam-const.m4])
 
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -82,6 +83,7 @@ AS_IF([test x"$libkafs" = xtrue],
 dnl Other portability checks.
 LIBS="-lpam $LIBS"
 AC_CHECK_FUNCS([pam_getenv pam_getenvlist])
+RRA_HEADER_PAM_CONST
 AC_CHECK_HEADERS([sys/ioccom.h])
 AC_TYPE_SIGNAL
 
