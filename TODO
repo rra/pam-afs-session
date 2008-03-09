@@ -12,3 +12,10 @@
    Unfortunately, the profile library doesn't return errors on memory
    allocation failure, which makes this mostly futile until there's a
    better profile library API.
+
+ * Add a test suite.  If the user already has an AFS token, it should be
+   fairly straightforward to test PAG creation.  Testing running an
+   external token program based on KRB5CCNAME is very straightforward.
+   Testing ticket cache destruction probably requires that the tester
+   already have a ticket cache.  We can fake a k_hasafs() failure by
+   selectively linking object files with a fake implementation.
