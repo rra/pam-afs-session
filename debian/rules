@@ -29,8 +29,8 @@ configure-stamp:
 	dh_testdir
 	CFLAGS="$(CFLAGS)" ./configure $(SYSTEM) --prefix=/ \
 	    --datarootdir=/usr/share --enable-reduced-depends \
-	    --with-kerberos --without-libkafs --with-aklog=/usr/bin/aklog
-	touch configure-stamp
+	    --with-krb5 --without-libkafs --with-aklog=/usr/bin/aklog
+	touch $@
 
 build: build-arch build-indep
 build-arch: build-stamp
@@ -38,7 +38,7 @@ build-indep:
 build-stamp: configure-stamp
 	dh_testdir
 	$(MAKE)
-	touch build-stamp
+	touch $@
 
 clean:
 	dh_testdir
@@ -55,7 +55,7 @@ install-stamp: build-stamp
 	dh_installdirs
 	install -m 644 pam_afs_session.so \
 	    $(CURDIR)/debian/libpam-afs-session/lib/security
-	touch install-stamp
+	touch $@
 
 binary: binary-arch binary-indep
 

@@ -6,6 +6,7 @@ libpam-afs-session (1.6-1) UNRELEASED; urgency=low
   * Install the upstream CHANGES as changelog.gz and install NEWS
     separately.
   * Improve debian/copyright based on upstream's LICENSE file.
+  * Touch $@ instead of the named stamp files.
 
  -- Russ Allbery <rra@debian.org>  Sat, 08 Mar 2008 20:20:19 -0800
 
