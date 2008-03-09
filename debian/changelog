@@ -1,4 +1,4 @@
-libpam-afs-session (1.6-1) UNRELEASED; urgency=low
+libpam-afs-session (1.6-1) unstable; urgency=low
 
   * New upstream release.
     - Correctly check the exit status of aklog.
@@ -9,7 +9,7 @@ libpam-afs-session (1.6-1) UNRELEASED; urgency=low
   * Touch $@ instead of the named stamp files.
   * Update standards version to 3.7.3 (no changes required).
 
- -- Russ Allbery <rra@debian.org>  Sat, 08 Mar 2008 20:20:19 -0800
+ -- Russ Allbery <rra@debian.org>  Sat, 08 Mar 2008 20:34:00 -0800
 
 libpam-afs-session (1.5-1) unstable; urgency=low
 
