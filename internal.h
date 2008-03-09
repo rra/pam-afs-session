@@ -1,7 +1,9 @@
 /*
- * internal.h
+ * Internal prototypes and structures for pam-afs-session.
  *
- * Internal prototypes and structures for pam_afs_session.
+ * Written by Russ Allbery <rra@stanford.edu>
+ * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #ifndef INTERNAL_H
