@@ -5,7 +5,8 @@
  * allocated structure with those details.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2006, 2007, 2008
+ *     Board of Trustees, Leland Stanford Jr. University
  * See LICENSE for licensing terms.
  */
 
@@ -15,8 +16,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* AIX doesn't have the appdefault functions. */
 #ifdef HAVE_KERBEROS
 # include <krb5.h>
+# ifndef HAVE_KRB5_APPDEFAULT_STRING
+#  include "compat-aix.c"
+# endif
 #endif
 
 #include "internal.h"

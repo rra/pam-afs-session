@@ -6,7 +6,8 @@
  * versions always log.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2006, 2007, 2008
+ *     Board of Trustees, Leland Stanford Jr. University
  * See LICENSE for licensing terms.
  */
 
@@ -24,12 +25,21 @@
 #include <syslog.h>
 
 #ifdef HAVE_KERBEROS
-# include <krb5.h>
-# ifdef HAVE_ET_COM_ERR_H
-#  include <et/com_err.h>
-# else
-#  include <com_err.h>
+# if !defined(HAVE_KRB5_GET_ERROR_MESSAGE) && !defined(HAVE_KRB5_GET_ERR_TEXT)
+#  if defined(HAVE_IBM_SVC_KRB5_SVC_H)
+#   include <ibm_svc/krb5_svc.h>
+#  elif defined(HAVE_ET_COM_ERR_H)
+#   include <et/com_err.h>
+#  else
+#   include <com_err.h>
+#  endif
 # endif
+
+/*
+ * This string is returned for unknown error messages.  We use a static
+ * variable so that we can be sure not to free it.
+ */
+static const char error_unknown[] = "unknown error";
 #endif
 
 #include "internal.h"
@@ -82,12 +92,14 @@ pamafs_debug(struct pam_args *pargs, const char *fmt, ...)
 static const char *
 pamafs_get_krb5_error(krb5_context c, krb5_error_code code)
 {
-    const char *msg;
+    const char *msg = NULL;
 
 # if defined(HAVE_KRB5_GET_ERROR_MESSAGE)
     msg = krb5_get_error_message(c, code);
 # elif defined(HAVE_KRB5_GET_ERR_TEXT)
     msg = krb5_get_err_text(c, code);
+# elif defined(HAVE_KRB5_SVC_GET_MSG)
+    krb5_svc_get_msg(code, &msg);
 # else
     msg = error_message(code);
 # endif
@@ -100,8 +112,12 @@ pamafs_get_krb5_error(krb5_context c, krb5_error_code code)
 void
 pamafs_free_krb5_error(krb5_context c, const char *msg)
 {
+    if (msg == error_unknown)
+        return;
 # ifdef HAVE_KRB5_FREE_ERROR_MESSAGE
     krb5_free_error_message(c, msg);
+# elif defined(HAVE_KRB5_SVC_GET_MSG)
+    krb5_free_string((char *) msg);
 # endif
 }
 

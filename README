@@ -29,14 +29,13 @@ DESCRIPTION
 
   There are two ways this module can obtain tokens:
 
-   * If you have Heimdal's libkafs library available and build this module
-     with Kerberos support (passing --with-kerberos to configure), the
-     module can call libkafs's krb5_afslog function to obtain tokens
-     directly.  If you are using Heimdal and obtaining tokens from
-     Kerberos tickets, this is the recommended configuration, since it
-     means the PAM module doesn't have to fork an external process.  If
-     built in the fashion described above, this will be the default unless
-     program is set in the module configuration.
+   * If you have Heimdal's libkafs library available, the module can call
+     libkafs's krb5_afslog function to obtain tokens directly.  If you are
+     using Heimdal and obtaining tokens from Kerberos tickets, this is the
+     recommended configuration, since it means the PAM module doesn't have
+     to fork an external process.  If built with Heimdal's libkafs, this
+     will be the default unless program is set in the module
+     configuration.
 
    * Otherwise, the module will run an arbitrary external program to
      obtain tokens.  This is the most flexible option, works with MIT
@@ -46,15 +45,14 @@ DESCRIPTION
      login.
 
   For the AFS system call layer, pam-afs-session supports linking with the
-  Heimdal libkafs library or the libkopenafs library that will ship with
-  later versions of OpenAFS and provides a similar interface.  As a
-  fallback, and to support a low-dependency build, it also comes with a
-  simple AFS system call implementation for either Linux or platforms that
-  use syscall to call AFS functions.  To use the built-in system call
-  interface on Linux, the system must run a new enough version of OpenAFS
-  or Arla to support AFS system calls through ioctl on a file in proc.  On
-  other systems, configure must be able to find the AFS header afs/param.h
-  in order to get the system call numbers for that platform.
+  Heimdal libkafs library.  As a fallback, and to support a low-dependency
+  build, it also comes with a simple AFS system call implementation for
+  either Linux or platforms that use syscall to call AFS functions.  To
+  use the built-in system call interface on Linux, the system must run a
+  new enough version of OpenAFS or Arla to support AFS system calls
+  through ioctl on a file in proc.  On other systems, configure must be
+  able to find the AFS header afs/param.h in order to get the system call
+  numbers for that platform.
 
   Right now, this module will probably only work on Linux, Solaris, HP-UX,
   and Mac OS X, and will require gcc to even attempt to build on any other
@@ -73,12 +71,19 @@ COMPILING AND INSTALLING
       ./configure
       make
 
-  If you have Kerberos libraries available and want pam-afs-session to be
-  able to read options from krb5.conf, or if you want to use libkafs's
-  internal functions for obtaining tokens (recommended if you have it
-  available), add the --with-kerberos option to configure (optionally
-  followed by the root of your Kerberos installation if krb5-config isn't
-  on your PATH).
+  Kerberos support is enabled by default if configure can find Kerberos
+  libraries.  If your Kerberos libraries aren't installed in a location
+  found by your compiler by default and krb5-config isn't on your PATH,
+  use the --with-krb5=PATH option to configure.  The Kerberos libraries
+  will then be expected in PATH/lib and the headers in PATH/include.
+
+  To specify a particular krb5-config script to use, either set the
+  KRB5_CONFIG environment variable or pass it to configure like:
+
+      ./configure KRB5_CONFIG=/path/to/krb5-config
+
+  To disable Kerberos support, even if you have Kerberos libraries
+  available, pass --without-krb5 to configure.
 
   By default, the first aklog program found on the PATH will be compiled
   into the module as the default aklog program to run.  This can be
@@ -145,8 +150,8 @@ CONFIGURING
   available or if you want different configurations for different
   services.
 
-  If configured with --with-kerberos, configuration options may also be
-  put in the krb5.conf file used by your Kerberos libraries (usually
+  If Kerberos support was enabled, configuration options may also be put
+  in the krb5.conf file used by your Kerberos libraries (usually
   /etc/krb5.conf or /usr/local/etc/krb5.conf) instead or in addition to
   the PAM configuration.  See the man page for more details.  This is
   recommended for general system configuration, since the krb5.conf
@@ -276,12 +281,12 @@ IMPLEMENTATION NOTES
   obtain tokens provided that the environment variable KRB5CCNAME is set
   in the PAM environment.
 
-  If built with Kerberos (--with-kerberos) support, if libkafs was found
-  and used at compile time, and if krb5_afslog is available, the default
-  is to run krb5_afslog to obtain tokens.  Otherwise, the default is to
-  run whatever aklog program was found at compile time.  If program is set
-  explicitly in the configuration, pam-afs-session will always run that
-  program rather than calling krb5_afslog.
+  If libkafs was found and used at compile time and if krb5_afslog is
+  available, the default is to run krb5_afslog to obtain tokens.
+  Otherwise, the default is to run whatever aklog program was found at
+  compile time.  If program is set explicitly in the configuration,
+  pam-afs-session will always run that program rather than calling
+  krb5_afslog.
 
   When pam_close_session or pam_setcred(PAM_DELETE_CRED) is called,
   pam-afs-session will destroy the user's tokens only if the PAM data key
