@@ -55,9 +55,9 @@ DESCRIPTION
   numbers for that platform.
 
   Right now, this module will probably only work on Linux, Solaris, HP-UX,
-  and Mac OS X, and will require gcc to even attempt to build on any other
-  platform.  Other PAM implementations will likely require some porting
-  work.
+  AIX, and Mac OS X, and will require gcc to even attempt to build on any
+  other platform.  Other PAM implementations will likely require some
+  porting work.
 
   The module can optionally be linked with Kerberos libraries to obtain
   configuration information from krb5.conf, to support the kdestroy
