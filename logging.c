@@ -109,7 +109,7 @@ pamafs_get_krb5_error(krb5_context c, krb5_error_code code)
         return msg;
 }
 
-void
+static void
 pamafs_free_krb5_error(krb5_context c, const char *msg)
 {
     if (msg == error_unknown)
