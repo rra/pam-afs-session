@@ -1,14 +1,23 @@
 dnl Process this file with Autoconf to produce a configure script.
+dnl
+dnl Written by Russ Allbery <rra@stanford.edu>
+dnl Copyright 2006, 2007, 2008
+dnl     Board of Trustees, Leland Stanford Jr. University
+dnl See LICENSE for licensing terms.
 
-AC_PREREQ([2.57])
-AC_INIT([pam-afs-session], [1.5], [rra@stanford.edu])
+AC_PREREQ([2.61])
+AC_INIT([pam-afs-session], [1.6], [rra@stanford.edu])
+AC_CONFIG_AUX_DIR([build-aux])
 
 m4_include([m4/krb5.m4])
+m4_include([m4/lib-depends.m4])
+m4_include([m4/pam-const.m4])
 
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_CANONICAL_HOST
+AC_AIX
 AC_HEADER_STDC
 
 dnl Determine the path to aklog.  If we can't figure it out, the user will
@@ -16,93 +25,49 @@ dnl have to set program in the PAM options.
 AC_ARG_WITH([aklog],
     AC_HELP_STRING([--with-aklog=PATH],
         [Path to aklog or other Kerberos v5 AFS token program]),
-    [if test x"$withval" != xno ; then
-        PATH_AKLOG=$withval
-    fi],
+    [AS_IF([test x"$withval" != xno], [PATH_AKLOG="$withval"])],
     [AC_PATH_PROGS([PATH_AKLOG], [aklog])])
-if test -n "$PATH_AKLOG" ; then
-    AC_DEFINE_UNQUOTED([PATH_AKLOG], ["$PATH_AKLOG"],
-        [Full path to aklog binary.])
-fi
+AS_IF([test -n "$PATH_AKLOG"],
+    [AC_DEFINE_UNQUOTED([PATH_AKLOG], ["$PATH_AKLOG"],
+        [Full path to aklog binary.])])
 
 dnl Let the user tell us where their AFS headers are.
 AC_ARG_WITH([afs-headers],
     AC_HELP_STRING([--with-afs-headers=PATH],
         [Path to OpenAFS headers (for syscall number)]),
-    [if test x"$withval" != xno ; then
-        CPPFLAGS="-I$withval $CPPFLAGS"
-    fi])
+    [AS_IF([test x"$withval" != xno], [CPPFLAGS="-I$withval $CPPFLAGS"])])
 
 dnl Crank up the warnings if we're using GCC.
-if test "$GCC" = "yes" ; then
-    CFLAGS="-Wall $CFLAGS"
-fi
-
-dnl If --enable-reduced-depends is used, we don't try to chase Kerberos
-dnl library dependencies for libkafs and assume that the dynamic loader
-dnl can cope.
-reduced_depends=false
-AC_ARG_ENABLE([reduced-depends],
-    AC_HELP_STRING([--enable-reduced-depends],
-        [Try to minimize shared library dependencies]),
-    [if test x"$enableval" = xyes ; then
-        reduced_depends=true
-    fi])
+AS_IF([test "$GCC" = "yes"], [CFLAGS="-Wall $CFLAGS"])
 
 dnl We can optionally build with Kerberos libraries so that we can use
-dnl Kerberos calls to get configuration information.
-KRBROOT=
-kerberos=false
-AC_ARG_WITH([kerberos],
-    AC_HELP_STRING([--with-kerberos@<:@=DIR@:>@],
-        [Compile with Kerberos v5 for configuration]),
-    [if test x"$withval" != xno ; then
-        kerberos=true
-        if test x"$withval" != xyes ; then
-            KRBROOT="$withval"
-        fi
-        AC_DEFINE([HAVE_KERBEROS], 1, [Define to enable Kerberos features.])
-     fi])
-if test x"$kerberos" = xtrue ; then
-    RRA_LIB_KRB5([true])
-fi
+dnl Kerberos calls to get configuration information.  Check this before
+dnl checking for libkafs.
+RRA_LIB_KRB5_OPTIONAL
+RRA_LIB_KRB5_SET
+AS_IF([test x"$rra_use_kerberos" != xfalse],
+    [AC_CHECK_HEADERS([k5profile.h])
+     AC_CHECK_FUNCS([krb5_appdefault_string])])
 
 dnl Figure out how we're going to get the kafs functions.  We only need
 dnl k_hasafs, k_setpag, and k_unlog.  On Linux only, we can fall back to our
 dnl internal implementation; otherwise, we have to have a library.
-dnl
-dnl libkafs may require the Kerberos libraries, so we have to do this annoying
-dnl dance where we check for them first just in case we need them.  The first
-dnl parameter says whether to fail if Kerberos isn't found.
 libkafs=true
 AC_ARG_WITH([libkafs],
     AC_HELP_STRING([--without-libkafs],
         [Always use internal AFS syscall code]),
-    [if test x"$withval" = xno ; then
-        libkafs=false
-     fi])
-if test x"$libkafs" != xfalse ; then
-    save_LIBS=$LIBS
-    if test x"$kerberos" != xtrue ; then
-        if test x"$reduced_depends" != xtrue ; then
-            RRA_LIB_KRB5([false])
-        fi
-    fi
-    AC_CHECK_LIB([kafs], [k_hasafs],
+    [AS_IF([test x"$withval" = xno], [libkafs=false])])
+AS_IF([test x"$libkafs" != xfalse],
+    [AC_CHECK_LIB([kafs], [k_hasafs],
         [LIBS="-lkafs $LIBS"
          AC_CHECK_HEADERS([kafs.h])],
-        [LIBS=$save_LIBS
-         AC_CHECK_LIB([kopenafs], [k_hasafs],
+        [AC_CHECK_LIB([kopenafs], [k_hasafs],
             [LIBS="-lkopenafs $LIBS"
              AC_CHECK_HEADERS([kopenafs.h])],
-            [libkafs=false])])
-fi
-if test x"$libkafs" = xtrue ; then
-    if test x"$kerberos" = xtrue ; then
-        AC_CHECK_FUNCS([krb5_afslog])
-    fi
-else
-    case "$host" in
+            [libkafs=false])])])
+AS_IF([test x"$libkafs" = xtrue],
+    [AC_CHECK_FUNCS([krb5_afslog])],
+    [case "$host" in
     *-linux*)
         AC_LIBOBJ([sys-api])
         AC_LIBOBJ([sys-linux])
@@ -113,12 +78,12 @@ else
              AC_LIBOBJ([sys-syscall])],
             [AC_MSG_ERROR([No suitable kafs implementation found])])
         ;;
-    esac
-fi
+    esac])
 
 dnl Other portability checks.
 LIBS="-lpam $LIBS"
 AC_CHECK_FUNCS([pam_getenv pam_getenvlist])
+RRA_HEADER_PAM_CONST
 AC_CHECK_HEADERS([sys/ioccom.h])
 AC_TYPE_SIGNAL
 
@@ -130,6 +95,11 @@ AC_CHECK_HEADERS([security/pam_appl.h], ,
 dnl Needed to get a prototype for environ on Linux.
 AC_DEFINE([_GNU_SOURCE], [1], [Define to 1 on Linux to get full prototypes.])
 
+dnl Needed for correct handling of errno with threaded applications on
+dnl Solaris.
+AC_DEFINE([_REENTRANT], [1],
+    [Define to 1 on Solaris for correct errno handling with threads.])
+
 dnl Try to add the compiler flags for position-independent code and try to
 dnl specify the binding so that any references within the PAM module are
 dnl resolved to the functions in that module in preference to any external
@@ -138,32 +108,35 @@ dnl symbols in the module are resolved.
 dnl
 dnl More platforms could be handled here.  Contributions welcome.
 case "$host" in
+*-aix*)
+    AS_IF([test "$GCC" = "yes"],
+        [CFLAGS="-fPIC $CFLAGS"
+         LD="$CC"
+         LDFLAGS="-fPIC -shared $LDFLAGS"],
+        [LD=ld
+         LDFLAGS="-G -bnoentry -bexpall $LDFLAGS"])
+    ;;
 *-darwin*)
-    if test "$GCC" = "yes" ; then
-        LD="$CC"
-        LDFLAGS="-bundle $LDFLAGS"
-    else
-        AC_MSG_ERROR([Only know compiler flags for gcc on this platform])
-    fi
+    AS_IF([test "$GCC" = "yes"],
+        [LD="$CC"
+         LDFLAGS="-bundle $LDFLAGS"],
+        [AC_MSG_ERROR([Only know compiler flags for gcc on this platform])])
     ;;
 *-hpux*)
-    if test "$GCC" = "yes" ; then
-        CFLAGS="-fPIC $CFLAGS"
-        LD="$CC"
-        LDFLAGS="-fPIC -shared -Wl,-Bsymbolic $LDFLAGS"
-    else
-        CFLAGS="+z $CFLAGS"
-        LD="ld"
-        LDFLAGS="+vshlibunsats -b $LDFLAGS"
-    fi
+    AS_IF([test "$GCC" = "yes"],
+        [CFLAGS="-fPIC $CFLAGS"
+         LD="$CC"
+         LDFLAGS="-fPIC -shared -Wl,-Bsymbolic $LDFLAGS"],
+        [CFLAGS="+z $CFLAGS"
+         LD="ld"
+         LDFLAGS="+vshlibunsats -b $LDFLAGS"])
     ;;
 x86_64-*-linux*)
     CFLAGS="-fPIC $CFLAGS"
     LD="$CC"
     LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $LDFLAGS"
-    if test x"$libdir" = x'${exec_prefix}/lib' ; then
-        libdir='${exec_prefix}/lib64'
-    fi
+    AS_IF([test x"$libdir" = x'${exec_prefix}/lib'],
+        [libdir='${exec_prefix}/lib64'])
     ;;
 *-linux*)
     CFLAGS="-fPIC $CFLAGS"
@@ -171,23 +144,19 @@ x86_64-*-linux*)
     LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $LDFLAGS"
     ;;
 *-solaris2*)
-    if test "$GCC" = "yes" ; then
-        CFLAGS="-fPIC $CFLAGS"
-        LDFLAGS="-fPIC -shared -Wl,-Bsymbolic $LDFLAGS"
-    else
-        CFLAGS="-KPIC $CFLAGS"
-        LDFLAGS="-G -xldscope=symbolic $LDFLAGS"
-    fi
+    AS_IF([test "$GCC" = "yes"],
+        [CFLAGS="-fPIC $CFLAGS"
+         LDFLAGS="-fPIC -shared -Wl,-Bsymbolic $LDFLAGS"],
+        [CFLAGS="-KPIC $CFLAGS"
+         LDFLAGS="-G -xldscope=symbolic $LDFLAGS"])
     LD="$CC"
     ;;
 *)
-    if test "$GCC" = "yes" ; then
-        CFLAGS="-fPIC $CFLAGS"
-        LD="$CC"
-        LDFLAGS="-fPIC -shared $LDFLAGS"
-    else
-        AC_MSG_ERROR([Only know compiler flags for gcc on this platform])
-    fi
+    AS_IF([test "$GCC" = "yes"],
+        [CFLAGS="-fPIC $CFLAGS"
+         LD="$CC"
+         LDFLAGS="-fPIC -shared $LDFLAGS"],
+        [AC_MSG_ERROR([Only know compiler flags for gcc on this platform])])
     ;;
 esac
 AC_SUBST([LD])

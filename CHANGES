@@ -1,3 +1,103 @@
+   89 Russ Allbery	2008-03-08
+      Release 1.6.
+
+   88 Russ Allbery	2008-03-08
+      Restore the previous behavior of succeeding even if token
+      acquisition failed, but be sure not to set our internal success
+      marker.
+
+   87 Russ Allbery	2008-03-08
+      Edit LICENSE slightly for better HTML conversion.
+
+   86 Russ Allbery	2008-03-08
+      Note in README that AIX's PAM implementation is supported.
+
+   85 Russ Allbery	2008-03-08
+      Add my copyright statement as well.
+
+   84 Russ Allbery	2008-03-08
+      Try to determine whether the PAM headers use const in the prototypes
+      of such things as pam_get_item and adjust accordingly.  This should
+      address compiler warnings on Solaris.  Thanks, Markus Moeller.
+
+   83 Russ Allbery	2008-03-08
+      More warning cleanup.
+
+   82 Russ Allbery	2008-03-08
+      Add a warnings target and the necessary code cleanup to pass it.
+
+   81 Russ Allbery	2008-03-08
+      Overhaul the configure machinery and use the Autoconf macros
+      developed for other packages (with modifications to let Kerberos
+      support be optional).
+      
+      Build with Kerberos support by default if Kerberos libraries are
+      found.  To disable Kerberos support, pass --without-krb5 to
+      configure.  The option to specify the Kerberos library location is now
+      --with-krb5, not --with-kerberos.
+      
+      Add support for AIX's bundled Kerberos.  Thanks to Markus Moeller for
+      the porting information.
+      
+      Define _ALL_SOURCE on AIX to get a prototype for vsnprintf.
+
+   80 Russ Allbery	2008-03-07
+      Add authorship information to every file.
+
+   79 Russ Allbery	2008-03-07
+      Move supporting Autoconf utilities to build-aux.  Add copyright
+      statements and license references to configure.ac and Makefile.in.
+
+   78 Russ Allbery	2008-03-07
+      Move licensing information to a separate LICENSE file and add
+      copyright notices and references to LICENSE to every source file.
+      Include all licensing information for supporting files.
+
+   77 Russ Allbery	2008-03-07
+      Fix the spelling of Douglas Engert's name and add thanks to
+      Chaskiel Grundman.
+
+   76 Russ Allbery	2008-03-06
+      Stop masking the return value of aklog in pamafs_token_get.
+
+   75 Russ Allbery	2008-03-04
+      Add thanks for the aklog exit status fix.
+
+   74 Russ Allbery	2008-03-04
+      Update copyright date.
+
+   73 Russ Allbery	2008-03-04
+      Add a reference to the examples to README.
+
+   72 Russ Allbery	2008-03-04
+      Import current config.guess and config.sub.
+
+   71 Russ Allbery	2008-03-04
+      Add example PAM configurations for Debian, Red Hat, and Solaris based
+      on Stanford's Linux configurations and a Solaris configuration from
+      Maciej Malek.  Hopefully I didn't break anything while merging
+      examples.
+
+   70 Russ Allbery	2008-03-04
+      Build with _REENTRANT set for correct errno handling in threaded
+      applications on Solaris.
+
+   69 Russ Allbery	2008-03-04
+      Correctly check the exit status of aklog and don't think acquiring
+      tokens was successful when aklog failed.
+
+   68 Russ Allbery	2008-03-04
+      Document bad interactions with pam_keyinit on Linux in README.
+
+   67 Russ Allbery	2008-03-04
+      Add additional documentation of interactions with the native pam_krb5
+      on Solaris to README.  pam_afs_session needs to be run from the auth
+      group, not the session group, with at least some services when used
+      with the Solaris pam_krb5.
+
+   66 Russ Allbery	2008-03-04
+      Add compiler and linker flags for AIX.  Thanks, Thomas Williams.
+
    65 Russ Allbery	2007-09-30
       Release 1.5.
 

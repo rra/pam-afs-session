@@ -1,3 +1,14 @@
+libpam-afs-session (1.6-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    - Correctly check the exit status of aklog.
+    - Additional documentation and examples.
+  * Install the upstream CHANGES as changelog.gz and install NEWS
+    separately.
+  * Improve debian/copyright based on upstream's LICENSE file.
+
+ -- Russ Allbery <rra@debian.org>  Sat, 08 Mar 2008 20:20:19 -0800
+
 libpam-afs-session (1.5-1) unstable; urgency=low
 
   * New upstream release.

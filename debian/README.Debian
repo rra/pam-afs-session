@@ -36,6 +36,9 @@ only a stub for user authentication and is included in the auth stack
 solely so that it is called on pam_setcred.  If you mark this module as
 sufficient, it will allow any user to log in without a password.
 
+See /usr/share/doc/libpam-afs-session/examples for example Debian PAM
+configuration files.
+
 For Debian, this module is built with Kerberos support so that it can read
 configuration options from /etc/krb5.conf and so that the kdestroy option
 is supported.  It is built without Heimdal libkafs support and therefore
@@ -46,4 +49,4 @@ option).
 
 For more information, see the pam_afs_session man page.
 
- -- Russ Allbery <rra@debian.org>, Sun, 30 Sep 2007 01:01:29 -0700
+ -- Russ Allbery <rra@debian.org>, Sat,  8 Mar 2008 20:24:23 -0800

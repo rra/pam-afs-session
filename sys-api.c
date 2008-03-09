@@ -1,6 +1,4 @@
 /*
- * sys-api.c
- *
  * kafs replacement.
  *
  * This is a simple implementation of the k_hasafs, k_setpag, and k_unlog
@@ -15,6 +13,10 @@
  * stripped-down implementation with only the few functions that the AFS PAM
  * module requires, various interface constants and system call numbers are
  * hard-coded here.
+ *
+ * Written by Russ Allbery <rra@stanford.edu>
+ * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #include "config.h"
@@ -29,6 +31,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include "internal.h"
 
 /* Provided by the relevant sys-*.c file. */
 extern int pamafs_syscall(long, long, long, long, long, int *);
@@ -61,12 +65,13 @@ static volatile sig_atomic_t syscall_okay = 1;
 /* Signal handler to catch failed system calls and change the okay flag. */
 #ifdef SIGSYS
 static RETSIGTYPE
-sigsys_handler(int s)
+sigsys_handler(int s UNUSED)
 {
     syscall_okay = 0;
     signal(SIGSYS, sigsys_handler);
 }
 #endif /* SIGSYS */
+
 
 /*
  * The other system calls are implemented in terms of k_pioctl.  This is a
@@ -84,6 +89,7 @@ k_pioctl(const char *path, int cmd, const void *cmarg, int follow)
         err = rval;
     return err;
 }
+
 
 /*
  * Probe to see if AFS is available and we can make system calls
@@ -119,6 +125,7 @@ k_hasafs(void)
     return okay;
 }
 
+
 /*
  * The setpag system call.  This is special in that it's not a pioctl;
  * instead, it's a separate system call done directly through the afs_syscall
@@ -134,6 +141,7 @@ k_setpag(void)
         err = rval;
     return err;
 }
+
 
 /*
  * The unlog system call.  This destroys any tokens in the current PAG.

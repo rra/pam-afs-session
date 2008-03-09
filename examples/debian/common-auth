@@ -1,0 +1,14 @@
+# /etc/pam.d/common-auth -- Authentication settings common to all services.
+#
+# This file is included from other service-specific PAM config files on
+# Debian, and should contain a list of the authentication modules that
+# define the central authentication scheme for use on the system (e.g.,
+# /etc/shadow, LDAP, Kerberos, etc.).
+#
+# Use the traditional Unix authentication mechanisms and fall back to
+# Kerberos if that fails.  Include pam_afs_session so that calls to
+# pam_setcred will acquire an AFS PAG and tokens.
+
+auth  sufficient                pam_unix.so try_first_pass nullok_secure
+auth  [success=ok default=die]  pam_krb5.so use_first_pass forwardable
+auth  [default=done]            pam_afs_session.so

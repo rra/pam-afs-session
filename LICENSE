@@ -1,20 +1,3 @@
-Packaged for Debian by Russ Allbery <rra@debian.org>            2007-04-11
-
-It was downloaded from:
-
-  <http://www.eyrie.org/~eagle/software/pam-afs-session/>
-
-Upstream Author:
-
-  Russ Allbery <rra@stanford.edu>
-
-Debian packaging copyright:
-
-  Copyright 2007, 2008 Board of Trustees, Leland Stanford Jr. University
-
-  All files and modifications related to Debian packaging are covered
-  under the same license terms as the rest of the package.
-
 The pam-afs-session package as a whole is:
 
   Copyright 2005, 2006, 2007, 2008
@@ -125,8 +108,7 @@ copyright and license:
 For the pam-afs-session distribution, the option described in the last
 paragraph has been accepted and these files are distributed under the same
 terms as the pam-afs-session package as a whole, as described at the top
-of this file.  You can find the GPL version 2 in
-/usr/share/common-licenses/GPL-2 on Debian systems.
+of this file.
 
 The file build-aux/install-sh is covered by the following copyright and
 license:

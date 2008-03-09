@@ -1,11 +1,13 @@
 /*
- * public.c
- *
- * The public APIs of the pam_afs_session PAM module.
+ * The public APIs of the pam-afs-session PAM module.
  *
  * Provides the public pam_sm_setcred, pam_sm_open_session, and
  * pam_sm_close_session functions, plus whatever other stubs we need to
  * satisfy PAM.
+ *
+ * Written by Russ Allbery <rra@stanford.edu>
+ * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #include "config.h"
@@ -27,9 +29,6 @@
 # include <kafs.h>
 #elif HAVE_KOPENAFS_H
 # include <kopenafs.h>
-#else
-int k_hasafs(void);
-int k_setpag(void);
 #endif
 
 #include "internal.h"
@@ -88,13 +87,14 @@ done:
     return pamret;
 }
 
+
 /*
  * Don't do anything for authenticate.  We're only an auth module so that we
  * can supply a pam_setcred implementation.
  */
 int
-pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
-                    const char *argv[])
+pam_sm_authenticate(pam_handle_t *pamh UNUSED, int flags UNUSED,
+                    int argc UNUSED, const char *argv[] UNUSED)
 {
     return PAM_SUCCESS;
 }

@@ -77,8 +77,9 @@ binary-arch: DH_OPTIONS=-a
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs NEWS
-	dh_installdocs README TODO
+	dh_installchangelogs CHANGES
+	dh_installdocs NEWS README TODO
+	dh_installexamples examples/debian/*
 	dh_installman pam_afs_session.5
 	dh_link
 	dh_strip

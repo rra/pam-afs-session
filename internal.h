@@ -22,7 +22,22 @@
 # include <krb5.h>
 #endif
 
+/* Forward declarations to avoid unnecessary includes. */
 struct passwd;
+
+/*
+ *__attribute__ is available in gcc 2.5 and later, but only with gcc 2.7
+ * could you use the __format__ form of the attributes, which is what we use
+ * (to avoid confusion with other macros).
+ */
+#ifndef __attribute__
+# if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#  define __attribute__(spec)   /* empty */
+# endif
+#endif
+
+/* Used for unused parameters to silence gcc warnings. */
+#define UNUSED  __attribute__((__unused__))
 
 /*
  * The global structure holding our arguments from the PAM configuration.
@@ -61,6 +76,13 @@ void pamafs_debug(struct pam_args *, const char *, ...);
 /* Error reporting for Kerberos v5 code. */
 #ifdef HAVE_KERBEROS
 void pamafs_error_krb5(krb5_context, const char *, int);
+#endif
+
+/* Prototypes for the internal kafs implementation. */
+#if !defined(HAVE_KAFS_H) && !defined(HAVE_KOPENAFS_H)
+int k_hasafs(void);
+int k_setpag(void);
+int k_unlog(void);
 #endif
 
 /* __func__ is C99, but not provided by all implementations. */
