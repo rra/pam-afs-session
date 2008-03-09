@@ -339,7 +339,7 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
         if (status == PAM_SUCCESS)
             maybe_destroy_cache(args, cache);
     }
-    return status;
+    return PAM_SUCCESS;
 }
 
 
