@@ -7,6 +7,7 @@ libpam-afs-session (1.6-1) UNRELEASED; urgency=low
     separately.
   * Improve debian/copyright based on upstream's LICENSE file.
   * Touch $@ instead of the named stamp files.
+  * Update standards version to 3.7.3 (no changes required).
 
  -- Russ Allbery <rra@debian.org>  Sat, 08 Mar 2008 20:20:19 -0800
 
