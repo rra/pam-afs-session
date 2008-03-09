@@ -1,4 +1,8 @@
-# Makefile for pam_afs_session
+# Makefile for pam-afs-session.
+#
+# Written by Russ Allbery <rra@stanford.edu>
+# Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+# See LICENSE for licensing terms.
 
 srcdir		= @srcdir@
 VPATH		= @srcdir@
@@ -45,6 +49,16 @@ install: pam_afs_session.so $(srcdir)/pam_afs_session.5
 	    $(DESTDIR)$(pamdir)/pam_afs_session.so
 	$(INSTALL_DATA) $(srcdir)/pam_afs_session.5 \
 	    $(DESTDIR)$(mandir)/man5/pam_afs_session.5
+
+# A set of flags for warnings.	Add -O because gcc won't find some warnings
+# without optimization turned on, and add -DDEBUG=1 so we'll also compile all
+# debugging code and test it.
+WARNINGS = -g -O -fPIC -DDEBUG=1 -Wall -W -Wendif-labels -Wpointer-arith \
+	-Wbad-function-cast -Wwrite-strings -Wstrict-prototypes \
+	-Wmissing-prototypes -Wnested-externs -Werror
+
+warnings:
+	$(MAKE) CFLAGS='$(WARNINGS)'
 
 # This target only works when builddir == srcdir, at least for now.
 dist: pam_afs_session.5

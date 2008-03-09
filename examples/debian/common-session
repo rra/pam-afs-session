@@ -1,0 +1,13 @@
+# /etc/pam.d/common-session -- Session-related modules common to all services
+#
+# This file is included from other service-specific PAM config files on
+# Debian, and should contain a list of modules that define tasks to be
+# performed at the start and end of sessions of *any* kind (both interactive
+# and non-interactive).
+#
+# Manage Kerberos credentials, create an AFS PAG and get a token if
+# appropriate, and then handle the regular Unix session.
+
+session  optional  pam_krb5.so
+session  optional  pam_afs_session.so
+session  required  pam_unix.so

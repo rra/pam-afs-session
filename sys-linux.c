@@ -1,12 +1,14 @@
 /*
- * sys-linux.c
- *
  * AFS system call for Linux systems.
  *
  * This is an AFS system call implementation for Linux systems only (and new
  * enough implementations of OpenAFS on Linux that /proc/fs/openafs/afs_ioctl
  * exists).  It is for use on systems that don't have libkafs or libkopenafs,
  * or where a dependency on those libraries is not desirable for some reason.
+ *
+ * Written by Russ Allbery <rra@stanford.edu>
+ * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #include "config.h"
@@ -16,6 +18,9 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+/* The interface we implement. */
+int pamafs_syscall(long, long, long, long, long, int *);
 
 /* 
  * The struct passed to ioctl to do an AFS system call.  Definition taken from

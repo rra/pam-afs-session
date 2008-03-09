@@ -1,5 +1,42 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 1.6 (2008-03-08)
+
+    Correctly check the exit status of aklog and don't think acquiring
+    tokens was successful when aklog failed.  Thanks, Douglas Engert
+    and Chaskiel Grundman.
+
+    Build with _REENTRANT set for correct errno handling in threaded
+    applications on Solaris.
+
+    Build with Kerberos support by default if Kerberos libraries are
+    found.  To disable Kerberos support, pass --without-krb5 to
+    configure.  The option to specify the Kerberos library location is now
+    --with-krb5, not --with-kerberos.
+
+    Add support for AIX's bundled Kerberos.  Thanks to Markus Moeller for
+    the porting information.
+
+    Define _ALL_SOURCE on AIX to get a prototype for vsnprintf.
+
+    Add compiler and linker flags for AIX.  Thanks, Thomas Williams.
+
+    Try to determine whether the PAM headers use const in the prototypes
+    of such things as pam_get_item and adjust accordingly.  This should
+    address compiler warnings on Solaris.  Thanks, Markus Moeller.
+
+    Add additional documentation of interactions with the native pam_krb5
+    on Solaris to README.  pam_afs_session needs to be run from the auth
+    group, not the session group, with at least some services when used
+    with the Solaris pam_krb5.
+
+    Document bad interactions with pam_keyinit on Linux in README.
+
+    Add example PAM configurations for Debian, Red Hat, and Solaris based
+    on Stanford's Linux configurations and a Solaris configuration from
+    Maciej Malek.  Hopefully I didn't break anything while merging
+    examples.
+
 pam-afs-session 1.5 (2007-09-30)
 
     Free the results of pam_getenvlist and the command-line argument for

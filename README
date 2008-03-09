@@ -1,11 +1,10 @@
-                           pam-afs-session 1.5
+                           pam-afs-session 1.6
                    (PAM module for AFS PAGs and tokens)
 
                 Written by Russ Allbery <rra@stanford.edu>
 
-  Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University.
-  This software is distributed under a BSD-style license.  Please see the
-  section LICENSE below for more information.
+  See the LICENSE file, included in this distribution, for copyright and
+  redistribution information.
 
 BLURB
 
@@ -30,14 +29,13 @@ DESCRIPTION
 
   There are two ways this module can obtain tokens:
 
-   * If you have Heimdal's libkafs library available and build this module
-     with Kerberos support (passing --with-kerberos to configure), the
-     module can call libkafs's krb5_afslog function to obtain tokens
-     directly.  If you are using Heimdal and obtaining tokens from
-     Kerberos tickets, this is the recommended configuration, since it
-     means the PAM module doesn't have to fork an external process.  If
-     built in the fashion described above, this will be the default unless
-     program is set in the module configuration.
+   * If you have Heimdal's libkafs library available, the module can call
+     libkafs's krb5_afslog function to obtain tokens directly.  If you are
+     using Heimdal and obtaining tokens from Kerberos tickets, this is the
+     recommended configuration, since it means the PAM module doesn't have
+     to fork an external process.  If built with Heimdal's libkafs, this
+     will be the default unless program is set in the module
+     configuration.
 
    * Otherwise, the module will run an arbitrary external program to
      obtain tokens.  This is the most flexible option, works with MIT
@@ -47,20 +45,19 @@ DESCRIPTION
      login.
 
   For the AFS system call layer, pam-afs-session supports linking with the
-  Heimdal libkafs library or the libkopenafs library that will ship with
-  later versions of OpenAFS and provides a similar interface.  As a
-  fallback, and to support a low-dependency build, it also comes with a
-  simple AFS system call implementation for either Linux or platforms that
-  use syscall to call AFS functions.  To use the built-in system call
-  interface on Linux, the system must run a new enough version of OpenAFS
-  or Arla to support AFS system calls through ioctl on a file in proc.  On
-  other systems, configure must be able to find the AFS header afs/param.h
-  in order to get the system call numbers for that platform.
+  Heimdal libkafs library.  As a fallback, and to support a low-dependency
+  build, it also comes with a simple AFS system call implementation for
+  either Linux or platforms that use syscall to call AFS functions.  To
+  use the built-in system call interface on Linux, the system must run a
+  new enough version of OpenAFS or Arla to support AFS system calls
+  through ioctl on a file in proc.  On other systems, configure must be
+  able to find the AFS header afs/param.h in order to get the system call
+  numbers for that platform.
 
   Right now, this module will probably only work on Linux, Solaris, HP-UX,
-  and Mac OS X, and will require gcc to even attempt to build on any other
-  platform.  Other PAM implementations will likely require some porting
-  work.
+  AIX, and Mac OS X, and will require gcc to even attempt to build on any
+  other platform.  Other PAM implementations will likely require some
+  porting work.
 
   The module can optionally be linked with Kerberos libraries to obtain
   configuration information from krb5.conf, to support the kdestroy
@@ -74,12 +71,19 @@ COMPILING AND INSTALLING
       ./configure
       make
 
-  If you have Kerberos libraries available and want pam-afs-session to be
-  able to read options from krb5.conf, or if you want to use libkafs's
-  internal functions for obtaining tokens (recommended if you have it
-  available), add the --with-kerberos option to configure (optionally
-  followed by the root of your Kerberos installation if krb5-config isn't
-  on your PATH).
+  Kerberos support is enabled by default if configure can find Kerberos
+  libraries.  If your Kerberos libraries aren't installed in a location
+  found by your compiler by default and krb5-config isn't on your PATH,
+  use the --with-krb5=PATH option to configure.  The Kerberos libraries
+  will then be expected in PATH/lib and the headers in PATH/include.
+
+  To specify a particular krb5-config script to use, either set the
+  KRB5_CONFIG environment variable or pass it to configure like:
+
+      ./configure KRB5_CONFIG=/path/to/krb5-config
+
+  To disable Kerberos support, even if you have Kerberos libraries
+  available, pass --without-krb5 to configure.
 
   By default, the first aklog program found on the PATH will be compiled
   into the module as the default aklog program to run.  This can be
@@ -89,9 +93,6 @@ COMPILING AND INSTALLING
       ./configure --with-aklog=/path/to/aklog
 
   instead.
-
-  On Solaris, expect a warning about a type mismatch for pam_get_user.
-  This warning should be harmless.
 
   To install the module into /usr/local/lib/security and the man page into
   /usr/local/share/man/man5, run:
@@ -146,12 +147,16 @@ CONFIGURING
   available or if you want different configurations for different
   services.
 
-  If configured with --with-kerberos, configuration options may also be
-  put in the krb5.conf file used by your Kerberos libraries (usually
+  If Kerberos support was enabled, configuration options may also be put
+  in the krb5.conf file used by your Kerberos libraries (usually
   /etc/krb5.conf or /usr/local/etc/krb5.conf) instead or in addition to
   the PAM configuration.  See the man page for more details.  This is
   recommended for general system configuration, since the krb5.conf
   configuration syntax is a little nicer and more flexible.
+
+  See the files in the examples directory for examples of PAM
+  configuration for various operating systems.  Contributions for
+  additional operating systems are welcome.
 
  Linux
 
@@ -186,24 +191,51 @@ CONFIGURING
   On Red Hat systems, modify /etc/pam.d/system-auth instead; it contains
   all of the configuration for the different stacks.
 
+  Be careful if your PAM configuration uses pam_keyinit.  This module
+  initializes a new kernel keyring and will remove the keyring created by
+  pam_afs_session to hold your tokens.  When using pam_afs_session, either
+  remove this PAM module or call pam_afs_session after it in the PAM
+  session group.
+
  Solaris
 
-  For Solaris console login, add something like:
+  Solaris doesn't support the [] keywords that Linux PAM does, so if you
+  want to mark the Kerberos v5 PAM module as sufficient and fall back on
+  the Unix module only if it fails, you won't be able to easily run
+  pam_afs_session in the auth group.  For most applications, this isn't a
+  problem; running pam_afs_session only from the session group with
+  something like:
 
-      login session required /usr/local/lib/security/pam_afs_session.so 
+      other session required /usr/local/lib/security/pam_afs_session.so 
           minimum_uid=100 retain_after_close
 
-  (all on one line) in /etc/pam.conf.  Note that, on Solaris, if you want
-  authentication to first try Kerberos v5 and then fall back to regular
-  Unix authentication, you probably cannot include this module in the auth
-  stack (for pam_setcred).  Solaris doesn't support the [] keywords that
-  Linux PAM does.  However, including it in the session stack should be
-  sufficient; most well-behaved applications will open a session as well
-  as calling pam-setcred.
+  (all on one line) in /etc/pam.conf will be sufficient.  Make sure this
+  line is after the Kerberos v5 PAM module's session call.
+
+  However, note that login and dtlogin, at least under Solaris 10,
+  apparently call pam_open_session before pam_setcred, and the
+  open_session function of the native Kerberos v5 PAM module doesn't set
+  up the ticket cache.  This means that calling pam_afs_session only in
+  the session group won't work, since it will be called before the setcred
+  function of the Kerberos v5 PAM module and hence won't have a ticket
+  cache available yet.  There are two possible solutions: replace the
+  native Kerberos v5 PAM module with another module, such as:
+
+      http://www.eyrie.org/~eagle/software/pam-krb5/
+
+  that does the same thing in open_session as in setcred, or also call
+  pam_afs_session from the auth group:
+
+      login auth required /usr/local/lib/security/pam_afs_session.so
+          minimum_uid=100
+
+  after the Kerberos v5 PAM module (and likewise for dtlogin).  This means
+  that you cannot use sufficient in the auth group for the Kerberos v5 PAM
+  module, since that will then abort the group before pam_afs_session
+  runs.
 
   See the man page for pam.conf on Solaris for more configuration
-  information.  You may need to add additional lines for graphical login,
-  ssh, or for "other" as a catch-all depending on which services you use.
+  information.
 
  HP-UX
 
@@ -221,7 +253,7 @@ CONFIGURING
   For Mac OS X, PAM isn't used for system login and is therefore mostly
   useful for remote ssh.  To use this module with sshd, add it to the
   session group of the sshd PAM configuration, and it will then obtain
-  tokens with forwarded tickets via GSSAPI or tickets obtained via
+  tokens with forwarded tickets via GSS-API or tickets obtained via
   KerberosAuthentication.
 
 IMPLEMENTATION NOTES
@@ -246,12 +278,12 @@ IMPLEMENTATION NOTES
   obtain tokens provided that the environment variable KRB5CCNAME is set
   in the PAM environment.
 
-  If built with Kerberos (--with-kerberos) support, if libkafs was found
-  and used at compile time, and if krb5_afslog is available, the default
-  is to run krb5_afslog to obtain tokens.  Otherwise, the default is to
-  run whatever aklog program was found at compile time.  If program is set
-  explicitly in the configuration, pam-afs-session will always run that
-  program rather than calling krb5_afslog.
+  If libkafs was found and used at compile time and if krb5_afslog is
+  available, the default is to run krb5_afslog to obtain tokens.
+  Otherwise, the default is to run whatever aklog program was found at
+  compile time.  If program is set explicitly in the configuration,
+  pam-afs-session will always run that program rather than calling
+  krb5_afslog.
 
   When pam_close_session or pam_setcred(PAM_DELETE_CRED) is called,
   pam-afs-session will destroy the user's tokens only if the PAM data key
@@ -276,7 +308,7 @@ THANKS
 
   Some of the ideas behind this PAM module (although not the code) are
   taken from the libpam-openafs-session Debian package written by Sam
-  Hartman and the pam_afs2 module written by Douglas Engart.  Thanks to
+  Hartman and the pam_afs2 module written by Douglas Engert.  Thanks to
   both of them for their previous work.  Any errors in this implementation
   are mine.
 
@@ -285,7 +317,7 @@ THANKS
   implement an AFS system call layer and on how the pieces work.  I
   couldn't have written this code without his explanations.
 
-  Thanks to Douglas Engart for an initial code review, for Solaris
+  Thanks to Douglas Engert for an initial code review, for Solaris
   porting, for suggesting the always_aklog and aklog_homedir options, and
   for catching various other problems and missing features.
 
@@ -294,22 +326,6 @@ THANKS
 
   Thanks to Joe Buehler for porting and testing on HP-UX.
 
-LICENSE
-
-  Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University.
-  All rights reserved.
-    
-  Permission to use, copy, modify, and distribute this software and its
-  documentation for any purpose and without fee is hereby granted,
-  provided that the above copyright notice appear in all copies and that
-  both that copyright notice and this permission notice appear in
-  supporting documentation, and that the name of Stanford University not
-  be used in advertising or publicity pertaining to distribution of the
-  software without specific, written prior permission.  Stanford
-  University makes no representations about the suitability of this
-  software for any purpose.  It is provided "as is" without express or
-  implied warranty.
-
-  THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
-  WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
-  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+  Thanks to Markus Moeller for multiple patches and suggestions for
+  improved portability for pam-krb5, from which this module has also
+  benefitted.

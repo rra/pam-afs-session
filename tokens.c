@@ -1,12 +1,15 @@
 /*
- * tokens.c
- *
  * Get or delete AFS tokens.
  *
  * Here are the functions to get or delete AFS tokens, called by the various
  * public functions.  The functions to get tokens should run after a PAG is
  * created.  All functions here assume that AFS is running and k_hasafs() has
  * already been called.
+ *
+ * Written by Russ Allbery <rra@stanford.edu>
+ * Copyright 2006, 2007, 2008
+ *     Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #include "config.h"
@@ -36,8 +39,6 @@
 # include <kafs.h>
 #elif HAVE_KOPENAFS_H
 # include <kopenafs.h>
-#else
-int k_unlog(void);
 #endif
 
 /*
@@ -69,6 +70,7 @@ pamafs_free_envlist(char **env)
 }
 #endif
 
+
 /*
  * Given the PAM arguments and the passwd struct of the user we're
  * authenticating, see if we should ignore that user because they're root or
@@ -82,13 +84,14 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
         pamafs_debug(args, "ignoring root user");
         return 1;
     }
-    if (args->minimum_uid > 0 && pwd->pw_uid < args->minimum_uid) {
+    if (args->minimum_uid > 0 && pwd->pw_uid < (unsigned) args->minimum_uid) {
         pamafs_debug(args, "ignoring low-UID user (%lu < %d)",
                     (unsigned long) pwd->pw_uid, args->minimum_uid);
         return 1;
     }
     return 0;
 }
+
 
 /*
  * Call aklog with the appropriate environment.  Takes the PAM handle (so that
@@ -99,7 +102,7 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
 static int
 pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
 {
-    int result, argc, arg, i;
+    int res, argc, arg, i;
     char **env;
     const char **argv;
     pid_t child;
@@ -161,11 +164,12 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
     }
     free(argv);
     pamafs_free_envlist(env);
-    if (waitpid(child, &result, 0) && WIFEXITED(result))
+    if (waitpid(child, &res, 0) && WIFEXITED(res) && WEXITSTATUS(res) == 0)
         return PAM_SUCCESS;
     else
         return PAM_SESSION_ERR;
 }
+
 
 /*
  * Call the appropriate krb5_afslog function to get tokens directly without
@@ -227,6 +231,7 @@ pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
 }
 #endif
 
+
 /*
  * If the kdestroy option is set and we were built with Kerberos support,
  * destroy the ticket cache after we successfully got tokens.
@@ -258,11 +263,12 @@ maybe_destroy_cache(struct pam_args *args, const char *cache)
 }
 #else /* !HAVE_KERBEROS */
 static void
-maybe_destroy_cache(struct pam_args *args, const char *cache)
+maybe_destroy_cache(struct pam_args *args UNUSED, const char *cache UNUSED)
 {
     return;
 }
 #endif /* !HAVE_KERBEROS */
+
 
 /*
  * Obtain AFS tokens, currently always by running aklog but eventually via the
@@ -275,7 +281,8 @@ int
 pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
 {
     int status;
-    const char *user, *cache;
+    PAM_CONST char *user;
+    const char *cache;
     struct passwd *pwd;
 
     /* Don't try to get a token unless we have a K5 ticket cache. */
@@ -285,12 +292,7 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
         return PAM_SUCCESS;
     }
 
-    /* 
-     * Get the user, look them up, and see if we should skip this user.  (This
-     * will produce warnings on Solaris 8 because pam_get_user is defined to
-     * take a char * instead of const char * on that platform, but this should
-     * be harmless.)
-     */
+    /* Get the user, look them up, and see if we should skip this user. */
     status = pam_get_user(pamh, &user, NULL);
     if (status != PAM_SUCCESS || user == NULL) {
         pamafs_error("no user set: %s", pam_strerror(pamh, status));
@@ -328,7 +330,7 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
     status = pamafs_run_aklog(pamh, args, pwd);
 #endif
     if (status == PAM_SUCCESS) {
-        status = pam_set_data(pamh, "pam_afs_session", "yes", NULL);
+        status = pam_set_data(pamh, "pam_afs_session", (char *) "yes", NULL);
         if (status != PAM_SUCCESS) {
             pamafs_error("cannot set success data: %s",
                          pam_strerror(pamh, status));
@@ -336,10 +338,10 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
         }
         if (status == PAM_SUCCESS)
             maybe_destroy_cache(args, cache);
-    } else
-        status = PAM_SUCCESS;
-    return status;
+    }
+    return PAM_SUCCESS;
 }
+
 
 /*
  * Delete AFS tokens by running k_unlog, but only if our flag data item was

@@ -1,0 +1,29 @@
+# /etc/pam.d/system-auth -- PAM configuration for all services.
+#
+# This file is included from other service-specific PAM config files on
+# Red Hat, and should define common default PAM actions for all services.
+#
+# Try local authentication first and then Kerberos.  Run pam_afs_session
+# from both the auth and session groups.  program could also be set while
+# building pam_afs_session or in /etc/krb5.conf (if built with Kerberos
+# support).
+
+auth      required    /lib/security/$ISA/pam_env.so
+auth      sufficient  /lib/security/$ISA/pam_unix.so likeauth nullok
+auth      [success=ok default=1] /lib/security/$ISA/pam_krb5.so 
+auth      [default=done] /lib/security/$ISA/pam_afs_session.so program=/usr/bin/aklog
+auth      required    /lib/security/$ISA/pam_deny.so
+
+account   required    /lib/security/$ISA/pam_krb5.so 
+account   required    /lib/security/$ISA/pam_unix.so
+
+session   optional    /lib/security/$ISA/pam_krb5.so
+session   required    /lib/security/$ISA/pam_afs_session.so program=/usr/bin/aklog
+session   required    /lib/security/$ISA/pam_limits.so
+session   required    /lib/security/$ISA/pam_unix.so
+
+# No Kerberos or AFS bits here at all, although you could use pam_krb5 to
+# do password changes through Kerberos.
+password  required    /lib/security/$ISA/pam_cracklib.so retry=3 type=
+password  sufficient  /lib/security/$ISA/pam_unix.so nullok use_authtok md5 shadow
+password  required    /lib/security/$ISA/pam_deny.so

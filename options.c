@@ -1,10 +1,13 @@
 /*
- * options.c
+ * Option handling for pam-afs-session.
  *
- * Option handling for pam_afs_session.
- *
- * Parses the PAM command line for options to pam_afs_session and fills out an
+ * Parses the PAM command line for options to pam-afs-session and fills out an
  * allocated structure with those details.
+ *
+ * Written by Russ Allbery <rra@stanford.edu>
+ * Copyright 2006, 2007, 2008
+ *     Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #include "config.h"
@@ -13,8 +16,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* AIX doesn't have the appdefault functions. */
 #ifdef HAVE_KERBEROS
 # include <krb5.h>
+# ifndef HAVE_KRB5_APPDEFAULT_STRING
+#  include "compat-aix.c"
+# endif
 #endif
 
 #include "internal.h"
@@ -34,6 +41,7 @@ pamafs_args_new(void)
     return args;
 }
 
+
 /*
  * Free the allocated args struct and any memory it points to.
  */
@@ -50,6 +58,7 @@ pamafs_args_free(struct pam_args *args)
         free(args);
     }
 }
+
 
 #ifdef HAVE_KERBEROS
 /*
@@ -69,6 +78,7 @@ default_string(krb5_context c, const char *opt, const char *defval,
     }
 }
 
+
 /*
  * Load a number option from Kerberos appdefaults.  The native interface
  * doesn't support numbers, so we actually read a string and then convert.
@@ -87,6 +97,7 @@ default_number(krb5_context c, const char *opt, int defval, int *result)
         free(tmp);
 }
 
+
 /*
  * Load a boolean option from Kerberos appdefaults.  This is a simple wrapper
  * around the Kerberos library function.
@@ -96,6 +107,7 @@ default_boolean(krb5_context c, const char *opt, int defval, int *result)
 {
     krb5_appdefault_boolean(c, "pam-afs-session", NULL, opt, defval, result);
 }
+
 
 /*
  * Load configuration options from krb5.conf.  This is only done if we were
@@ -127,13 +139,14 @@ load_krb5_config(struct pam_args *args)
 }
 #endif /* HAVE_KERBEROS */
 
+
 /*
  * This is where we parse options.  Currently, only setting options in the PAM
  * arguments is supported.  It would be nice to also support getting options
  * from krb5.conf, but that requires linking with Kerberos libraries.
  */
 struct pam_args *
-pamafs_args_parse(int flags, int argc, const char **argv)
+pamafs_args_parse(int flags UNUSED, int argc, const char **argv)
 {
     struct pam_args *args;
     int i;
