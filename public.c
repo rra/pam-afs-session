@@ -29,9 +29,6 @@
 # include <kafs.h>
 #elif HAVE_KOPENAFS_H
 # include <kopenafs.h>
-#else
-int k_hasafs(void);
-int k_setpag(void);
 #endif
 
 #include "internal.h"
@@ -96,8 +93,8 @@ done:
  * can supply a pam_setcred implementation.
  */
 int
-pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
-                    const char *argv[])
+pam_sm_authenticate(pam_handle_t *pamh UNUSED, int flags UNUSED,
+                    int argc UNUSED, const char *argv[] UNUSED)
 {
     return PAM_SUCCESS;
 }

@@ -146,7 +146,7 @@ load_krb5_config(struct pam_args *args)
  * from krb5.conf, but that requires linking with Kerberos libraries.
  */
 struct pam_args *
-pamafs_args_parse(int flags, int argc, const char **argv)
+pamafs_args_parse(int flags UNUSED, int argc, const char **argv)
 {
     struct pam_args *args;
     int i;

@@ -18,6 +18,9 @@
 #endif
 #include <sys/syscall.h>
 
+/* The interface we implement. */
+int pamafs_syscall(long, long, long, long, long, int *);
+
 int
 pamafs_syscall(long call, long param1, long param2, long param3, long param4,
                int *rval)

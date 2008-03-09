@@ -32,6 +32,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "internal.h"
+
 /* Provided by the relevant sys-*.c file. */
 extern int pamafs_syscall(long, long, long, long, long, int *);
 
@@ -63,7 +65,7 @@ static volatile sig_atomic_t syscall_okay = 1;
 /* Signal handler to catch failed system calls and change the okay flag. */
 #ifdef SIGSYS
 static RETSIGTYPE
-sigsys_handler(int s)
+sigsys_handler(int s UNUSED)
 {
     syscall_okay = 0;
     signal(SIGSYS, sigsys_handler);

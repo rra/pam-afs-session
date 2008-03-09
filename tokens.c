@@ -39,8 +39,6 @@
 # include <kafs.h>
 #elif HAVE_KOPENAFS_H
 # include <kopenafs.h>
-#else
-int k_unlog(void);
 #endif
 
 /*
@@ -86,7 +84,7 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
         pamafs_debug(args, "ignoring root user");
         return 1;
     }
-    if (args->minimum_uid > 0 && pwd->pw_uid < args->minimum_uid) {
+    if (args->minimum_uid > 0 && pwd->pw_uid < (unsigned) args->minimum_uid) {
         pamafs_debug(args, "ignoring low-UID user (%lu < %d)",
                     (unsigned long) pwd->pw_uid, args->minimum_uid);
         return 1;
@@ -265,7 +263,7 @@ maybe_destroy_cache(struct pam_args *args, const char *cache)
 }
 #else /* !HAVE_KERBEROS */
 static void
-maybe_destroy_cache(struct pam_args *args, const char *cache)
+maybe_destroy_cache(struct pam_args *args UNUSED, const char *cache UNUSED)
 {
     return;
 }
@@ -336,7 +334,7 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
     status = pamafs_run_aklog(pamh, args, pwd);
 #endif
     if (status == PAM_SUCCESS) {
-        status = pam_set_data(pamh, "pam_afs_session", "yes", NULL);
+        status = pam_set_data(pamh, "pam_afs_session", (char *) "yes", NULL);
         if (status != PAM_SUCCESS) {
             pamafs_error("cannot set success data: %s",
                          pam_strerror(pamh, status));
