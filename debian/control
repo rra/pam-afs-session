@@ -5,6 +5,7 @@ Maintainer: Russ Allbery <rra@debian.org>
 Uploaders: Sam Hartman <hartmans@debian.org>
 Standards-Version: 3.7.3
 Build-Depends: debhelper (>= 5), libpam0g-dev, libkrb5-dev, comerr-dev
+Homepage: http://www.eyrie.org/~eagle/software/pam-afs-session/
 
 Package: libpam-afs-session
 Architecture: any
