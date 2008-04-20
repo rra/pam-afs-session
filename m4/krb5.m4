@@ -6,6 +6,10 @@ dnl KRB5_LIBS.  Provides the --with-krb5 configure option to specify a
 dnl non-standard path to the Kerberos libraries.  Uses krb5-config where
 dnl available unless reduced dependencies is requested.
 dnl
+dnl Sets an Automake conditional saying whether we use com_err, since if we're
+dnl also linking with AFS libraries, we may have to change library ordering in
+dnl that case.
+dnl
 dnl Provides the macro RRA_LIB_KRB5 and sets the substitution variables
 dnl KRB5_CPPFLAGS, KRB5_LDFLAGS, and KRB5_LIBS.  Also provides
 dnl RRA_LIB_KRB5_SET to set CPPFLAGS, LDFLAGS, and LIBS to include the
@@ -22,6 +26,7 @@ dnl
 dnl Written by Russ Allbery <rra@stanford.edu>
 dnl Copyright 2005, 2006, 2007, 2008
 dnl     Board of Trustees, Leland Stanford Jr. University
+dnl
 dnl See LICENSE for licensing terms.
 
 dnl Set CPPFLAGS, LDFLAGS, and LIBS to values including the Kerberos v5
@@ -102,7 +107,7 @@ AC_DEFUN([_RRA_LIB_KRB5_MANUAL],
                 [rra_krb5_pthread="-lpthread"])])
          AC_CHECK_LIB([krb5support], [krb5int_setspecific],
             [rra_krb5_extra="-lkrb5support $rra_krb5_extra $rra_krb5_pthread"],
-            [$rra_krb5_pthread])])
+            , [$rra_krb5_pthread])])
      AC_CHECK_LIB([com_err], [error_message],
         [rra_krb5_extra="-lcom_err $rra_krb5_extra"])
      AC_CHECK_LIB([ksvc], [krb5_svc_get_msg],
@@ -160,7 +165,14 @@ AC_DEFUN([_RRA_LIB_KRB5_INTERNAL],
                       [AC_CHECK_HEADERS([et/com_err.h])])])])
           RRA_LIB_KRB5_RESTORE],
          [_RRA_LIB_KRB5_PATHS
-          _RRA_LIB_KRB5_MANUAL([$1])])])])
+          _RRA_LIB_KRB5_MANUAL([$1])])])
+ rra_krb5_uses_com_err=false
+ case "$LIBS" in
+ *-lcom_err*)
+     rra_krb5_uses_com_err=true
+     ;;
+ esac
+ AM_CONDITIONAL([KRB5_USES_COM_ERR], [test x"$rra_krb5_uses_com_err" = xtrue])])
 
 dnl The main macro for packages with mandatory Kerberos support.
 AC_DEFUN([RRA_LIB_KRB5],

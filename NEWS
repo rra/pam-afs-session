@@ -1,5 +1,10 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 1.7 (unreleased)
+
+    Fix Autoconf syntax error when probing for libkrb5support.  Thanks,
+    Mike Garrison.
+
 pam-afs-session 1.6 (2008-03-08)
 
     Correctly check the exit status of aklog and don't think acquiring
