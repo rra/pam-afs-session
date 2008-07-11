@@ -9,6 +9,14 @@ pam-afs-session 1.7 (unreleased)
     Fix Autoconf syntax error when probing for libkrb5support.  Thanks,
     Mike Garrison.
 
+    If KRB5_CONFIG was explicitly set in the environment, don't use a
+    different krb5-config based on --with-krb5.  If krb5-config isn't
+    executable, don't use it.  This allows one to force library probing by
+    setting KRB5_CONFIG to point to a nonexistent file.
+
+    Sanity-check the results of krb5-config before proceeding and error
+    out in configure if they don't work.
+
     Fix the probing of PAM headers for const on Mac OS X.  This will
     suppress some harmless compiler warnings there.  Thanks, Markus
     Moeller.

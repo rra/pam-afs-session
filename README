@@ -82,6 +82,11 @@ COMPILING AND INSTALLING
 
       ./configure KRB5_CONFIG=/path/to/krb5-config
 
+  To not use krb5-config and force library probing even if there is a
+  krb5-config script on your path, set KRB5_CONFIG to a nonexistent path:
+
+      ./configure KRB5_CONFIG=/nonexistent
+
   To disable Kerberos support, even if you have Kerberos libraries
   available, pass --without-krb5 to configure.
 
