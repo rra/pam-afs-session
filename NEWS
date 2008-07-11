@@ -1,6 +1,6 @@
                    User-Visible pam-afs-session Changes
 
-pam-afs-session 1.7 (unreleased)
+pam-afs-session 1.7 (2008-07-10)
 
     Return PAM_IGNORE instead of PAM_SUCCESS from pam_authenticate, from
     all functions when AFS isn't available, and when functions are skipped
