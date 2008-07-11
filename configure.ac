@@ -80,17 +80,16 @@ AS_IF([test x"$libkafs" = xtrue],
         ;;
     esac])
 
-dnl Other portability checks.
+dnl Other portability checks.  Mac OS X calls its PAM headers something
+dnl different than everyone else.
 LIBS="-lpam $LIBS"
 AC_CHECK_FUNCS([pam_getenv pam_getenvlist])
-RRA_HEADER_PAM_CONST
 AC_CHECK_HEADERS([sys/ioccom.h])
 AC_TYPE_SIGNAL
-
-dnl Mac OS X calls its PAM headers something different than everyone else.
 AC_CHECK_HEADERS([security/pam_appl.h], ,
     [AC_CHECK_HEADERS([pam/pam_appl.h], ,
         [AC_MSG_ERROR([No PAM header files found])])])
+RRA_HEADER_PAM_CONST
 
 dnl Needed to get a prototype for environ on Linux.
 AC_DEFINE([_GNU_SOURCE], [1], [Define to 1 on Linux to get full prototypes.])
