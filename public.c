@@ -6,7 +6,7 @@
  * satisfy PAM.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2006, 2007, 2008 Board of Trustees, Leland Stanford Jr. University
  * See LICENSE for licensing terms.
  */
 
@@ -44,8 +44,7 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
                     const char *argv[])
 {
     struct pam_args *args;
-    int status;
-    int pamret = PAM_SUCCESS;
+    int pamret;
     const void *dummy;
 
     args = pamafs_args_parse(flags, argc, argv);
@@ -59,6 +58,7 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
     /* Do nothing unless AFS is available. */
     if (!k_hasafs()) {
         pamafs_error("skipping, AFS apparently not available");
+        pamret = PAM_IGNORE;
         goto done;
     }
 
@@ -66,9 +66,9 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
      * Unless nopag is set or we've already created a PAG, always create a
      * PAG.  Do this even if we're otherwise ignoring the user.
      */
-    status = pam_get_data(pamh, "pam_afs_session", &dummy);
-    if (status == PAM_SUCCESS) {
+    if (pam_get_data(pamh, "pam_afs_session", &dummy) == PAM_SUCCESS) {
         pamafs_debug(args, "skipping, apparently already ran");
+        pamret = PAM_SUCCESS;
         goto done;
     }
     if (!args->nopag && k_setpag() != 0) {
@@ -96,7 +96,7 @@ int
 pam_sm_authenticate(pam_handle_t *pamh UNUSED, int flags UNUSED,
                     int argc UNUSED, const char *argv[] UNUSED)
 {
-    return PAM_SUCCESS;
+    return PAM_IGNORE;
 }
 
 
@@ -125,15 +125,18 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
     /* Do nothing unless AFS is available. */
     if (!k_hasafs()) {
         pamafs_error("skipping, AFS apparently not available");
+        pamret = PAM_IGNORE;
         goto done;
     }
 
     /* If DELETE_CRED was specified, delete the tokens (if any). */
     if (flags & PAM_DELETE_CRED) {
-        if (args->retain || args->notokens)
+        if (args->retain || args->notokens) {
+            pamret = PAM_IGNORE;
             pamafs_debug(args, "skipping as configured");
-        else
+        } else {
             pamret = pamafs_token_delete(pamh, args);
+        }
         goto done;
     }
 
@@ -186,12 +189,14 @@ pam_sm_close_session(pam_handle_t *pamh, int flags, int argc,
 
     /* Do nothing if so configured. */
     if (args->retain || args->notokens) {
+        pamret = PAM_IGNORE;
         pamafs_debug(args, "skipping as configured");
         goto done;
     }
 
     /* Do nothing unless AFS is available. */
     if (!k_hasafs()) {
+        pamret = PAM_IGNORE;
         pamafs_error("skipping, AFS apparently not available");
         goto done;
     }

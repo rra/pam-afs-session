@@ -2,6 +2,10 @@
 
 pam-afs-session 1.7 (unreleased)
 
+    Return PAM_IGNORE instead of PAM_SUCCESS from pam_authenticate, from
+    all functions when AFS isn't available, and when functions are skipped
+    due to the configuration.
+
     Fix Autoconf syntax error when probing for libkrb5support.  Thanks,
     Mike Garrison.
 
