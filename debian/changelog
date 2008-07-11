@@ -9,6 +9,7 @@ libpam-afs-session (1.7-1) UNRELEASED; urgency=low
   * Install NEWS as the upstream changelog.  Upstream no longer includes a
     detailed CHANGES file.
   * Add a Homepage control field.
+  * Add Vcs-Git and Vcs-Browser control fields.
 
  -- Russ Allbery <rra@debian.org>  Sat, 08 Mar 2008 20:48:55 -0800
 
