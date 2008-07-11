@@ -2,9 +2,12 @@
 
 pam-afs-session 1.7 (2008-07-10)
 
-    Return PAM_IGNORE instead of PAM_SUCCESS from pam_authenticate, from
-    all functions when AFS isn't available, and when functions are skipped
-    due to the configuration.
+    Return PAM_IGNORE instead of PAM_SUCCESS from all functions when AFS
+    isn't available, and when functions are skipped due to the
+    configuration.  We would like to do this in pam_authenticate as well
+    (it would be much safer), but there is a bug in (at least) Linux PAM
+    0.99.7.1 (and probably earlier) that treats this as authentication
+    failure if the module is configured with [default=done].
 
     Fix Autoconf syntax error when probing for libkrb5support.  Thanks,
     Mike Garrison.

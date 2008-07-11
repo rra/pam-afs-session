@@ -96,7 +96,13 @@ int
 pam_sm_authenticate(pam_handle_t *pamh UNUSED, int flags UNUSED,
                     int argc UNUSED, const char *argv[] UNUSED)
 {
-    return PAM_IGNORE;
+    /*
+     * We want to return PAM_IGNORE here, but Linux PAM 0.99.7.1 (at least)
+     * has a bug that causes PAM_IGNORE to result in authentication failure
+     * when the module is marked [default=done].  So we return PAM_SUCCESS,
+     * which is dangerous but works in that case.
+     */
+    return PAM_SUCCESS;
 }
 
 

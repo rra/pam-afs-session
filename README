@@ -196,7 +196,8 @@ CONFIGURING
   session group.
 
   Note that this is not an authentication module and will always return
-  PAM_IGNORE to any authentication attempt.  It's only listed as an auth
+  PAM_SUCCESS to any authentication attempt, so never make this module
+  sufficient in your authentication stack.  It's only listed as an auth
   module because it provides a pam_setcred implementation and some
   programs need to call pam_setcred rather than pam_open_session (screen
   savers, for instance, to refresh credentials).

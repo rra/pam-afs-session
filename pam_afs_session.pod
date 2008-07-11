@@ -27,7 +27,10 @@ group, it also implements a dummy pam_authenticate that always succeeds
 Make sure that this module is NEVER listed as C<sufficient> or as the only
 C<required> module in the auth group.  Doing so will potentially allow
 users to log on without any password.  There unfortunately isn't a way to
-work around this and still provide pam_setcred given the structure of PAM.
+work around this and still provide pam_setcred without running afoul of a
+bug in (at least) Linux PAM 0.99.7.1 and probably earlier that causes
+authentication to fail when the final module in the auth group returns
+PAM_IGNORE and C<[default=done]> was given as the action.
 
 Here are the actions of this module:
 
