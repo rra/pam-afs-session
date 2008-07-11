@@ -10,6 +10,7 @@ libpam-afs-session (1.7-1) UNRELEASED; urgency=low
     detailed CHANGES file.
   * Add a Homepage control field.
   * Add Vcs-Git and Vcs-Browser control fields.
+  * Update standards version to 3.8.0 (no changes required).
 
  -- Russ Allbery <rra@debian.org>  Sat, 08 Mar 2008 20:48:55 -0800
 

@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Russ Allbery <rra@debian.org>
 Uploaders: Sam Hartman <hartmans@debian.org>
-Standards-Version: 3.7.3
+Standards-Version: 3.8.0
 Build-Depends: debhelper (>= 5), libpam0g-dev, libkrb5-dev, comerr-dev
 Homepage: http://www.eyrie.org/~eagle/software/pam-afs-session/
 Vcs-Git: git://git.debian.org/git/pkg-k5-afs/libpam-afs-session.git
