@@ -64,7 +64,6 @@ warnings:
 dist: pam_afs_session.5
 	rm -rf $(TARDIR) $(TARNAME).gz
 	mkdir $(TARDIR)
-	bzr log --short > CHANGES
 	rsync -C --exclude /debian/ -a ./ $(TARDIR)/
 	cd $(TARDIR) && ./autogen
 	tar cf $(TARNAME) $(TARDIR)

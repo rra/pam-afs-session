@@ -1,4 +1,4 @@
-                           pam-afs-session 1.6
+                           pam-afs-session 1.7
                    (PAM module for AFS PAGs and tokens)
 
                 Written by Russ Allbery <rra@stanford.edu>
@@ -81,6 +81,11 @@ COMPILING AND INSTALLING
   KRB5_CONFIG environment variable or pass it to configure like:
 
       ./configure KRB5_CONFIG=/path/to/krb5-config
+
+  To not use krb5-config and force library probing even if there is a
+  krb5-config script on your path, set KRB5_CONFIG to a nonexistent path:
+
+      ./configure KRB5_CONFIG=/nonexistent
 
   To disable Kerberos support, even if you have Kerberos libraries
   available, pass --without-krb5 to configure.
@@ -181,13 +186,6 @@ CONFIGURING
   Kerberos v5 PAM module.  If there is no ticket cache available in the
   PAM environment, it will succeed silently.
 
-  Note that this is not an authentication module and will always return
-  success to any authentication attempt, so never make this module
-  sufficient in your authentication stack.  It's only listed as an auth
-  module because it provides a pam_setcred implementation and some
-  programs need to call pam_setcred rather than pam_open_session (screen
-  savers, for instance, to refresh credentials).
-
   On Red Hat systems, modify /etc/pam.d/system-auth instead; it contains
   all of the configuration for the different stacks.
 
@@ -196,6 +194,13 @@ CONFIGURING
   pam_afs_session to hold your tokens.  When using pam_afs_session, either
   remove this PAM module or call pam_afs_session after it in the PAM
   session group.
+
+  Note that this is not an authentication module and will always return
+  PAM_SUCCESS to any authentication attempt, so never make this module
+  sufficient in your authentication stack.  It's only listed as an auth
+  module because it provides a pam_setcred implementation and some
+  programs need to call pam_setcred rather than pam_open_session (screen
+  savers, for instance, to refresh credentials).
 
  Solaris
 
@@ -329,3 +334,12 @@ THANKS
   Thanks to Markus Moeller for multiple patches and suggestions for
   improved portability for pam-krb5, from which this module has also
   benefitted.
+
+SOURCE REPOSITORY
+
+  pam-afs-session is maintained using Git.  You can access the current
+  source by pointing a Git client at:
+
+      http://archives.eyrie.org/software/git/pam-afs-session.git
+
+  No gitweb interface is available (yet).
