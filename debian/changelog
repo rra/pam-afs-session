@@ -6,6 +6,8 @@ libpam-afs-session (1.7-1) UNRELEASED; urgency=low
     - Set explicit hidden visibility for all local symbols and further
       restrict the visible symbols with a version script, removing leaks
       of symbols into the application namespace.
+  * Install NEWS as the upstream changelog.  Upstream no longer includes a
+    detailed CHANGES file.
   * Add a Homepage control field.
 
  -- Russ Allbery <rra@debian.org>  Sat, 08 Mar 2008 20:48:55 -0800
