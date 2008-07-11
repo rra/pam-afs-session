@@ -333,3 +333,12 @@ THANKS
   Thanks to Markus Moeller for multiple patches and suggestions for
   improved portability for pam-krb5, from which this module has also
   benefitted.
+
+SOURCE REPOSITORY
+
+  pam-afs-session is maintained using Git.  You can access the current
+  source by pointing a Git client at:
+
+      http://archives.eyrie.org/software/git/pam-afs-session.git
+
+  No gitweb interface is available (yet).
