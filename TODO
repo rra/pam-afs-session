@@ -1,9 +1,38 @@
                         pam-afs-session To-Do List
 
+General:
+
  * Providing a way to pass command-line arguments to the aklog program
    would be nice, even if not strictly necessary.  If set in krb5.conf,
    one should be able to just use spaces.  PAM options will require some
    other workaround (maybe using ! to separate arguments or something).
+
+PAM API:
+
+ * Fix error logging levels to comply with the Linux PAM recommendations.
+   Currently, all errors are logged at LOG_ERR level.  malloc failures and
+   other system resource failures should be logged at LOG_CRIT.
+
+ * Tighter verification that all of our flags are valid might be a good
+   idea.
+
+Build System:
+
+ * It would be very nice to use Automake to match my other projects, but
+   getting the flags right for building a PAM module while fighting with
+   Libtool is unappealing.  Maybe it won't be that bad, or maybe I can
+   convince Automake to generate a shared object using the flags I figured
+   out without using Libtool.
+
+Code Cleanup:
+
+ * The PAM option parsing is repetitive code that involves counting the
+   lengths of strings.  It should be possible to replace most of it with
+   some carefully-chosen macros.
+
+ * The PAM option parsing code could do a binary search on a table of
+   option strings rather than checking each one in turn, although the
+   performance and cleanliness gain may not be worth the effort.
 
  * All of the option parsing code does not deal clealy with failure to
    allocate memory.  Generally, we just don't set the parameter.  This may
@@ -12,3 +41,14 @@
    Unfortunately, the profile library doesn't return errors on memory
    allocation failure, which makes this mostly futile until there's a
    better profile library API.
+
+ * Add portability glue for a missing or broken vsnprintf.
+
+Tests:
+
+ * Add a test suite.  If the user already has an AFS token, it should be
+   fairly straightforward to test PAG creation.  Testing running an
+   external token program based on KRB5CCNAME is very straightforward.
+   Testing ticket cache destruction probably requires that the tester
+   already have a ticket cache.  We can fake a k_hasafs() failure by
+   selectively linking object files with a fake implementation.

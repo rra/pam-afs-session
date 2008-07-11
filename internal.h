@@ -1,7 +1,9 @@
 /*
- * internal.h
+ * Internal prototypes and structures for pam-afs-session.
  *
- * Internal prototypes and structures for pam_afs_session.
+ * Written by Russ Allbery <rra@stanford.edu>
+ * Copyright 2006, 2007, 2008 Board of Trustees, Leland Stanford Jr. University
+ * See LICENSE for licensing terms.
  */
 
 #ifndef INTERNAL_H
@@ -60,29 +62,36 @@ struct pam_args {
 };
 
 /* Parse the PAM flags and arguments and fill out pam_args. */
-struct pam_args *pamafs_args_parse(int flags, int argc, const char **argv);
+struct pam_args *pamafs_args_parse(int flags, int argc, const char **argv)
+    __attribute__((__visibility__("hidden")));
 
 /* Free the pam_args struct when we're done. */
-void pamafs_args_free(struct pam_args *);
+void pamafs_args_free(struct pam_args *)
+    __attribute__((__visibility__("hidden")));
 
 /* Token manipulation functions. */
-int pamafs_token_get(pam_handle_t *pamh, struct pam_args *args);
-int pamafs_token_delete(pam_handle_t *pamh, struct pam_args *args);
+int pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
+    __attribute__((__visibility__("hidden")));
+int pamafs_token_delete(pam_handle_t *pamh, struct pam_args *args)
+    __attribute__((__visibility__("hidden")));
 
 /* Error reporting and debugging functions. */
-void pamafs_error(const char *, ...);
-void pamafs_debug(struct pam_args *, const char *, ...);
+void pamafs_error(const char *, ...)
+    __attribute__((__format__(printf, 1, 2), __visibility__("hidden")));
+void pamafs_debug(struct pam_args *, const char *, ...)
+    __attribute__((__format__(printf, 2, 3), __visibility__("hidden")));
 
 /* Error reporting for Kerberos v5 code. */
 #ifdef HAVE_KERBEROS
-void pamafs_error_krb5(krb5_context, const char *, int);
+void pamafs_error_krb5(krb5_context, const char *, int)
+    __attribute__((__visibility__("hidden")));
 #endif
 
 /* Prototypes for the internal kafs implementation. */
 #if !defined(HAVE_KAFS_H) && !defined(HAVE_KOPENAFS_H)
-int k_hasafs(void);
-int k_setpag(void);
-int k_unlog(void);
+int k_hasafs(void) __attribute__((__visibility__("hidden")));
+int k_setpag(void) __attribute__((__visibility__("hidden")));
+int k_unlog(void) __attribute__((__visibility__("hidden")));
 #endif
 
 /* __func__ is C99, but not provided by all implementations. */

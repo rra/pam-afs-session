@@ -6,7 +6,7 @@ dnl     Board of Trustees, Leland Stanford Jr. University
 dnl See LICENSE for licensing terms.
 
 AC_PREREQ([2.61])
-AC_INIT([pam-afs-session], [1.6], [rra@stanford.edu])
+AC_INIT([pam-afs-session], [1.7], [rra@stanford.edu])
 AC_CONFIG_AUX_DIR([build-aux])
 
 m4_include([m4/krb5.m4])
@@ -80,17 +80,16 @@ AS_IF([test x"$libkafs" = xtrue],
         ;;
     esac])
 
-dnl Other portability checks.
+dnl Other portability checks.  Mac OS X calls its PAM headers something
+dnl different than everyone else.
 LIBS="-lpam $LIBS"
 AC_CHECK_FUNCS([pam_getenv pam_getenvlist])
-RRA_HEADER_PAM_CONST
 AC_CHECK_HEADERS([sys/ioccom.h])
 AC_TYPE_SIGNAL
-
-dnl Mac OS X calls its PAM headers something different than everyone else.
 AC_CHECK_HEADERS([security/pam_appl.h], ,
     [AC_CHECK_HEADERS([pam/pam_appl.h], ,
         [AC_MSG_ERROR([No PAM header files found])])])
+RRA_HEADER_PAM_CONST
 
 dnl Needed to get a prototype for environ on Linux.
 AC_DEFINE([_GNU_SOURCE], [1], [Define to 1 on Linux to get full prototypes.])
@@ -103,10 +102,17 @@ AC_DEFINE([_REENTRANT], [1],
 dnl Try to add the compiler flags for position-independent code and try to
 dnl specify the binding so that any references within the PAM module are
 dnl resolved to the functions in that module in preference to any external
-dnl function.  Also, if and only if we're on Linux, make sure that all the
-dnl symbols in the module are resolved.
+dnl function.
+dnl
+dnl Also, if and only if we're on Linux, make sure that all the symbols in the
+dnl module are resolved, try to adjust for the 32-bit vs. 64-bit library
+dnl paths, and use a version script to be sure that we hide internal
+dnl functions.  The version script could also be used on Solaris and probably
+dnl other ELF platforms, but the option is only valid with the GNU ld and I
+dnl don't know how to probe for that.
 dnl
 dnl More platforms could be handled here.  Contributions welcome.
+MAP="-Wl,--version-script=pam_afs_session.map"
 case "$host" in
 *-aix*)
     AS_IF([test "$GCC" = "yes"],
@@ -134,14 +140,14 @@ case "$host" in
 x86_64-*-linux*)
     CFLAGS="-fPIC $CFLAGS"
     LD="$CC"
-    LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $LDFLAGS"
+    LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $MAP $LDFLAGS"
     AS_IF([test x"$libdir" = x'${exec_prefix}/lib'],
         [libdir='${exec_prefix}/lib64'])
     ;;
 *-linux*)
     CFLAGS="-fPIC $CFLAGS"
     LD="$CC"
-    LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $LDFLAGS"
+    LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $MAP $LDFLAGS"
     ;;
 *-solaris2*)
     AS_IF([test "$GCC" = "yes"],
