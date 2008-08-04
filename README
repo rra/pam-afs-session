@@ -309,6 +309,24 @@ IMPLEMENTATION NOTES
   and primary GID.  If calling krb5_afslog, that user's UID is used for
   the "AFS ID" field in the tokens display (which is entirely cosmetic).
 
+HOMEPAGE AND SOURCE REPOSITORY
+
+  The pam-afs-session web page at:
+
+      http://www.eyrie.org/~eagle/software/pam-afs-session/
+
+  will always have the current version of this package, the current
+  documentation, and pointers to any additional resources.
+
+  pam-afs-session is maintained using Git.  You can access the current
+  source by cloning the repository at:
+
+      git://git.eyrie.org/afs/pam-afs-session.git
+
+  or view the repository via the web at:
+
+      http://git.eyrie.org/?p=afs/pam-afs-session.git
+
 THANKS
 
   Some of the ideas behind this PAM module (although not the code) are
@@ -334,12 +352,3 @@ THANKS
   Thanks to Markus Moeller for multiple patches and suggestions for
   improved portability for pam-krb5, from which this module has also
   benefitted.
-
-SOURCE REPOSITORY
-
-  pam-afs-session is maintained using Git.  You can access the current
-  source by pointing a Git client at:
-
-      http://archives.eyrie.org/software/git/pam-afs-session.git
-
-  No gitweb interface is available (yet).
