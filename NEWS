@@ -1,5 +1,10 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 1.8 (unreleased)
+
+    When debugging is enabled, log an exit status of PAM_IGNORE as ignore
+    rather than failure.
+
 pam-afs-session 1.7 (2008-07-10)
 
     Return PAM_IGNORE instead of PAM_SUCCESS from all functions when AFS

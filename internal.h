@@ -108,6 +108,7 @@ int k_unlog(void) __attribute__((__visibility__("hidden")));
     pamafs_debug((args), "%s: entry (0x%x)", __func__, (flags))
 #define EXIT(args, pamret) \
     pamafs_debug((args), "%s: exit (%s)", __func__, \
-                ((pamret) == PAM_SUCCESS) ? "success" : "failure")
+                 ((pamret) == PAM_SUCCESS) ? "success" \
+                 : (((pamret) == PAM_IGNORE) ? "ignore" : "failure"))
 
 #endif /* INTERNAL_H */
