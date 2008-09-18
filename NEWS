@@ -2,6 +2,8 @@
 
 pam-afs-session 1.8 (unreleased)
 
+    Fix a configure error when built --without-krb5.
+
     When debugging is enabled, log an exit status of PAM_IGNORE as ignore
     rather than failure.
 

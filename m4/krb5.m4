@@ -221,7 +221,8 @@ AC_DEFUN([RRA_LIB_KRB5_OPTIONAL],
         [rra_use_kerberos=false],
         [AS_IF([test x"$withval" != xyes], [rra_krb5_root="$withval"])
          rra_use_kerberos=true])])
- AS_IF([test x"$rra_use_kerberos" != xfalse],
+ AS_IF([test x"$rra_use_kerberos" = xfalse],
+     [AM_CONDITIONAL([KRB5_USES_COM_ERR], [false])],
      [AS_IF([test x"$rra_use_kerberos" = xtrue],
          [_RRA_LIB_KRB5_INTERNAL([true])],
          [_RRA_LIB_KRB5_INTERNAL([false])])])
