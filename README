@@ -192,8 +192,16 @@ CONFIGURING
   Be careful if your PAM configuration uses pam_keyinit.  This module
   initializes a new kernel keyring and will remove the keyring created by
   pam_afs_session to hold your tokens.  When using pam_afs_session, either
-  remove this PAM module or call pam_afs_session after it in the PAM
-  session group.
+  remove this PAM module or make sure pam_afs_session only runs after it
+  in the PAM session group.  This can be tricky with OpenSSH since OpenSSH
+  calls setcred, then open_session, then setcred again, which means that
+  if you list pam_afs_session in the auth stack and pam_keyinit in the
+  session stack, pam_afs_session will create a PAG during setcred,
+  pam_keyinit will destroy the PAG in the session stack, and then
+  pam_afs_session won't recreate it because it believes it has already
+  run.  You may want to remove pam_afs_session from the auth stack of only
+  OpenSSH, or remove pam_keyinit entirely if you use OpenSSH and
+  pam_keyinit isn't doing anything useful for you.
 
   Note that this is not an authentication module and will always return
   PAM_SUCCESS to any authentication attempt, so never make this module
