@@ -2,6 +2,9 @@
 
 pam-afs-session 1.8 (unreleased)
 
+    Avoid returning an uninitialized value from pam_open_session when
+    notokens is set.  Thanks, Ian Ward Comfort.
+
     Fix a configure error when built --without-krb5.
 
     When debugging is enabled, log an exit status of PAM_IGNORE as ignore

@@ -45,7 +45,7 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
                     const char *argv[])
 {
     struct pam_args *args;
-    int pamret;
+    int pamret = PAM_SUCCESS;
     const void *dummy;
 
     args = pamafs_args_parse(flags, argc, argv);
