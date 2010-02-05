@@ -1,25 +1,24 @@
-dnl Process this file with Autoconf to produce a configure script.
+dnl Autoconf configuration for pam-afs-session.
 dnl
 dnl Written by Russ Allbery <rra@stanford.edu>
-dnl Copyright 2006, 2007, 2008
+dnl Copyright 2006, 2007, 2008, 2010
 dnl     Board of Trustees, Leland Stanford Jr. University
 dnl
 dnl See LICENSE for licensing terms.
 
-AC_PREREQ([2.61])
+AC_PREREQ([2.64])
 AC_INIT([pam-afs-session], [1.7], [rra@stanford.edu])
 AC_CONFIG_AUX_DIR([build-aux])
-
-m4_include([m4/krb5.m4])
-m4_include([m4/lib-depends.m4])
-m4_include([m4/pam-const.m4])
+AC_CONFIG_MACRO_DIR([m4])
+AM_INIT_AUTOMAKE([1.11 check-news silent-rules -Wall -Werror])
+AM_MAINTAINER_MODE
 
 AC_PROG_CC
+AC_USE_SYSTEM_EXTENSIONS
+AC_PROG_CC_C_O
 AC_PROG_INSTALL
-AC_PROG_MAKE_SET
+LT_INIT([disable-static])
 AC_CANONICAL_HOST
-AC_AIX
-AC_HEADER_STDC
 
 dnl Determine the path to aklog.  If we can't figure it out, the user will
 dnl have to set program in the PAM options.
@@ -45,10 +44,11 @@ dnl We can optionally build with Kerberos libraries so that we can use
 dnl Kerberos calls to get configuration information.  Check this before
 dnl checking for libkafs.
 RRA_LIB_KRB5_OPTIONAL
-RRA_LIB_KRB5_SET
+RRA_LIB_KRB5_SWITCH
 AS_IF([test x"$rra_use_kerberos" != xfalse],
     [AC_CHECK_HEADERS([k5profile.h])
      AC_CHECK_FUNCS([krb5_appdefault_string])])
+RRA_LIB_KRB5_RESTORE
 
 dnl Figure out how we're going to get the kafs functions.  We only need
 dnl k_hasafs, k_setpag, and k_unlog.  On Linux only, we can fall back to our
@@ -91,9 +91,6 @@ AC_CHECK_HEADERS([security/pam_appl.h], ,
     [AC_CHECK_HEADERS([pam/pam_appl.h], ,
         [AC_MSG_ERROR([No PAM header files found])])])
 RRA_HEADER_PAM_CONST
-
-dnl Needed to get a prototype for environ on Linux.
-AC_DEFINE([_GNU_SOURCE], [1], [Define to 1 on Linux to get full prototypes.])
 
 dnl Needed for correct handling of errno with threaded applications on
 dnl Solaris.

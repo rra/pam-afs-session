@@ -13,6 +13,12 @@ pam-afs-session 1.8 (unreleased)
     When debugging is enabled, log an exit status of PAM_IGNORE as ignore
     rather than failure.
 
+    pam-afs-session is now built using Automake and Libtool to bring it
+    more in line with other software packages.  This means that it now
+    relies on Libtool to know how to generate a loadable module rather
+    than hand-configured linker rules.  This may improve portability on
+    some platforms and may hurt it on other platforms.
+
 pam-afs-session 1.7 (2008-07-10)
 
     Return PAM_IGNORE instead of PAM_SUCCESS from all functions when AFS

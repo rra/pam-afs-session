@@ -2,5 +2,12 @@
 #
 # Run this shell script to bootstrap as necessary after a fresh checkout.
 
-autoreconf -i
+set -e
+
+autoreconf -i --force
 rm -rf autom4te.cache
+
+# Generate manual pages.
+version=`grep '^pam-afs-session' NEWS | head -1 | cut -d' ' -f2`
+pod2man --release="$version" --center="pam-afs-session" --section=5 \
+    pam_afs_session.pod > pam_afs_session.5
