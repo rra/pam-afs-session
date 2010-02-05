@@ -2,14 +2,16 @@
  * Internal prototypes and structures for pam-afs-session.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2006, 2007, 2008, 2010
+ *     Board of Trustees, Leland Stanford Jr. University
  * See LICENSE for licensing terms.
  */
 
 #ifndef INTERNAL_H
 #define INTERNAL_H 1
 
-#include "config.h"
+#include <config.h>
+#include <portable/macros.h>
 
 #ifdef HAVE_SECURITY_PAM_APPL_H
 # include <security/pam_appl.h>
@@ -26,17 +28,6 @@
 
 /* Forward declarations to avoid unnecessary includes. */
 struct passwd;
-
-/*
- *__attribute__ is available in gcc 2.5 and later, but only with gcc 2.7
- * could you use the __format__ form of the attributes, which is what we use
- * (to avoid confusion with other macros).
- */
-#ifndef __attribute__
-# if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-#  define __attribute__(spec)   /* empty */
-# endif
-#endif
 
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED  __attribute__((__unused__))
@@ -60,6 +51,8 @@ struct pam_args {
     char *program;              /* Program to run for tokens. */
     int retain;                 /* Don't destroy the cache on session end. */
 };
+
+BEGIN_DECLS
 
 /* Parse the PAM flags and arguments and fill out pam_args. */
 struct pam_args *pamafs_args_parse(int flags, int argc, const char **argv)
@@ -87,12 +80,7 @@ void pamafs_error_krb5(krb5_context, const char *, int)
     __attribute__((__visibility__("hidden")));
 #endif
 
-/* Prototypes for the internal kafs implementation. */
-#if !defined(HAVE_KAFS_H) && !defined(HAVE_KOPENAFS_H)
-int k_hasafs(void) __attribute__((__visibility__("hidden")));
-int k_setpag(void) __attribute__((__visibility__("hidden")));
-int k_unlog(void) __attribute__((__visibility__("hidden")));
-#endif
+END_DECLS
 
 /* __func__ is C99, but not provided by all implementations. */
 #if __STDC_VERSION__ < 199901L

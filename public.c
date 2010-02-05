@@ -26,11 +26,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#if HAVE_KAFS_H
-# include <kafs.h>
-#elif HAVE_KOPENAFS_H
-# include <kopenafs.h>
-#endif
+#include <kafs/kafs.h>
 
 #include "internal.h"
 

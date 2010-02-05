@@ -12,13 +12,35 @@ EXTRA_DIST = LICENSE autogen compat-aix.c examples/debian/common-account \
 	examples/redhat/system-auth examples/solaris/pam.conf		 \
 	pam_afs_session.map pam_afs_session.pod
 
+# The following library order matters for annoying reasons.  libafsauthent
+# contains its own com_err implementation, which we do not want to pick up.
+#
+# If pam_afs_session calls com_err functions directly, configure adds
+# -lcom_err to the link line explicitly.  In that case, we want to link with
+# the AFS libraries last, after -lcom_err, so that we don't use its com_err
+# implementation.  If pam_afs_session doesn't call com_err functions, we
+# want to link with the AFS libraries first, since otherwise in the
+# --enable-reduced-depends case the linker may try to resolve the com_err
+# symbols in libkrb5 from the AFS libraries.
+if KRB5_USES_COM_ERR
+    DEPEND_LIBS = $(KRB5_LIBS) $(KAFS_LIBS)
+else
+    DEPEND_LIBS = $(KAFS_LIBS) $(KRB5_LIBS)
+endif
+
 AM_CPPFLAGS = $(KRB5_CPPFLAGS)
+
+noinst_LTLIBRARIES = kafs/libkafs.la
+EXTRA_kafs_libkafs_la_SOURCES = kafs/sys-linux.c kafs/sys-syscall.c
+kafs_libkafs_la_SOURCES = kafs/kafs.c kafs/kafs.h portable/macros.h	\
+	portable/stdbool.h portable/system.h
+kafs_libkafs_la_CPPFLAGS = $(KAFS_CPPFLAGS)
 
 pamdir = $(libdir)/security
 pam_LTLIBRARIES = pam_afs_session.la
 pam_afs_session_la_SOURCES = logging.c options.c public.c tokens.c
 pam_afs_session_la_LDFLAGS = -module -shared -avoid-version $(KRB5_LDFLAGS)
-pam_afs_session_la_LIBADD = $(LTLIBOBJS) $(KRB5_LIBS)
+pam_afs_session_la_LIBADD = $(LTLIBOBJS) kafs/libkafs.la $(DEPEND_LIBS)
 dist_man_MANS = pam_afs_session.5
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile		 \

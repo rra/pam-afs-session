@@ -19,6 +19,10 @@ pam-afs-session 1.8 (unreleased)
     than hand-configured linker rules.  This may improve portability on
     some platforms and may hurt it on other platforms.
 
+    Update the embedded kafs code to rra-c-util 2.3, adding
+    --with-libkafs-include, --with-libkafs-lib, --with-afs-include, and
+    --with-afs-lib configure options for finer control.
+
     Update Kerberos Autoconf macros from rra-c-util 2.3:
 
     * Add --with-krb5-include and --with-krb5-lib configure options.

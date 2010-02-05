@@ -49,44 +49,14 @@ AS_IF([test x"$rra_use_kerberos" != xfalse],
     [AC_CHECK_HEADERS([k5profile.h])
      AC_CHECK_FUNCS([krb5_appdefault_string])])
 RRA_LIB_KRB5_RESTORE
-
-dnl Figure out how we're going to get the kafs functions.  We only need
-dnl k_hasafs, k_setpag, and k_unlog.  On Linux only, we can fall back to our
-dnl internal implementation; otherwise, we have to have a library.
-libkafs=true
-AC_ARG_WITH([libkafs],
-    AC_HELP_STRING([--without-libkafs],
-        [Always use internal AFS syscall code]),
-    [AS_IF([test x"$withval" = xno], [libkafs=false])])
-AS_IF([test x"$libkafs" != xfalse],
-    [AC_CHECK_LIB([kafs], [k_hasafs],
-        [LIBS="-lkafs $LIBS"
-         AC_CHECK_HEADERS([kafs.h])],
-        [AC_CHECK_LIB([kopenafs], [k_hasafs],
-            [LIBS="-lkopenafs $LIBS"
-             AC_CHECK_HEADERS([kopenafs.h])],
-            [libkafs=false])])])
-AS_IF([test x"$libkafs" = xtrue],
-    [AC_CHECK_FUNCS([krb5_afslog])],
-    [case "$host" in
-    *-linux*)
-        AC_LIBOBJ([sys-api])
-        AC_LIBOBJ([sys-linux])
-        ;;
-    *)
-        AC_CHECK_HEADERS([afs/param.h],
-            [AC_LIBOBJ([sys-api])
-             AC_LIBOBJ([sys-syscall])],
-            [AC_MSG_ERROR([No suitable kafs implementation found])])
-        ;;
-    esac])
+RRA_LIB_KAFS
 
 dnl Other portability checks.  Mac OS X calls its PAM headers something
 dnl different than everyone else.
 LIBS="-lpam $LIBS"
+AC_HEADER_STDBOOL
+AC_CHECK_HEADERS([sys/bittypes.h])
 AC_CHECK_FUNCS([pam_getenv pam_getenvlist])
-AC_CHECK_HEADERS([sys/ioccom.h])
-AC_TYPE_SIGNAL
 AC_CHECK_HEADERS([security/pam_appl.h], ,
     [AC_CHECK_HEADERS([pam/pam_appl.h], ,
         [AC_MSG_ERROR([No PAM header files found])])])

@@ -36,11 +36,7 @@
 # include <krb5.h>
 #endif
 
-#if HAVE_KAFS_H
-# include <kafs.h>
-#elif HAVE_KOPENAFS_H
-# include <kopenafs.h>
-#endif
+#include <kafs/kafs.h>
 
 /*
  * HP-UX doesn't have a separate environment maintained in the PAM
