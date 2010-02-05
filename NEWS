@@ -19,6 +19,14 @@ pam-afs-session 1.8 (unreleased)
     than hand-configured linker rules.  This may improve portability on
     some platforms and may hurt it on other platforms.
 
+    Update Kerberos Autoconf macros from rra-c-util 2.3:
+
+    * Add --with-krb5-include and --with-krb5-lib configure options.
+    * Don't break if the user clobbers CPPFLAGS at build time.
+    * Fall back on manual probing if krb5-config results don't work.
+    * Suppress error output from krb5-config probes.
+    * Add support for the old Heimdal krb5_get_error_string interface.
+
 pam-afs-session 1.7 (2008-07-10)
 
     Return PAM_IGNORE instead of PAM_SUCCESS from all functions when AFS
