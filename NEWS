@@ -23,7 +23,7 @@ pam-afs-session 1.8 (unreleased)
     --with-libkafs-include, --with-libkafs-lib, --with-afs-include, and
     --with-afs-lib configure options for finer control.
 
-    Update Kerberos Autoconf macros from rra-c-util 2.3:
+    Update Kerberos Autoconf macros to rra-c-util 2.3:
 
     * Add --with-krb5-include and --with-krb5-lib configure options.
     * Don't break if the user clobbers CPPFLAGS at build time.
