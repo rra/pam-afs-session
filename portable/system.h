@@ -66,6 +66,9 @@ BEGIN_DECLS
  * HAVE_DECL macros for those functions that may be prototyped but implemented
  * incorrectly or implemented without a prototype.
  */
+#if !HAVE_ISSETUIDGID
+extern int issetuidgid(void);
+#endif
 
 /* Undo default visibility change. */
 #pragma GCC visibility pop

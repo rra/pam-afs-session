@@ -9,6 +9,7 @@ dnl See LICENSE for licensing terms.
 AC_PREREQ([2.64])
 AC_INIT([pam-afs-session], [1.7], [rra@stanford.edu])
 AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_LIBOBJ_DIR([portable])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([1.11 check-news silent-rules -Wall -Werror])
 AM_MAINTAINER_MODE
@@ -19,6 +20,20 @@ AC_PROG_CC_C_O
 AC_PROG_INSTALL
 LT_INIT([disable-static])
 AC_CANONICAL_HOST
+
+dnl Probe for the functionality of the PAM libraries and their include file
+dnl naming.  Mac OS X puts them in pam/* instead of security/*.
+AC_SEARCH_LIBS([pam_set_data], [pam])
+AC_CHECK_FUNCS([pam_getenv pam_getenvlist])
+AC_REPLACE_FUNCS([pam_syslog pam_vsyslog])
+AC_CHECK_HEADERS([security/pam_modutil.h], ,
+    [AC_CHECK_HEADERS([pam/pam_modutil.h])])
+AC_CHECK_HEADERS([security/pam_appl.h], ,
+    [AC_CHECK_HEADERS([pam/pam_appl.h], ,
+        [AC_MSG_ERROR([No PAM header files found])])])
+AC_CHECK_HEADERS([security/pam_ext.h], ,
+    [AC_CHECK_HEADERS([pam/pam_ext.h])])
+RRA_HEADER_PAM_CONST
 
 dnl Determine the path to aklog.  If we can't figure it out, the user will
 dnl have to set program in the PAM options.
@@ -52,16 +67,10 @@ RRA_LIB_KRB5_RESTORE
 RRA_LIB_KAFS
 AM_CONDITIONAL([NEED_KAFS], [test x"$rra_build_kafs" = xtrue])
 
-dnl Other portability checks.  Mac OS X calls its PAM headers something
-dnl different than everyone else.
-LIBS="-lpam $LIBS"
+dnl Other portability checks.
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([sys/bittypes.h])
-AC_CHECK_FUNCS([pam_getenv pam_getenvlist])
-AC_CHECK_HEADERS([security/pam_appl.h], ,
-    [AC_CHECK_HEADERS([pam/pam_appl.h], ,
-        [AC_MSG_ERROR([No PAM header files found])])])
-RRA_HEADER_PAM_CONST
+AC_REPLACE_FUNCS([issetuidgid])
 
 dnl Needed for correct handling of errno with threaded applications on
 dnl Solaris.
