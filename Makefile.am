@@ -30,17 +30,26 @@ endif
 
 AM_CPPFLAGS = $(KRB5_CPPFLAGS)
 
-noinst_LTLIBRARIES = kafs/libkafs.la
-EXTRA_kafs_libkafs_la_SOURCES = kafs/sys-linux.c kafs/sys-syscall.c
-kafs_libkafs_la_SOURCES = kafs/kafs.c kafs/kafs.h portable/macros.h	\
+noinst_LTLIBRARIES = pam-util/libpamutil.la
+pam_util_libpamutil_la_SOURCES = pam-util/args.c pam-util/args.h	\
+	pam-util/logging.c pam-util/logging.h pam-util/options.c	\
+	pam-util/options.h pam-util/vector.c pam-util/vector.h
+
+if NEED_KAFS
+    noinst_LTLIBRARIES += kafs/libkafs.la
+    EXTRA_kafs_libkafs_la_SOURCES = kafs/sys-linux.c kafs/sys-syscall.c
+    kafs_libkafs_la_SOURCES = kafs/kafs.c kafs/kafs.h portable/macros.h	\
 	portable/stdbool.h portable/system.h
-kafs_libkafs_la_CPPFLAGS = $(KAFS_CPPFLAGS)
+    kafs_libkafs_la_CPPFLAGS = $(KAFS_CPPFLAGS)
+    LIBKAFS = kafs/libkafs.la
+endif
 
 pamdir = $(libdir)/security
 pam_LTLIBRARIES = pam_afs_session.la
 pam_afs_session_la_SOURCES = logging.c options.c public.c tokens.c
 pam_afs_session_la_LDFLAGS = -module -shared -avoid-version $(KRB5_LDFLAGS)
-pam_afs_session_la_LIBADD = $(LTLIBOBJS) kafs/libkafs.la $(DEPEND_LIBS)
+pam_afs_session_la_LIBADD = $(LTLIBOBJS) $(LIBKAFS) pam-util/libpamutil.la \
+	$(DEPEND_LIBS)
 dist_man_MANS = pam_afs_session.5
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile		 \
