@@ -19,8 +19,11 @@
 /pam-afs-session-*
 /pam_afs_session.5
 /stamp-h1
+/tests/runtests
 .deps/
 .dirstamp
 .libs/
+*.a
 *.la
 *.lo
+*.o
