@@ -19,6 +19,7 @@
 /pam-afs-session-*
 /pam_afs_session.5
 /stamp-h1
+/tests/kafs/basic
 /tests/runtests
 .deps/
 .dirstamp

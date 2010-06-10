@@ -46,6 +46,7 @@ if NEED_KAFS
     kafs_libkafs_la_SOURCES = kafs/kafs.c kafs/kafs.h portable/macros.h	\
 	portable/stdbool.h portable/system.h
     kafs_libkafs_la_CPPFLAGS = $(KAFS_CPPFLAGS)
+    kafs_libkafs_la_LDFLAGS = $(KAFS_LDFLAGS)
     LIBKAFS = kafs/libkafs.la
 endif
 
@@ -75,12 +76,23 @@ warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)' $(check_PROGRAMS)
 
 # The bits below are for the test suite, not for the main package.
-check_PROGRAMS = tests/runtests
+check_PROGRAMS = tests/runtests tests/kafs/basic
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/tap/libtap.a
 tests_tap_libtap_a_CPPFLAGS = -I$(abs_top_srcdir)/tests
 tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h
+
+# kafs tests are buit differently depending on whether we use our local
+# libkafs replacement.
+if NEED_KAFS
+    tests_kafs_basic_CPPFLAGS = $(KAFS_CPPFLAGS)
+    tests_kafs_basic_LDFLAGS = $(KAFS_LDFLAGS)
+    tests_kafs_basic_LDADD = kafs/libkafs.la portable/libportable.la \
+	$(KAFS_LIBS)
+else
+    tests_kafs_basic_LDADD = portable/libportable.la $(KAFS_LIBS)
+endif
 
 check-local: $(check_PROGRAMS)
 	cd tests && ./runtests $(abs_top_srcdir)/tests/TESTS
