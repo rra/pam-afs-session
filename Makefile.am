@@ -7,11 +7,11 @@
 
 AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I m4
-EXTRA_DIST = LICENSE autogen compat-aix.c examples/debian/common-account \
-	examples/debian/common-auth examples/debian/common-session	 \
-	examples/redhat/system-auth examples/solaris/pam.conf		 \
-	pam_afs_session.map pam_afs_session.pod tests/TESTS		 \
-	tests/tap/libtap.sh
+EXTRA_DIST = .gitignore LICENSE autogen compat-aix.c			  \
+	examples/debian/common-account examples/debian/common-auth	  \
+	examples/debian/common-session examples/redhat/system-auth	  \
+	examples/solaris/pam.conf pam_afs_session.map pam_afs_session.pod \
+	tests/TESTS tests/tap/libtap.sh
 
 # The following library order matters for annoying reasons.  libafsauthent
 # contains its own com_err implementation, which we do not want to pick up.
