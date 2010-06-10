@@ -1,3 +1,8 @@
+=for stopwords
+AFS PAG auth Heimdal libkafs aklog KRB5CCNAME kaserver appdefaults API
+unlog kdestroy nopag notokens SIGSYS krb524 Kerberos username login sshd
+Kerberos-v5-derived
+
 =head1 NAME
 
 pam_afs_session - AFS PAG and token PAM module
@@ -45,7 +50,7 @@ new PAG (Process Authentication Group, often implemented as supplemental
 groups, which limits user tokens to only processes in that PAG).  It will
 then attempt to obtain tokens, either directly if built with the Heimdal
 libkafs library and Kerberos support or by running an external B<aklog>
-program.  If PAG creation fails, the module will fail; if obtainint tokens
+program.  If PAG creation fails, the module will fail; if obtaining tokens
 fails, the module will log a warning but still return success.
 
 The module will only attempt to obtain tokens if the environment variable
@@ -258,7 +263,7 @@ module as C<sufficient> or as the only C<required> module or you may allow
 users to log on without a password.
 
 To detect whether AFS is running on the system, the AFS session PAM module
-teporarily sets a SIGSYS handler before attempting an AFS system call.
+temporarily sets a SIGSYS handler before attempting an AFS system call.
 That handler may also modify a static variable.  Neither of these should
 ideally be done in a PAM module, but there is no other good way of
 checking for the non-existence of a system call that doesn't crash the
@@ -288,7 +293,8 @@ should add configuration like:
     }
 
 to the [appdefaults] section of their F<krb5.conf> files to disable use of
-the krb524 service.  See the Heimdal kafs man page for more information.
+the krb524 service.  See the Heimdal kafs(3) man page for more
+information.
 
 =head1 SEE ALSO
 
