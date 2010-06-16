@@ -22,7 +22,11 @@
 #ifdef HAVE_KERBEROS
 # include <portable/krb5.h>
 #endif
-#include <portable/pam.h>
+#ifdef TESTING
+# include <tests/fakepam/api.h>
+#else
+# include <portable/pam.h>
+#endif
 #include <portable/stdbool.h>
 
 /* Opaque struct from the PAM utility perspective. */

@@ -11,7 +11,7 @@ EXTRA_DIST = .gitignore LICENSE autogen compat-aix.c			  \
 	examples/debian/common-account examples/debian/common-auth	  \
 	examples/debian/common-session examples/redhat/system-auth	  \
 	examples/solaris/pam.conf pam_afs_session.map pam_afs_session.pod \
-	tests/TESTS tests/tap/libtap.sh
+	tests/TESTS tests/fakepam/README tests/tap/libtap.sh
 
 # The following library order matters for annoying reasons.  libafsauthent
 # contains its own com_err implementation, which we do not want to pick up.
@@ -39,6 +39,8 @@ portable_libportable_la_LIBADD = $(LTLIBOBJS)
 pam_util_libpamutil_la_SOURCES = pam-util/args.c pam-util/args.h	\
 	pam-util/logging.c pam-util/logging.h pam-util/options.c	\
 	pam-util/options.h pam-util/vector.c pam-util/vector.h
+pam_util_libpamutil_la_LDFLAGS = $(KRB5_LDFLAGS)
+pam_util_libpamutil_la_LIBADD = portable/libportable.la $(DEPEND_LIBS)
 
 if NEED_KAFS
     noinst_LTLIBRARIES += kafs/libkafs.la
@@ -55,8 +57,8 @@ pam_LTLIBRARIES = pam_afs_session.la
 pam_afs_session_la_SOURCES = logging.c options.c public.c tokens.c
 pam_afs_session_la_LDFLAGS = -module -shared -avoid-version $(KAFS_LDFLAGS) \
 	$(KRB5_LDFLAGS)
-pam_afs_session_la_LIBADD = $(LTLIBOBJS) $(LIBKAFS) pam-util/libpamutil.la \
-	$(DEPEND_LIBS)
+pam_afs_session_la_LIBADD = $(LIBKAFS) pam-util/libpamutil.la \
+	portable/libportable.la $(DEPEND_LIBS)
 dist_man_MANS = pam_afs_session.5
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile		 \
@@ -77,10 +79,12 @@ warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)' $(check_PROGRAMS)
 
 # The bits below are for the test suite, not for the main package.
-check_PROGRAMS = tests/runtests tests/kafs/basic tests/pam-util/vector-t
+check_PROGRAMS = tests/runtests tests/kafs/basic tests/pam-util/args-t \
+	tests/pam-util/vector-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
-check_LIBRARIES = tests/tap/libtap.a
+check_LIBRARIES = tests/fakepam/libfakepam.a tests/tap/libtap.a
+tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/api.c tests/fakepam/api.h
 tests_tap_libtap_a_CPPFLAGS = -I$(abs_top_srcdir)/tests
 tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h
 
@@ -96,6 +100,11 @@ else
 endif
 
 # All of the other test programs.
+tests_pam_util_args_t_SOURCES = tests/pam-util/args.c \
+	tests/pam-util/logging.c tests/pam-util/args-t.c
+tests_pam_util_args_t_LDFLAGS = $(KRB5_LDFLAGS)
+tests_pam_util_args_t_LDADD = tests/fakepam/libfakepam.a tests/tap/libtap.a \
+	portable/libportable.la $(KRB5_LIBS)
 tests_pam_util_vector_t_LDADD = tests/tap/libtap.a pam-util/libpamutil.la \
 	portable/libportable.la
 

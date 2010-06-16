@@ -16,8 +16,8 @@
 
 #include <sys/wait.h>
 
-#include <tests/tap/basic.h>
 #include <pam-util/vector.h>
+#include <tests/tap/basic.h>
 
 
 int
