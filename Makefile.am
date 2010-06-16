@@ -77,7 +77,7 @@ warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)' $(check_PROGRAMS)
 
 # The bits below are for the test suite, not for the main package.
-check_PROGRAMS = tests/runtests tests/kafs/basic
+check_PROGRAMS = tests/runtests tests/kafs/basic tests/pam-util/vector-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/tap/libtap.a
@@ -94,6 +94,10 @@ if NEED_KAFS
 else
     tests_kafs_basic_LDADD = portable/libportable.la $(KAFS_LIBS)
 endif
+
+# All of the other test programs.
+tests_pam_util_vector_t_LDADD = tests/tap/libtap.a pam-util/libpamutil.la \
+	portable/libportable.la
 
 check-local: $(check_PROGRAMS)
 	cd tests && ./runtests $(abs_top_srcdir)/tests/TESTS
