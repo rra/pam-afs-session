@@ -70,7 +70,10 @@ AM_CONDITIONAL([NEED_KAFS], [test x"$rra_build_kafs" = xtrue])
 dnl Other portability checks.
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([sys/bittypes.h])
-AC_REPLACE_FUNCS([issetuidgid])
+AC_CHECK_DECLS([snprintf, vsnprintf])
+AC_TYPE_LONG_LONG_INT
+RRA_FUNC_SNPRINTF
+AC_REPLACE_FUNCS([asprintf issetuidgid strlcat strlcpy])
 
 dnl Needed for correct handling of errno with threaded applications on
 dnl Solaris.

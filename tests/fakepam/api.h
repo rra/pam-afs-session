@@ -1,10 +1,11 @@
 /*
  * Interface for fake PAM library, used for testing.
  *
- * This is the public interface for the fake PAM library, used for testing.
- * It declares only enough functions and data structures to allow PAM module
- * code to be linked with this library instead of the system libpam library
- * for testing purposes.
+ * This is the public interface for the fake PAM library, used when testing
+ * module code.  It declares only enough functions and data structures to
+ * allow PAM module code to be linked with this library instead of the system
+ * libpam library for testing purposes.  The functions used by the test suite
+ * itself aren't defined here; for those, see <fakepam/testing.h>.
  *
  * Written by Russ Allbery <rra@stanford.edu>
  * Copyright 2010 Board of Trustees, Leland Stanford Jr. University
@@ -56,19 +57,11 @@ enum pam_item {
     PAM_RUSER      = 8
 };
 
-/* This is an opaque data structure, so we can put whatever we want in it. */
-typedef struct pam_handle {
-    const char *service;
-    const char *user;
-    const struct pam_conv *conversation;
-} pam_handle_t;
+/* pam_handle_t is opaque to clients. */
+struct pam_handle;
+typedef struct pam_handle pam_handle_t;
 
 BEGIN_DECLS
-
-/* Initialize the pam_handle_t used by all other PAM functions. */
-int pam_start(const char *service_name, const char *user,
-              const struct pam_conv *pam_conversation,
-              pam_handle_t **pamh);
 
 /* PAM logging and error reporting functions. */
 const char *pam_strerror(pam_handle_t *, int);

@@ -12,6 +12,7 @@
 #include <portable/system.h>
 
 #include <tests/fakepam/api.h>
+#include <tests/fakepam/testing.h>
 #include <tests/tap/basic.h>
 
 #define TESTING 1

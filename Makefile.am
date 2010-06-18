@@ -40,7 +40,7 @@ pam_util_libpamutil_la_SOURCES = pam-util/args.c pam-util/args.h	\
 	pam-util/logging.c pam-util/logging.h pam-util/options.c	\
 	pam-util/options.h pam-util/vector.c pam-util/vector.h
 pam_util_libpamutil_la_LDFLAGS = $(KRB5_LDFLAGS)
-pam_util_libpamutil_la_LIBADD = portable/libportable.la $(DEPEND_LIBS)
+pam_util_libpamutil_la_LIBADD = $(DEPEND_LIBS)
 
 if NEED_KAFS
     noinst_LTLIBRARIES += kafs/libkafs.la
@@ -80,11 +80,12 @@ warnings:
 
 # The bits below are for the test suite, not for the main package.
 check_PROGRAMS = tests/runtests tests/kafs/basic tests/pam-util/args-t \
-	tests/pam-util/vector-t
+	tests/pam-util/logging-t tests/pam-util/vector-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/fakepam/libfakepam.a tests/tap/libtap.a
-tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/api.c tests/fakepam/api.h
+tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/api.c tests/fakepam/api.h \
+	tests/fakepam/logging.c tests/fakepam/testing.h
 tests_tap_libtap_a_CPPFLAGS = -I$(abs_top_srcdir)/tests
 tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h
 
@@ -105,6 +106,11 @@ tests_pam_util_args_t_SOURCES = tests/pam-util/args.c \
 tests_pam_util_args_t_LDFLAGS = $(KRB5_LDFLAGS)
 tests_pam_util_args_t_LDADD = tests/fakepam/libfakepam.a tests/tap/libtap.a \
 	portable/libportable.la $(KRB5_LIBS)
+tests_pam_util_logging_t_SOURCES = tests/pam-util/args.c \
+	tests/pam-util/logging.c tests/pam-util/logging-t.c
+tests_pam_util_logging_t_LDFLAGS = $(KRB5_LDFLAGS)
+tests_pam_util_logging_t_LDADD = tests/fakepam/libfakepam.a \
+	tests/tap/libtap.a portable/libportable.la $(KRB5_LIBS)
 tests_pam_util_vector_t_LDADD = tests/tap/libtap.a pam-util/libpamutil.la \
 	portable/libportable.la
 

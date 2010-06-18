@@ -1,7 +1,7 @@
 /*
  * Interface for fake PAM library, used for testing.
  *
- * This is the public interface for the fake PAM library, used for testing.
+ * This contains most interfaces for the fake PAM library, used for testing.
  * It declares only the functions required to allow PAM module code to be
  * linked with this library instead of the system libpam library for testing
  * purposes.
@@ -16,6 +16,7 @@
 #include <portable/system.h>
 
 #include <tests/fakepam/api.h>
+#include <tests/fakepam/testing.h>
 
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED __attribute__((__unused__))
@@ -47,21 +48,6 @@ pam_start(const char *service_name, const char *user,
 /*
  * The following functions are just stubs for right now and always fail.
  */
-const char *
-pam_strerror(pam_handle_t *pamh UNUSED, int code UNUSED)
-{
-    return NULL;
-}
-void
-pam_syslog(const pam_handle_t *pamh UNUSED, int code UNUSED,
-           const char *format UNUSED, ...)
-{
-}
-void
-pam_vsyslog(const pam_handle_t *pamh UNUSED, int code UNUSED,
-            const char *format UNUSED, va_list args UNUSED)
-{
-}
 int
 pam_get_item(const pam_handle_t *pamh UNUSED, int item UNUSED,
              const void **data UNUSED)
