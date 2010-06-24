@@ -311,12 +311,12 @@ convert_number(struct pam_args *args, const char *arg, long *setting)
     long result;
 
     value = strchr(arg, '=');
-    if (value == NULL) {
+    if (value == NULL || value[1] == '\0') {
         putil_err(args, "value missing for option %s", arg);
         return;
     }
     errno = 0;
-    result = strtol(arg, &end, 10);
+    result = strtol(value + 1, &end, 10);
     if (errno != 0 || *end != '\0') {
         putil_err(args, "invalid number in setting: %s", arg);
         return;
@@ -343,7 +343,7 @@ convert_string(struct pam_args *args, const char *arg, char **setting)
         putil_err(args, "value missing for option %s", arg);
         return true;
     }
-    result = strdup(value);
+    result = strdup(value + 1);
     if (result == NULL) {
         putil_crit(args, "cannot allocate memory: %s", strerror(errno));
         return false;
@@ -371,7 +371,7 @@ convert_list(struct pam_args *args, const char *arg, struct vector **setting)
         putil_err(args, "value missing for option %s", arg);
         return true;
     }
-    result = vector_split_multi(value, " \t,", NULL);
+    result = vector_split_multi(value + 1, " \t,", NULL);
     if (result == NULL) {
         putil_crit(args, "cannot allocate vector: %s", strerror(errno));
         return false;

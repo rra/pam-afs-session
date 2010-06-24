@@ -82,11 +82,10 @@ struct option {
 /*
  * The user of this file should also define a macro of the following form:
  *
- *     #define K(name) (#name), offsetof(struct config, name)
+ *     #define K(name) (#name), offsetof(struct pam_config, name)
  *
- * replacing struct config with the name of the configuration struct.  Then,
- * the definition of the necessary table for building the configuration will
- * look something like this:
+ * Then, the definition of the necessary table for building the configuration
+ * will look something like this:
  *
  *     const struct option options[] = {
  *         { K(aklog_homedir), true,  BOOL   (false) },
@@ -108,9 +107,10 @@ BEGIN_DECLS
 
 /*
  * Fill out options from krb5.conf.  Takes the PAM args structure, the name of
- * the section for the software being configured, and an option table defined
- * as above.  The config member of the args struct must already be allocated.
- * Only those options whose krb5_config attribute is true will be considered.
+ * the section for the software being configured, an option table defined as
+ * above, and the number of entries in the table.  The config member of the
+ * args struct must already be allocated.  Only those options whose
+ * krb5_config attribute is true will be considered.
  *
  * This code automatically checks for configuration settings scoped to the
  * local realm, so the default realm should be set before calling this
@@ -129,13 +129,13 @@ bool putil_args_krb5(struct pam_args *, const char *section,
 
 /*
  * Parse the PAM arguments and fill out the provided struct.  Takes the PAM
- * arguments, the argument count and vector, and an option table defined as
- * above.  The config member of the args struct must already be allocated.
- * Returns true on success and false on error.  An error return should be
- * considered fatal.  Errors will already be reported using putil_crit().
- * Unknown options will also be diagnosed (to syslog at LOG_ERR using
- * putil_err()), but are not considered fatal errors and will still return
- * true.
+ * arguments, the argument count and vector, an option table defined as above,
+ * and the number of entries in the table.  The config member of the args
+ * struct must already be allocated.  Returns true on success and false on
+ * error.  An error return should be considered fatal.  Errors will already be
+ * reported using putil_crit().  Unknown options will also be diagnosed (to
+ * syslog at LOG_ERR using putil_err()), but are not considered fatal errors
+ * and will still return true.
  *
  * The krb5_config option of the option configuration is ignored by this
  * function.  If options should be retrieved from krb5.conf, call

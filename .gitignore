@@ -22,6 +22,7 @@
 /tests/kafs/basic
 /tests/pam-util/args-t
 /tests/pam-util/logging-t
+/tests/pam-util/options-t
 /tests/pam-util/vector-t
 /tests/runtests
 .deps/

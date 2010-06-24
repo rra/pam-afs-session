@@ -79,8 +79,9 @@ warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)' $(check_PROGRAMS)
 
 # The bits below are for the test suite, not for the main package.
-check_PROGRAMS = tests/runtests tests/kafs/basic tests/pam-util/args-t \
-	tests/pam-util/logging-t tests/pam-util/vector-t
+check_PROGRAMS = tests/runtests tests/kafs/basic tests/pam-util/args-t	\
+	tests/pam-util/logging-t tests/pam-util/options-t		\
+	tests/pam-util/vector-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/fakepam/libfakepam.a tests/tap/libtap.a
@@ -111,6 +112,12 @@ tests_pam_util_logging_t_SOURCES = tests/pam-util/args.c \
 tests_pam_util_logging_t_LDFLAGS = $(KRB5_LDFLAGS)
 tests_pam_util_logging_t_LDADD = tests/fakepam/libfakepam.a \
 	tests/tap/libtap.a portable/libportable.la $(KRB5_LIBS)
+tests_pam_util_options_t_SOURCES = tests/pam-util/args.c \
+	tests/pam-util/logging.c tests/pam-util/options-t.c
+tests_pam_util_options_t_LDFLAGS = $(KRB5_LDFLAGS)
+tests_pam_util_options_t_LDADD = tests/fakepam/libfakepam.a		  \
+	pam-util/libpamutil.la tests/tap/libtap.a portable/libportable.la \
+	$(KRB5_LIBS)
 tests_pam_util_vector_t_LDADD = tests/tap/libtap.a pam-util/libpamutil.la \
 	portable/libportable.la
 
