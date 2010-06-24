@@ -10,6 +10,8 @@
 #include <config.h>
 #include <portable/system.h>
 
+#include <syslog.h>
+
 #include <tests/fakepam/api.h>
 #include <tests/fakepam/testing.h>
 #include <tests/tap/basic.h>
@@ -39,6 +41,24 @@ struct option options[] = {
     { K(program),     false, STRING (NULL)  },
 };
 const size_t optlen = sizeof(options) / sizeof(options[0]);
+
+/*
+ * A macro used to test error reporting from putil_args_parse().  This reuses
+ * the argv_err variable, setting it to the first value provided and then
+ * calling putil_args_parse() on it.  It then recovers the error message and
+ * expects it to match the severity and error message given.
+ */
+#define TEST_ERROR(a, p, e)                                             \
+    do {                                                                \
+        argv_err[0] = (a);                                              \
+        status = putil_args_parse(args, 1, argv_err, options, optlen);  \
+        ok(status, "Parse of %s", (a));                                 \
+        asprintf(&expected, "%d %s", (p), (e));                         \
+        seen = pam_output();                                            \
+        is_string(expected, seen, "...error for %s", (a));              \
+        free(seen);                                                     \
+        free(expected);                                                 \
+    } while (0);
 
 
 /*
@@ -79,7 +99,8 @@ main(void)
     struct pam_args *args;
     bool status;
     struct vector *cells;
-    char *program;
+    char *program, *seen, *expected;
+    const char *argv_err[2] = { NULL, NULL };
     const char *argv_empty[] = { NULL };
     const char *argv_all[] = {
         "cells=stanford.edu,ir.stanford.edu", "debug", "ignore_root",
@@ -92,7 +113,7 @@ main(void)
     if (args == NULL)
         sysbail("cannot create PAM argument struct");
 
-    plan(30);
+    plan(40);
 
     /* First, check just the defaults. */
     args->config = config_new();
@@ -160,6 +181,16 @@ main(void)
     options[4].defaults.string = NULL;
     vector_free(cells);
     free(program);
+
+    /* Test for various parsing errors. */
+    TEST_ERROR("minimum_uid", LOG_ERR,
+               "value missing for option minimum_uid");
+    TEST_ERROR("minimum_uid=", LOG_ERR,
+               "value missing for option minimum_uid=");
+    TEST_ERROR("minimum_uid=foo", LOG_ERR,
+               "invalid number in setting: minimum_uid=foo");
+    TEST_ERROR("program", LOG_ERR, "value missing for option program");
+    TEST_ERROR("cells", LOG_ERR, "value missing for option cells");
 
     return 0;
 }
