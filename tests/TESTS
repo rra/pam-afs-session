@@ -3,4 +3,5 @@ docs/pod-spelling
 kafs/basic
 pam-util/args
 pam-util/logging
+pam-util/options
 pam-util/vector
