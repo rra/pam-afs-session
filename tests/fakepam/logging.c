@@ -101,6 +101,8 @@ pam_vsyslog(const pam_handle_t *pamh UNUSED, int priority, const char *format,
         strlcat(messages, prefix, size);
         strlcat(messages, message, size);
     }
+    free(prefix);
+    free(message);
 }
 
 
