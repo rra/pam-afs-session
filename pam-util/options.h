@@ -106,6 +106,20 @@ BEGIN_DECLS
 #pragma GCC visibility push(hidden)
 
 /*
+ * Set the defaults for the PAM configuration.  Takes the PAM arguments, an
+ * option table defined as above, and the number of entries in the table.  The
+ * config member of the args struct must already be allocated.  Returns true
+ * on success and false on error (generally out of memory).  Errors will
+ * already be reported using putil_crit().
+ *
+ * This function must be called before either putil_args_krb5() or
+ * putil_args_parse(), since neither of those functions set defaults.
+ */
+bool putil_args_defaults(struct pam_args *, const struct option options[],
+                         size_t optlen)
+    __attribute__((__nonnull__));
+
+/*
  * Fill out options from krb5.conf.  Takes the PAM args structure, the name of
  * the section for the software being configured, an option table defined as
  * above, and the number of entries in the table.  The config member of the
@@ -120,6 +134,8 @@ BEGIN_DECLS
  * Returns true on success and false on an error.  An error return should be
  * considered fatal.  Errors will already be reported using putil_crit*() or
  * putil_err*() as appropriate.
+ *
+ * putil_args_defaults() should be called before this function.
  */
 #ifdef HAVE_KERBEROS
 bool putil_args_krb5(struct pam_args *, const char *section,
@@ -140,6 +156,8 @@ bool putil_args_krb5(struct pam_args *, const char *section,
  * The krb5_config option of the option configuration is ignored by this
  * function.  If options should be retrieved from krb5.conf, call
  * putil_args_krb5() first, before calling this function.
+ *
+ * putil_args_defaults() should be called before this function.
  */
 bool putil_args_parse(struct pam_args *, int argc, const char *argv[],
                       const struct option options[], size_t optlen)

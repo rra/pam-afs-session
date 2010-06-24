@@ -75,6 +75,61 @@ copy_default_list(struct pam_args *args, struct vector **setting,
 }
 
 
+/*
+ * Set the defaults for the PAM configuration.  Takes the PAM arguments, an
+ * option table defined as above, and the number of entries in the table.  The
+ * config member of the args struct must already be allocated.  Returns true
+ * on success and false on error (generally out of memory).  Errors will
+ * already be reported using putil_crit().
+ *
+ * This function must be called before either putil_args_krb5() or
+ * putil_args_parse(), since neither of those functions set defaults.
+ */
+bool
+putil_args_defaults(struct pam_args *args, const struct option options[],
+                    size_t optlen)
+{
+    size_t opt;
+
+    for (opt = 0; opt < optlen; opt++) {
+        bool *bp;
+        long *lp;
+        char **sp;
+        struct vector **vp;
+
+        switch (options[opt].type) {
+        case TYPE_BOOLEAN:
+            bp = CONF_BOOL(args->config, options[opt].location);
+            *bp = options[opt].defaults.boolean;
+            break;
+        case TYPE_NUMBER:
+            lp = CONF_NUMBER(args->config, options[opt].location);
+            *lp = options[opt].defaults.number;
+            break;
+        case TYPE_STRING:
+            sp = CONF_STRING(args->config, options[opt].location);
+            if (options[opt].defaults.string == NULL)
+                *sp = NULL;
+            else {
+                *sp = strdup(options[opt].defaults.string);
+                if (*sp == NULL) {
+                    putil_crit(args, "cannot allocate memory: %s",
+                               strerror(errno));
+                    return false;
+                }
+            }
+            break;
+        case TYPE_LIST:
+            vp = CONF_LIST(args->config, options[opt].location);
+            if (!copy_default_list(args, vp, options[opt].defaults.list))
+                return false;
+            break;
+        }
+    }
+    return true;
+}
+
+
 #ifdef HAVE_KERBEROS
 /*
  * Load a boolean option from Kerberos appdefaults.  Takes the PAM argument
@@ -85,14 +140,14 @@ copy_default_list(struct pam_args *args, struct vector **setting,
  */
 static void
 default_boolean(struct pam_args *args, const char *section, const char *realm,
-                const char *opt, bool defval, bool *result)
+                const char *opt, bool *result)
 {
     int tmp;
 #ifdef HAVE_KRB5_REALM
-    krb5_const_realm realm_data = realm;
+    krb5_const_realm rdata = realm;
 #else
     krb5_data realm_struct;
-    const krb5_data *realm_data = &realm_struct;
+    const krb5_data *rdata = &realm_struct;
 
     realm_struct.magic = KV5M_DATA;
     realm_struct.data = (void *) realm;
@@ -104,7 +159,7 @@ default_boolean(struct pam_args *args, const char *section, const char *realm,
      * Heimdal version takes a krb5_boolean *, so hope that Heimdal always
      * defines krb5_boolean to int or this will require more portability work.
      */
-    krb5_appdefault_boolean(args->ctx, section, realm_data, opt, defval, &tmp);
+    krb5_appdefault_boolean(args->ctx, section, rdata, opt, *result, &tmp);
     *result = tmp;
 }
 
@@ -117,31 +172,29 @@ default_boolean(struct pam_args *args, const char *section, const char *realm,
  */
 static void
 default_number(struct pam_args *args, const char *section, const char *realm,
-               const char *opt, int defval, long *result)
+               const char *opt, long *result)
 {
     char *tmp, *end;
+    long value;
 #ifdef HAVE_KRB5_REALM
-    krb5_const_realm realm_data = realm;
+    krb5_const_realm rdata = realm;
 #else
     krb5_data realm_struct;
-    const krb5_data *realm_data = &realm_struct;
+    const krb5_data *rdata = &realm_struct;
 
     realm_struct.magic = KV5M_DATA;
     realm_struct.data = (void *) realm;
     realm_struct.length = strlen(realm);
 #endif
 
-    krb5_appdefault_string(args->ctx, section, realm_data, opt, "", &tmp);
-    if (tmp == NULL || tmp[0] == '\0')
-        *result = defval;
-    else {
+    krb5_appdefault_string(args->ctx, section, rdata, opt, "", &tmp);
+    if (tmp != NULL && tmp[0] != '\0') {
         errno = 0;
-        *result = strtol(tmp, &end, 10);
-        if (errno != 0 || *end != '\0') {
+        value = strtol(tmp, &end, 10);
+        if (errno != 0 || *end != '\0')
             putil_err(args, "invalid number in krb5.conf setting for %s: %s",
                       opt, tmp);
-            *result = defval;
-        }
+        *result = value;
     }
     if (tmp != NULL)
         free(tmp);
@@ -150,8 +203,7 @@ default_number(struct pam_args *args, const char *section, const char *realm,
 
 /*
  * Load a string option from Kerberos appdefaults.  Takes the PAM argument
- * struct, the section name, the realm, the option, the default value, and the
- * result location.
+ * struct, the section name, the realm, the option, and the result location.
  *
  * This requires an annoying workaround because one cannot specify a default
  * value of NULL with MIT Kerberos, since MIT Kerberos unconditionally calls
@@ -161,54 +213,52 @@ default_number(struct pam_args *args, const char *section, const char *realm,
  */
 static void
 default_string(struct pam_args *args, const char *section, const char *realm,
-               const char *opt, const char *defval, char **result)
+               const char *opt, char **result)
 {
+    char *value;
 #ifdef HAVE_KRB5_REALM
-    krb5_const_realm realm_data = realm;
+    krb5_const_realm rdata = realm;
 #else
     krb5_data realm_struct;
-    const krb5_data *realm_data = &realm_struct;
+    const krb5_data *rdata = &realm_struct;
 
     realm_struct.magic = KV5M_DATA;
     realm_struct.data = (void *) realm;
     realm_struct.length = strlen(realm);
 #endif
 
-    if (defval == NULL)
-        defval = "";
-    krb5_appdefault_string(args->ctx, section, realm_data, opt, defval,
-                           result);
-    if (*result != NULL && (*result)[0] == '\0') {
-        free(*result);
-        *result = NULL;
+    krb5_appdefault_string(args->ctx, section, rdata, opt, "", &value);
+    if (value != NULL) {
+        if (value[0] == '\0')
+            free(value);
+        else
+            *result = value;
     }
 }
 
 
 /*
  * Load a list option from Kerberos appdefaults.  Takes the PAM arguments, the
- * context, the section name, the realm, the option, the default value, and
- * the result location.
+ * context, the section name, the realm, the option, and the result location.
  *
  * We may fail here due to memory allocation problems, in which case we return
  * false to indicate that PAM setup should abort.
  */
 static bool
 default_list(struct pam_args *args, const char *section, const char *realm,
-             const char *opt, const struct vector *defval,
-             struct vector **result)
+             const char *opt, struct vector **result)
 {
-    char *tmp;
+    char *tmp = NULL;
+    struct vector *value;
 
-    default_string(args, section, realm, opt, NULL, &tmp);
-    if (tmp == NULL)
-        return copy_default_list(args, result, defval);
-    else {
-        *result = vector_split_multi(tmp, " \t,", NULL);
-        if (*result == NULL) {
+    default_string(args, section, realm, opt, &tmp);
+    if (tmp != NULL) {
+        value = vector_split_multi(tmp, " \t,", NULL);
+        if (value == NULL) {
             putil_crit(args, "cannot allocate vector: %s", strerror(errno));
             return false;
         }
+        *result = value;
     }
     return true;
 }
@@ -242,22 +292,18 @@ putil_args_krb5(struct pam_args *args, const char *section,
         switch (opt->type) {
         case TYPE_BOOLEAN:
             default_boolean(args, section, realm, opt->name,
-                            opt->defaults.boolean,
                             CONF_BOOL(args->config, opt->location));
             break;
         case TYPE_NUMBER:
             default_number(args, section, realm, opt->name,
-                           opt->defaults.number,
                            CONF_NUMBER(args->config, opt->location));
             break;
         case TYPE_STRING:
             default_string(args, section, realm, opt->name,
-                           opt->defaults.string,
                            CONF_STRING(args->config, opt->location));
             break;
         case TYPE_LIST:
             if (!default_list(args, section, realm, opt->name,
-                              opt->defaults.list,
                               CONF_LIST(args->config, opt->location)))
                 return false;
             break;
@@ -401,45 +447,7 @@ putil_args_parse(struct pam_args *args, int argc, const char *argv[],
                  const struct option options[], size_t optlen)
 {
     int i;
-    size_t opt;
     const struct option *option;
-
-    /* First pass: set all the defaults. */
-    for (opt = 0; opt < optlen; opt++) {
-        bool *bp;
-        long *lp;
-        char **sp;
-        struct vector **vp;
-
-        switch (options[opt].type) {
-        case TYPE_BOOLEAN:
-            bp = CONF_BOOL(args->config, options[opt].location);
-            *bp = options[opt].defaults.boolean;
-            break;
-        case TYPE_NUMBER:
-            lp = CONF_NUMBER(args->config, options[opt].location);
-            *lp = options[opt].defaults.number;
-            break;
-        case TYPE_STRING:
-            sp = CONF_STRING(args->config, options[opt].location);
-            if (options[opt].defaults.string == NULL)
-                *sp = NULL;
-            else {
-                *sp = strdup(options[opt].defaults.string);
-                if (*sp == NULL) {
-                    putil_crit(args, "cannot allocate memory: %s",
-                               strerror(errno));
-                    return false;
-                }
-            }
-            break;
-        case TYPE_LIST:
-            vp = CONF_LIST(args->config, options[opt].location);
-            if (!copy_default_list(args, vp, options[opt].defaults.list))
-                return false;
-            break;
-        }
-    }
 
     /*
      * Second pass: find each option we were given and set the corresponding

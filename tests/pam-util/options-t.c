@@ -92,22 +92,28 @@ main(void)
     if (args == NULL)
         sysbail("cannot create PAM argument struct");
 
-    plan(24);
+    plan(30);
 
     /* First, check just the defaults. */
     args->config = config_new();
-    status = putil_args_parse(args, 0, argv_empty, options, optlen);
-    ok(status, "Parse of empty argv");
+    status = putil_args_defaults(args, options, optlen);
+    ok(status, "Setting the defaults");
     ok(args->config->cells == NULL, "...cells default");
     is_int(false, args->config->debug, "...debug default");
     is_int(true, args->config->ignore_root, "...ignore_root default");
     is_int(0, args->config->minimum_uid, "...minimum_uid default");
     ok(args->config->program == NULL, "...program default");
-    config_free(args->config);
-    args->config = NULL;
+
+    /* Now parse an empty set of PAM arguments.  Nothing should change. */
+    status = putil_args_parse(args, 0, argv_empty, options, optlen);
+    ok(status, "Parse of empty argv");
+    ok(args->config->cells == NULL, "...cells still default");
+    is_int(false, args->config->debug, "...debug still default");
+    is_int(true, args->config->ignore_root, "...ignore_root still default");
+    is_int(0, args->config->minimum_uid, "...minimum_uid still default");
+    ok(args->config->program == NULL, "...program still default");
 
     /* Now, check setting everything. */
-    args->config = config_new();
     status = putil_args_parse(args, 5, argv_all, options, optlen);
     ok(status, "Parse of full argv");
     ok(args->config->cells != NULL, "...cells is set");
@@ -135,8 +141,8 @@ main(void)
         sysbail("cannot allocate memory");
     options[4].defaults.string = program;
     args->config = config_new();
-    status = putil_args_parse(args, 0, argv_empty, options, optlen);
-    ok(status, "Parse of empty argv with new defaults");
+    status = putil_args_defaults(args, options, optlen);
+    ok(status, "Setting defaults with new defaults");
     ok(args->config->cells != NULL, "...cells is set");
     is_int(2, args->config->cells->count, "...with two cells");
     is_string("foo.com", args->config->cells->strings[0],
