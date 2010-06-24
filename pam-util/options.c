@@ -346,6 +346,38 @@ option_compare(const void *key, const void *member)
 
 
 /*
+ * Given a PAM argument, convert the value portion of the argument to a
+ * boolean and store it in the provided location.  If the value is missing,
+ * that's equivalent to a true value.  If the value is invalid, report an
+ * error and leave the location unchanged.
+ */
+static void
+convert_boolean(struct pam_args *args, const char *arg, bool *setting)
+{
+    const char *value;
+
+    value = strchr(arg, '=');
+    if (value == NULL)
+        *setting = true;
+    else {
+        value++;
+        if      (   strcasecmp(value, "true") == 0
+                 || strcasecmp(value, "yes")  == 0
+                 || strcasecmp(value, "on")   == 0
+                 || strcmp    (value, "1")    == 0)
+            *setting = true;
+        else if (   strcasecmp(value, "false") == 0
+                 || strcasecmp(value, "no")    == 0
+                 || strcasecmp(value, "off")   == 0
+                 || strcmp    (value, "0")     == 0)
+            *setting = false;
+        else
+            putil_err(args, "invalid boolean in setting: %s", arg);
+    }
+}
+
+
+/*
  * Given a PAM argument, convert the value portion of the argument to a number
  * and store it in the provided location.  If the value is missing or isn't a
  * number, report an error and leave the location unchanged.
@@ -462,7 +494,8 @@ putil_args_parse(struct pam_args *args, int argc, const char *argv[],
         }
         switch (option->type) {
         case TYPE_BOOLEAN:
-            *(CONF_BOOL(args->config, option->location)) = true;
+            convert_boolean(args, argv[i],
+                            CONF_BOOL(args->config, option->location));
             break;
         case TYPE_NUMBER:
             convert_number(args, argv[i],

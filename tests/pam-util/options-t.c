@@ -43,6 +43,21 @@ struct option options[] = {
 const size_t optlen = sizeof(options) / sizeof(options[0]);
 
 /*
+ * A macro used to parse the various ways of spelling booleans.  This reuses
+ * the argv_bool variable, setting it to the first value provided and then
+ * calling putil_args_parse() on it.  It then checks whether the provided
+ * config option is set to the expected value.
+ */
+#define TEST_BOOL(a, c, v)                                              \
+    do {                                                                \
+        argv_bool[0] = (a);                                             \
+        status = putil_args_parse(args, 1, argv_bool, options, optlen); \
+        ok(status, "Parse of %s", (a));                                 \
+        is_int((v), (c), "...and value is correct");                    \
+        ok(pam_output() == NULL, "...and no output");                   \
+    } while (0);
+
+/*
  * A macro used to test error reporting from putil_args_parse().  This reuses
  * the argv_err variable, setting it to the first value provided and then
  * calling putil_args_parse() on it.  It then recovers the error message and
@@ -100,6 +115,7 @@ main(void)
     bool status;
     struct vector *cells;
     char *program, *seen, *expected;
+    const char *argv_bool[2] = { NULL, NULL };
     const char *argv_err[2] = { NULL, NULL };
     const char *argv_empty[] = { NULL };
     const char *argv_all[] = {
@@ -113,7 +129,7 @@ main(void)
     if (args == NULL)
         sysbail("cannot create PAM argument struct");
 
-    plan(40);
+    plan(92);
 
     /* First, check just the defaults. */
     args->config = config_new();
@@ -182,15 +198,48 @@ main(void)
     vector_free(cells);
     free(program);
 
+    /* Should be no errors so far. */
+    ok(pam_output() == NULL, "No errors so far");
+
+    /* Test various ways of spelling booleans. */
+    args->config = config_new();
+    TEST_BOOL("debug", args->config->debug, true);
+    TEST_BOOL("debug=false", args->config->debug, false);
+    TEST_BOOL("debug=true", args->config->debug, true);
+    TEST_BOOL("debug=no", args->config->debug, false);
+    TEST_BOOL("debug=yes", args->config->debug, true);
+    TEST_BOOL("debug=off", args->config->debug, false);
+    TEST_BOOL("debug=on", args->config->debug, true);
+    TEST_BOOL("debug=0", args->config->debug, false);
+    TEST_BOOL("debug=1", args->config->debug, true);
+    TEST_BOOL("debug=False", args->config->debug, false);
+    TEST_BOOL("debug=trUe", args->config->debug, true);
+    TEST_BOOL("debug=No", args->config->debug, false);
+    TEST_BOOL("debug=Yes", args->config->debug, true);
+    TEST_BOOL("debug=OFF", args->config->debug, false);
+    TEST_BOOL("debug=ON", args->config->debug, true);
+    config_free(args->config);
+    args->config = NULL;
+
     /* Test for various parsing errors. */
+    args->config = config_new();
+    TEST_ERROR("debug=", LOG_ERR,
+               "invalid boolean in setting: debug=");
+    TEST_ERROR("debug=truth", LOG_ERR,
+               "invalid boolean in setting: debug=truth");
     TEST_ERROR("minimum_uid", LOG_ERR,
                "value missing for option minimum_uid");
     TEST_ERROR("minimum_uid=", LOG_ERR,
                "value missing for option minimum_uid=");
     TEST_ERROR("minimum_uid=foo", LOG_ERR,
                "invalid number in setting: minimum_uid=foo");
+    TEST_ERROR("minimum_uid=1000foo", LOG_ERR,
+               "invalid number in setting: minimum_uid=1000foo");
     TEST_ERROR("program", LOG_ERR, "value missing for option program");
     TEST_ERROR("cells", LOG_ERR, "value missing for option cells");
+    config_free(args->config);
+    args->config = NULL;
 
+    putil_args_free(args);
     return 0;
 }
