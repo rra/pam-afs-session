@@ -78,6 +78,8 @@ main(void)
     pam_handle_t *pamh;
     struct pam_args *args;
     bool status;
+    struct vector *cells;
+    char *program;
     const char *argv_empty[] = { NULL };
     const char *argv_all[] = {
         "cells=stanford.edu,ir.stanford.edu", "debug", "ignore_root",
@@ -90,7 +92,7 @@ main(void)
     if (args == NULL)
         sysbail("cannot create PAM argument struct");
 
-    plan(15);
+    plan(24);
 
     /* First, check just the defaults. */
     args->config = config_new();
@@ -120,6 +122,38 @@ main(void)
     is_string("/bin/true", args->config->program, "...program is set");
     config_free(args->config);
     args->config = NULL;
+
+    /* Test deep copying of defaults. */
+    cells = vector_new();
+    if (cells == NULL)
+        sysbail("cannot allocate memory");
+    vector_add(cells, "foo.com");
+    vector_add(cells, "bar.com");
+    options[0].defaults.list = cells;
+    program = strdup("/bin/false");
+    if (program == NULL)
+        sysbail("cannot allocate memory");
+    options[4].defaults.string = program;
+    args->config = config_new();
+    status = putil_args_parse(args, 0, argv_empty, options, optlen);
+    ok(status, "Parse of empty argv with new defaults");
+    ok(args->config->cells != NULL, "...cells is set");
+    is_int(2, args->config->cells->count, "...with two cells");
+    is_string("foo.com", args->config->cells->strings[0],
+              "...first is foo.com");
+    is_string("bar.com", args->config->cells->strings[1],
+              "...second is bar.com");
+    is_string("/bin/false", args->config->program,
+              "...program is /bin/false");
+    config_free(args->config);
+    args->config = NULL;
+    is_string("foo.com", cells->strings[0], "...first member after free");
+    is_string("bar.com", cells->strings[1], "...second member after free");
+    is_string("/bin/false", program, "...string after free");
+    options[0].defaults.list = NULL;
+    options[4].defaults.string = NULL;
+    vector_free(cells);
+    free(program);
 
     return 0;
 }

@@ -65,7 +65,7 @@ struct option {
         bool boolean;
         long number;
         const char *string;
-        struct vector *list;
+        const struct vector *list;
     } defaults;
 };
 

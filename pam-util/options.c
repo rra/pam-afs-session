@@ -36,6 +36,45 @@
 #define CONF_LIST(c, o)   (struct vector **)(void *)((char *) (c) + (o))
 
 
+/*
+ * Set a vector argument to its default.  This needs to do a deep copy of the
+ * vector so that we can safely free it when freeing the configuration.  Takes
+ * the PAM argument struct, the pointer in which to store the vector, and the
+ * default vector.  Returns true if the default was set correctly and false on
+ * memory allocation failure, which is also reported with putil_crit().
+ */
+static bool
+copy_default_list(struct pam_args *args, struct vector **setting,
+                  const struct vector *defval)
+{
+    struct vector *result;
+    size_t i;
+
+    *setting = NULL;
+    if (defval != NULL && defval->strings != NULL) {
+        result = vector_new();
+        if (result == NULL) {
+            putil_crit(args, "cannot allocate memory: %s", strerror(errno));
+            return false;
+        }
+        if (!vector_resize(result, defval->count)) {
+            putil_crit(args, "cannot allocate memory: %s", strerror(errno));
+            vector_free(result);
+            return false;
+        }
+        for (i = 0; i < defval->count; i++)
+            if (!vector_add(result, defval->strings[i])) {
+                putil_crit(args, "cannot allocate memory: %s",
+                           strerror(errno));
+                vector_free(result);
+                return false;
+            }
+        *setting = result;
+    }
+    return true;
+}
+
+
 #ifdef HAVE_KERBEROS
 /*
  * Load a boolean option from Kerberos appdefaults.  Takes the PAM argument
@@ -156,13 +195,14 @@ default_string(struct pam_args *args, const char *section, const char *realm,
  */
 static bool
 default_list(struct pam_args *args, const char *section, const char *realm,
-             const char *opt, struct vector *defval, struct vector **result)
+             const char *opt, const struct vector *defval,
+             struct vector **result)
 {
     char *tmp;
 
     default_string(args, section, realm, opt, NULL, &tmp);
     if (tmp == NULL)
-        *result = defval;
+        return copy_default_list(args, result, defval);
     else {
         *result = vector_split_multi(tmp, " \t,", NULL);
         if (*result == NULL) {
@@ -228,45 +268,6 @@ putil_args_krb5(struct pam_args *args, const char *section,
     return true;
 }
 #endif /* HAVE_KERBEROS */
-
-
-/*
- * Set a vector argument to its default.  This needs to do a deep copy of the
- * vector so that we can safely free it when freeing the configuration.  Takes
- * the PAM argument struct, the pointer in which to store the vector, and the
- * default vector.  Returns true if the default was set correctly and false on
- * memory allocation failure, which is also reported with putil_crit().
- */
-static bool
-copy_default_list(struct pam_args *args, struct vector **setting,
-                  const struct vector *defval)
-{
-    struct vector *result;
-    size_t i;
-
-    *setting = NULL;
-    if (defval != NULL && defval->strings != NULL) {
-        result = vector_new();
-        if (result == NULL) {
-            putil_crit(args, "cannot allocate memory: %s", strerror(errno));
-            return false;
-        }
-        if (!vector_resize(result, defval->count)) {
-            putil_crit(args, "cannot allocate memory: %s", strerror(errno));
-            vector_free(result);
-            return false;
-        }
-        for (i = 0; i < defval->count; i++)
-            if (!vector_add(result, defval->strings[i])) {
-                putil_crit(args, "cannot allocate memory: %s",
-                           strerror(errno));
-                vector_free(result);
-                return false;
-            }
-    }
-    *setting = result;
-    return true;
-}
 
 
 /*
