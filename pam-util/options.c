@@ -147,11 +147,16 @@ default_boolean(struct pam_args *args, const char *section, const char *realm,
     krb5_const_realm rdata = realm;
 #else
     krb5_data realm_struct;
-    const krb5_data *rdata = &realm_struct;
+    const krb5_data *rdata;
 
-    realm_struct.magic = KV5M_DATA;
-    realm_struct.data = (void *) realm;
-    realm_struct.length = strlen(realm);
+    if (realm == NULL)
+        rdata = NULL;
+    else {
+        rdata = &realm_struct;
+        realm_struct.magic = KV5M_DATA;
+        realm_struct.data = (void *) realm;
+        realm_struct.length = strlen(realm);
+    }
 #endif
 
     /*
@@ -180,11 +185,16 @@ default_number(struct pam_args *args, const char *section, const char *realm,
     krb5_const_realm rdata = realm;
 #else
     krb5_data realm_struct;
-    const krb5_data *rdata = &realm_struct;
+    const krb5_data *rdata;
 
-    realm_struct.magic = KV5M_DATA;
-    realm_struct.data = (void *) realm;
-    realm_struct.length = strlen(realm);
+    if (realm == NULL)
+        rdata = NULL;
+    else {
+        rdata = &realm_struct;
+        realm_struct.magic = KV5M_DATA;
+        realm_struct.data = (void *) realm;
+        realm_struct.length = strlen(realm);
+    }
 #endif
 
     krb5_appdefault_string(args->ctx, section, rdata, opt, "", &tmp);
@@ -220,11 +230,16 @@ default_string(struct pam_args *args, const char *section, const char *realm,
     krb5_const_realm rdata = realm;
 #else
     krb5_data realm_struct;
-    const krb5_data *rdata = &realm_struct;
+    const krb5_data *rdata;
 
-    realm_struct.magic = KV5M_DATA;
-    realm_struct.data = (void *) realm;
-    realm_struct.length = strlen(realm);
+    if (realm == NULL)
+        rdata = NULL;
+    else {
+        rdata = &realm_struct;
+        realm_struct.magic = KV5M_DATA;
+        realm_struct.data = (void *) realm;
+        realm_struct.length = strlen(realm);
+    }
 #endif
 
     krb5_appdefault_string(args->ctx, section, rdata, opt, "", &value);
@@ -282,13 +297,22 @@ putil_args_krb5(struct pam_args *args, const char *section,
 {
     size_t i;
     char *realm;
+    bool free_realm = false;
 
     /* Having no local realm may be intentional, so don't report an error. */
-    if (krb5_get_default_realm(args->ctx, &realm) < 0)
-        realm = NULL;
+    if (args->realm != NULL)
+        realm = args->realm;
+    else {
+        if (krb5_get_default_realm(args->ctx, &realm) < 0)
+            realm = NULL;
+        else
+            free_realm = true;
+    }
     for (i = 0; i < optlen; i++) {
         const struct option *opt = &options[i];
 
+        if (!opt->krb5_config)
+            continue;
         switch (opt->type) {
         case TYPE_BOOLEAN:
             default_boolean(args, section, realm, opt->name,
@@ -309,7 +333,7 @@ putil_args_krb5(struct pam_args *args, const char *section,
             break;
         }
     }
-    if (realm != NULL)
+    if (free_realm)
         krb5_free_default_realm(args->ctx, realm);
     return true;
 }

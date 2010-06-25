@@ -25,7 +25,7 @@ main(void)
     pam_handle_t *pamh;
     struct pam_args *args;
 
-    plan(7);
+    plan(8);
 
     if (pam_start(NULL, NULL, NULL, &pamh) != PAM_SUCCESS)
         sysbail("Fake PAM initialization failed");
@@ -37,8 +37,9 @@ main(void)
     is_int(args->debug, false, "...and debug is false");
 #ifdef HAVE_KERBEROS
     ok(args->ctx != NULL, "...and the Kerberos context is initialized");
+    ok(args->realm == NULL, "...and realm is NULL");
 #else
-    skip("Kerberos support not configured");
+    skip_block(2, "Kerberos support not configured");
 #endif
     putil_args_free(args);
     ok(1, "Freeing the args struct works");

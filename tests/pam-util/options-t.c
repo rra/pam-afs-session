@@ -34,11 +34,11 @@ struct pam_config {
 
 /* The rules specifying the configuration options. */
 struct option options[] = {
-    { K(cells),       false, LIST   (NULL)  },
-    { K(debug),       false, BOOL   (false) },
+    { K(cells),       true,  LIST   (NULL)  },
+    { K(debug),       true,  BOOL   (false) },
     { K(ignore_root), false, BOOL   (true)  },
-    { K(minimum_uid), false, NUMBER (0)     },
-    { K(program),     false, STRING (NULL)  },
+    { K(minimum_uid), true,  NUMBER (0)     },
+    { K(program),     true,  STRING (NULL)  },
 };
 const size_t optlen = sizeof(options) / sizeof(options[0]);
 
@@ -114,7 +114,7 @@ main(void)
     struct pam_args *args;
     bool status;
     struct vector *cells;
-    char *program, *seen, *expected;
+    char *program, *seen, *expected, *krb5conf;
     const char *argv_bool[2] = { NULL, NULL };
     const char *argv_err[2] = { NULL, NULL };
     const char *argv_empty[] = { NULL };
@@ -129,7 +129,7 @@ main(void)
     if (args == NULL)
         sysbail("cannot create PAM argument struct");
 
-    plan(92);
+    plan(134);
 
     /* First, check just the defaults. */
     args->config = config_new();
@@ -188,10 +188,25 @@ main(void)
               "...second is bar.com");
     is_string("/bin/false", args->config->program,
               "...program is /bin/false");
+    status = putil_args_parse(args, 5, argv_all, options, optlen);
+    ok(status, "Parse of full argv after defaults");
+    ok(args->config->cells != NULL, "...cells is set");
+    is_int(2, args->config->cells->count, "...with two cells");
+    is_string("stanford.edu", args->config->cells->strings[0],
+              "...first is stanford.edu");
+    is_string("ir.stanford.edu", args->config->cells->strings[1],
+              "...second is ir.stanford.edu");
+    is_int(true, args->config->debug, "...debug is set");
+    is_int(true, args->config->ignore_root, "...ignore_root is set");
+    is_int(1000, args->config->minimum_uid, "...minimum_uid is set");
+    is_string("/bin/true", args->config->program, "...program is set");
+    is_string("foo.com", cells->strings[0], "...first cell after parse");
+    is_string("bar.com", cells->strings[1], "...second cell after parse");
+    is_string("/bin/false", program, "...string after parse");
     config_free(args->config);
     args->config = NULL;
-    is_string("foo.com", cells->strings[0], "...first member after free");
-    is_string("bar.com", cells->strings[1], "...second member after free");
+    is_string("foo.com", cells->strings[0], "...first cell after free");
+    is_string("bar.com", cells->strings[1], "...second cell after free");
     is_string("/bin/false", program, "...string after free");
     options[0].defaults.list = NULL;
     options[4].defaults.string = NULL;
@@ -239,6 +254,100 @@ main(void)
     TEST_ERROR("cells", LOG_ERR, "value missing for option cells");
     config_free(args->config);
     args->config = NULL;
+
+#ifdef HAVE_KERBEROS
+
+    /* Test for Kerberos krb5.conf option parsing. */
+    krb5conf = test_file_path("data/krb5.conf");
+    if (krb5conf == NULL)
+        bail("cannot find data/krb5.conf");
+    if (setenv("KRB5_CONFIG", krb5conf, 1) < 0)
+        sysbail("cannot set KRB5_CONFIG");
+    krb5_free_context(args->ctx);
+    status = krb5_init_context(&args->ctx);
+    if (status != 0)
+        bail("cannot parse test krb5.conf file");
+    args->config = config_new();
+    status = putil_args_defaults(args, options, optlen);
+    ok(status, "Setting the defaults");
+    status = putil_args_krb5(args, "testing", options, optlen);
+    ok(status, "Options from krb5.conf");
+    ok(args->config->cells == NULL, "...cells default");
+    is_int(true, args->config->debug, "...debug set from krb5.conf");
+    is_int(true, args->config->ignore_root, "...ignore_root default");
+    is_int(1000, args->config->minimum_uid,
+           "...minimum_uid set from krb5.conf");
+    ok(args->config->program == NULL, "...program default");
+    status = putil_args_krb5(args, "other-test", options, optlen);
+    ok(status, "Options from krb5.conf (other-test)");
+    is_int(-1000, args->config->minimum_uid,
+           "...minimum_uid set from krb5.conf other-test");
+
+    /* Test with a realm set, which should expose more settings. */
+    krb5_free_context(args->ctx);
+    status = krb5_init_context(&args->ctx);
+    if (status != 0)
+        bail("cannot parse test krb5.conf file");
+    args->realm = strdup("FOO.COM");
+    if (args->realm == NULL)
+        sysbail("cannot allocate memory");
+    status = putil_args_krb5(args, "testing", options, optlen);
+    ok(status, "Options from krb5.conf with FOO.COM");
+    is_int(2, args->config->cells->count, "...cells count from krb5.conf");
+    is_string("foo.com", args->config->cells->strings[0],
+              "...first cell from krb5.conf");
+    is_string("bar.com", args->config->cells->strings[1],
+              "...second cell from krb5.conf");
+    is_int(true, args->config->debug, "...debug set from krb5.conf");
+    is_int(true, args->config->ignore_root, "...ignore_root default");
+    is_int(1000, args->config->minimum_uid,
+           "...minimum_uid set from krb5.conf");
+    is_string("/bin/false", args->config->program,
+              "...program from krb5.conf");
+
+    /* Test with a different realm. */
+    free(args->realm);
+    args->realm = strdup("BAR.COM");
+    if (args->realm == NULL)
+        sysbail("cannot allocate memory");
+    status = putil_args_krb5(args, "testing", options, optlen);
+    ok(status, "Options from krb5.conf with BAR.COM");
+    is_int(2, args->config->cells->count, "...cells count from krb5.conf");
+    is_string("bar.com", args->config->cells->strings[0],
+              "...first cell from krb5.conf");
+    is_string("foo.com", args->config->cells->strings[1],
+              "...second cell from krb5.conf");
+    is_int(true, args->config->debug, "...debug set from krb5.conf");
+    is_int(true, args->config->ignore_root, "...ignore_root default");
+    is_int(1000, args->config->minimum_uid,
+           "...minimum_uid set from krb5.conf");
+    is_string("echo /bin/true", args->config->program,
+              "...program from krb5.conf");
+    config_free(args->config);
+    args->config = config_new();
+    status = putil_args_krb5(args, "other-test", options, optlen);
+    ok(status, "Options from krb5.conf (other-test with realm)");
+    ok(args->config->cells == NULL, "...cells is NULL");
+    is_string("echo /bin/true", args->config->program,
+              "...program from krb5.conf");
+    config_free(args->config);
+    args->config = NULL;
+
+    /* Test error reporting from the krb5.conf parser. */
+    args->config = config_new();
+    status = putil_args_krb5(args, "bad-number", options, optlen);
+    ok(status, "Options from krb5.conf (bad-number)");
+    asprintf(&expected, "%d invalid number in krb5.conf setting for %s: %s",
+             LOG_ERR, "minimum_uid", "1000foo");
+    seen = pam_output();
+    is_string(expected, seen, "...and correct error reported");
+    free(expected);
+    free(seen);
+    config_free(args->config);
+    args->config = NULL;
+#else /* !HAVE_KERBEROS */
+    skip_block(30, "Kerberos support not configured");
+#endif
 
     putil_args_free(args);
     return 0;
