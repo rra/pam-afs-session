@@ -49,6 +49,11 @@ const char *krb5_get_error_message(krb5_context, krb5_error_code);
 void krb5_free_error_message(krb5_context, const char *);
 #endif
 
+/* MIT-specific.  The Heimdal documentation says to use free(). */
+#ifndef HAVE_KRB5_FREE_DEFAULT_REALM
+# define krb5_free_default_realm(c, r) free(r)
+#endif
+
 /* Undo default visibility change. */
 #pragma GCC visibility pop
 
