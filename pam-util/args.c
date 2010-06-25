@@ -56,7 +56,9 @@ putil_args_new(pam_handle_t *pamh)
     args->config = NULL;
     args->user = NULL;
     args->ctx = NULL;
+
 #ifdef HAVE_KERBEROS
+    args->realm = NULL;
     if (issetuidgid())
         status = krb5_init_secure_context(&args->ctx);
     else
@@ -78,6 +80,8 @@ void
 putil_args_free(struct pam_args *args)
 {
 #ifdef HAVE_KERBEROS
+    if (args->realm != NULL)
+        free(args->realm);
     if (args->ctx != NULL)
         krb5_free_context(args->ctx);
 #endif

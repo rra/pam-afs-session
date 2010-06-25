@@ -40,6 +40,7 @@ struct pam_args {
 
 #ifdef HAVE_KERBEROS
     krb5_context ctx;           /* Context for Kerberos operations. */
+    char *realm;                /* Kerberos realm for configuration. */
 #endif
 };
 
