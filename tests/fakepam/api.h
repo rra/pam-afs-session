@@ -19,6 +19,8 @@
 #include <config.h>
 #include <portable/macros.h>
 
+#include <stdarg.h>
+
 /* Data structures standardized by the PAM API. */
 struct pam_message {
     int msg_style;

@@ -196,8 +196,7 @@ AC_DEFUN([_RRA_LIB_KRB5_INTERNAL],
  *-lcom_err*)
      rra_krb5_uses_com_err=true
      ;;
- esac
- AM_CONDITIONAL([KRB5_USES_COM_ERR], [test x"$rra_krb5_uses_com_err" = xtrue])])
+ esac])
 
 dnl The main macro for packages with mandatory Kerberos support.
 AC_DEFUN([RRA_LIB_KRB5],
@@ -223,7 +222,9 @@ AC_DEFUN([RRA_LIB_KRB5],
         [Location of Kerberos v5 libraries])],
     [AS_IF([test x"$withval" != xyes && test x"$withval" != xno],
         [rra_krb5_libdir="$withval"])])
- _RRA_LIB_KRB5_INTERNAL([true])])
+ _RRA_LIB_KRB5_INTERNAL([true])
+ AM_CONDITIONAL([KRB5_USES_COM_ERR],
+    [test x"$rra_krb5_uses_com_err" = xtrue])])
 
 dnl The main macro for packages with optional Kerberos support.
 AC_DEFUN([RRA_LIB_KRB5_OPTIONAL],
@@ -258,4 +259,6 @@ AC_DEFUN([RRA_LIB_KRB5_OPTIONAL],
          [_RRA_LIB_KRB5_INTERNAL([true])],
          [_RRA_LIB_KRB5_INTERNAL([false])])])
  AS_IF([test x"$KRB5_LIBS" != x],
-    [AC_DEFINE([HAVE_KERBEROS], 1, [Define to enable Kerberos features.])])])
+    [AC_DEFINE([HAVE_KERBEROS], 1, [Define to enable Kerberos features.])])
+ AM_CONDITIONAL([KRB5_USES_COM_ERR],
+    [test x"$rra_krb5_uses_com_err" = xtrue])])

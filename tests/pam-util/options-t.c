@@ -114,7 +114,7 @@ main(void)
     struct pam_args *args;
     bool status;
     struct vector *cells;
-    char *program, *seen, *expected, *krb5conf;
+    char *program, *seen, *expected;
     const char *argv_bool[2] = { NULL, NULL };
     const char *argv_err[2] = { NULL, NULL };
     const char *argv_empty[] = { NULL };
@@ -122,6 +122,9 @@ main(void)
         "cells=stanford.edu,ir.stanford.edu", "debug", "ignore_root",
         "minimum_uid=1000", "program=/bin/true"
     };
+#ifdef HAVE_KERBEROS
+    char *krb5conf;
+#endif
 
     if (pam_start(NULL, NULL, NULL, &pamh) != PAM_SUCCESS)
         sysbail("cannot create pam_handle_t");

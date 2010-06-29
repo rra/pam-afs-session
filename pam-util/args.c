@@ -55,7 +55,6 @@ putil_args_new(pam_handle_t *pamh)
     args->pamh = pamh;
     args->config = NULL;
     args->user = NULL;
-    args->ctx = NULL;
 
 #ifdef HAVE_KERBEROS
     args->realm = NULL;

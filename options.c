@@ -70,7 +70,7 @@ pamafs_init(pam_handle_t *pamh, int flags UNUSED, int argc, const char **argv)
 
     /* Warn if kdestroy was set and we can't honor it. */
 #ifndef HAVE_KERBEROS
-    if (args->kdestroy)
+    if (args->config->kdestroy)
         putil_err(args, "kdestroy specified but not built with Kerberos"
                   " support");
 #endif
