@@ -46,12 +46,6 @@ AS_IF([test -n "$PATH_AKLOG"],
     [AC_DEFINE_UNQUOTED([PATH_AKLOG], ["$PATH_AKLOG"],
         [Full path to aklog binary.])])
 
-dnl Let the user tell us where their AFS headers are.
-AC_ARG_WITH([afs-headers],
-    AC_HELP_STRING([--with-afs-headers=PATH],
-        [Path to OpenAFS headers (for syscall number)]),
-    [AS_IF([test x"$withval" != xno], [CPPFLAGS="-I$withval $CPPFLAGS"])])
-
 dnl Crank up the warnings if we're using GCC.
 AS_IF([test "$GCC" = "yes"], [CFLAGS="-Wall $CFLAGS"])
 

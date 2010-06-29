@@ -21,7 +21,8 @@ pam-afs-session 1.8 (unreleased)
 
     Update the embedded kafs code to rra-c-util 2.3, adding
     --with-libkafs-include, --with-libkafs-lib, --with-afs-include, and
-    --with-afs-lib configure options for finer control.
+    --with-afs-lib configure options for finer control.  Remove obsolete
+    --with-afs-headers configure option (use --with-afs-include instead).
 
     Update Kerberos Autoconf macros to rra-c-util 2.3:
 
