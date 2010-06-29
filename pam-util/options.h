@@ -133,15 +133,14 @@ bool putil_args_defaults(struct pam_args *, const struct option options[],
  *
  * Returns true on success and false on an error.  An error return should be
  * considered fatal.  Errors will already be reported using putil_crit*() or
- * putil_err*() as appropriate.
+ * putil_err*() as appropriate.  If Kerberos is not available, returns without
+ * doing anything.
  *
  * putil_args_defaults() should be called before this function.
  */
-#ifdef HAVE_KERBEROS
 bool putil_args_krb5(struct pam_args *, const char *section,
                      const struct option options[], size_t optlen)
     __attribute__((__nonnull__));
-#endif
 
 /*
  * Parse the PAM arguments and fill out the provided struct.  Takes the PAM

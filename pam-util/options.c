@@ -25,6 +25,9 @@
 #include <pam-util/options.h>
 #include <pam-util/vector.h>
 
+/* Used for unused parameters to silence gcc warnings. */
+#define UNUSED __attribute__((__unused__))
+
 /*
  * Macros used to resolve a void * pointer to the configuration struct and an
  * offset into a pointer to the appropriate type.  Scary violations of the C
@@ -337,7 +340,22 @@ putil_args_krb5(struct pam_args *args, const char *section,
         krb5_free_default_realm(args->ctx, realm);
     return true;
 }
-#endif /* HAVE_KERBEROS */
+
+#else /* !HAVE_KERBEROS */
+
+/*
+ * Stub function for getting configuration information from krb5.conf used
+ * when the PAM module is not built with Kerberos support so that the function
+ * can be called unconditionally.
+ */
+bool
+putil_args_krb5(struct pam_args *args UNUSED, const char *section UNUSED,
+                const struct option options[] UNUSED, size_t optlen UNUSED)
+{
+    return true;
+}
+
+#endif /* !HAVE_KERBEROS */
 
 
 /*
