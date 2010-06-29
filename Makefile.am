@@ -54,7 +54,7 @@ endif
 
 pamdir = $(libdir)/security
 pam_LTLIBRARIES = pam_afs_session.la
-pam_afs_session_la_SOURCES = logging.c options.c public.c tokens.c
+pam_afs_session_la_SOURCES = internal.h options.c public.c tokens.c
 pam_afs_session_la_LDFLAGS = -module -shared -avoid-version $(KAFS_LDFLAGS) \
 	$(KRB5_LDFLAGS)
 pam_afs_session_la_LIBADD = $(LIBKAFS) pam-util/libpamutil.la \

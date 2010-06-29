@@ -6,29 +6,23 @@
  * satisfy PAM.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2006, 2007, 2008, 2010
+ *     Board of Trustees, Leland Stanford Jr. University
  *
  * See LICENSE for licensing terms.
  */
 
-#include "config.h"
+#include <config.h>
+#include <portable/pam.h>
+#include <portable/system.h>
 
 #include <errno.h>
-#ifdef HAVE_SECURITY_PAM_APPL_H
-# include <security/pam_appl.h>
-# include <security/pam_modules.h>
-#elif HAVE_PAM_PAM_APPL_H
-# include <pam/pam_appl.h>
-# include <pam/pam_modules.h>
-#endif
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
+#include <internal.h>
 #include <kafs/kafs.h>
+#include <pam-util/args.h>
+#include <pam-util/logging.h>
 
-#include "internal.h"
 
 /*
  * Open a new session.  Create a new PAG with k_setpag and then fork the aklog
@@ -44,9 +38,8 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
     int pamret = PAM_SUCCESS;
     const void *dummy;
 
-    args = pamafs_args_parse(flags, argc, argv);
+    args = pamafs_init(pamh, flags, argc, argv);
     if (args == NULL) {
-        pamafs_error("cannot allocate memory: %s", strerror(errno));
         pamret = PAM_SESSION_ERR;
         goto done;
     }
@@ -54,7 +47,7 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
 
     /* Do nothing unless AFS is available. */
     if (!k_hasafs()) {
-        pamafs_error("skipping, AFS apparently not available");
+        putil_err(args, "skipping, AFS apparently not available");
         pamret = PAM_IGNORE;
         goto done;
     }
@@ -64,23 +57,23 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
      * PAG.  Do this even if we're otherwise ignoring the user.
      */
     if (pam_get_data(pamh, "pam_afs_session", &dummy) == PAM_SUCCESS) {
-        pamafs_debug(args, "skipping, apparently already ran");
+        putil_debug(args, "skipping, apparently already ran");
         pamret = PAM_SUCCESS;
         goto done;
     }
-    if (!args->nopag && k_setpag() != 0) {
-        pamafs_error("PAG creation failed: %s", strerror(errno));
+    if (!args->config->nopag && k_setpag() != 0) {
+        putil_err(args, "PAG creation failed: %s", strerror(errno));
         pamret = PAM_SESSION_ERR;
         goto done;
     }
 
     /* Get tokens. */
-    if (!args->notokens)
-        pamret = pamafs_token_get(pamh, args);
+    if (!args->config->notokens)
+        pamret = pamafs_token_get(args);
 
 done:
     EXIT(args, pamret);
-    pamafs_args_free(args);
+    pamafs_free(args);
     return pamret;
 }
 
@@ -117,9 +110,8 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
     int pamret = PAM_SUCCESS;
     const void *dummy;
 
-    args = pamafs_args_parse(flags, argc, argv);
+    args = pamafs_init(pamh, flags, argc, argv);
     if (args == NULL) {
-        pamafs_error("cannot allocate memory: %s", strerror(errno));
         pamret = PAM_SESSION_ERR;
         goto done;
     }
@@ -127,18 +119,18 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
 
     /* Do nothing unless AFS is available. */
     if (!k_hasafs()) {
-        pamafs_error("skipping, AFS apparently not available");
+        putil_err(args, "skipping, AFS apparently not available");
         pamret = PAM_IGNORE;
         goto done;
     }
 
     /* If DELETE_CRED was specified, delete the tokens (if any). */
     if (flags & PAM_DELETE_CRED) {
-        if (args->retain || args->notokens) {
+        if (args->config->retain_after_close || args->config->notokens) {
             pamret = PAM_IGNORE;
-            pamafs_debug(args, "skipping as configured");
+            putil_debug(args, "skipping as configured");
         } else {
-            pamret = pamafs_token_delete(pamh, args);
+            pamret = pamafs_token_delete(args);
         }
         goto done;
     }
@@ -152,21 +144,21 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
     if (!(flags & (PAM_REINITIALIZE_CRED | PAM_REFRESH_CRED))) {
         status = pam_get_data(pamh, "pam_afs_session", &dummy);
         if (status == PAM_SUCCESS) {
-            pamafs_debug(args, "skipping, apparently already ran");
+            putil_debug(args, "skipping, apparently already ran");
             goto done;
         }
-        if (!args->nopag && k_setpag() != 0) {
-            pamafs_error("PAG creation failed: %s", strerror(errno));
+        if (!args->config->nopag && k_setpag() != 0) {
+            putil_err(args, "PAG creation failed: %s", strerror(errno));
             pamret = PAM_SESSION_ERR;
             goto done;
         }
     }
-    if (!args->notokens)
-        pamret = pamafs_token_get(pamh, args);
+    if (!args->config->notokens)
+        pamret = pamafs_token_get(args);
 
 done:
     EXIT(args, pamret);
-    pamafs_args_free(args);
+    pamafs_free(args);
     return pamret;
 }
 
@@ -182,33 +174,32 @@ pam_sm_close_session(pam_handle_t *pamh, int flags, int argc,
     struct pam_args *args;
     int pamret = PAM_SUCCESS;
 
-    args = pamafs_args_parse(flags, argc, argv);
+    args = pamafs_init(pamh, flags, argc, argv);
     if (args == NULL) {
-        pamafs_error("cannot allocate memory: %s", strerror(errno));
         pamret = PAM_SESSION_ERR;
         goto done;
     }
     ENTRY(args, flags);
 
     /* Do nothing if so configured. */
-    if (args->retain || args->notokens) {
+    if (args->config->retain_after_close || args->config->notokens) {
         pamret = PAM_IGNORE;
-        pamafs_debug(args, "skipping as configured");
+        putil_debug(args, "skipping as configured");
         goto done;
     }
 
     /* Do nothing unless AFS is available. */
     if (!k_hasafs()) {
         pamret = PAM_IGNORE;
-        pamafs_error("skipping, AFS apparently not available");
+        putil_err(args, "skipping, AFS apparently not available");
         goto done;
     }
 
     /* Delete tokens. */
-    pamret = pamafs_token_delete(pamh, args);
+    pamret = pamafs_token_delete(args);
 
 done:
     EXIT(args, pamret);
-    pamafs_args_free(args);
+    pamafs_free(args);
     return pamret;
 }

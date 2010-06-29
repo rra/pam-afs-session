@@ -21,6 +21,7 @@
 #else
 # include <portable/pam.h>
 #endif
+#include <syslog.h>
 
 /* Forward declarations to avoid extra includes. */
 struct pam_args;
