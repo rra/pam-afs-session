@@ -59,6 +59,11 @@ enum pam_item {
     PAM_RUSER      = 8
 };
 
+/* PAM flags.  The numbers are the same as Linux. */
+enum pam_flag {
+    PAM_SILENT     = 0x8000U
+};
+
 /* pam_handle_t is opaque to clients. */
 struct pam_handle;
 typedef struct pam_handle pam_handle_t;

@@ -8,7 +8,6 @@
  */
 
 #include <config.h>
-#include <portable/stdbool.h>
 #include <portable/system.h>
 
 #include <tests/fakepam/api.h>
@@ -25,16 +24,17 @@ main(void)
     pam_handle_t *pamh;
     struct pam_args *args;
 
-    plan(8);
+    plan(11);
 
     if (pam_start(NULL, NULL, NULL, &pamh) != PAM_SUCCESS)
         sysbail("Fake PAM initialization failed");
-    args = putil_args_new(pamh);
+    args = putil_args_new(pamh, 0);
     ok(args != NULL, "New args struct is not NULL");
     ok(args->pamh == pamh, "...and pamh is correct");
     ok(args->config == NULL, "...and config is NULL");
     ok(args->user == NULL, "...and user is NULL");
     is_int(args->debug, false, "...and debug is false");
+    is_int(args->silent, false, "...and silent is false");
 #ifdef HAVE_KERBEROS
     ok(args->ctx != NULL, "...and the Kerberos context is initialized");
     ok(args->realm == NULL, "...and realm is NULL");
@@ -43,6 +43,11 @@ main(void)
 #endif
     putil_args_free(args);
     ok(1, "Freeing the args struct works");
+
+    args = putil_args_new(pamh, PAM_SILENT);
+    ok(args != NULL, "New args struct with PAM_SILENT is not NULL");
+    is_int(args->silent, true, "...and silent is true");
+    putil_args_free(args);
 
     return 0;
 }

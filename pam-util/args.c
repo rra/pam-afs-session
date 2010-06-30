@@ -40,7 +40,7 @@
  * allocate a Kerberos context.
  */
 struct pam_args *
-putil_args_new(pam_handle_t *pamh)
+putil_args_new(pam_handle_t *pamh, int flags)
 {
     struct pam_args *args;
 #ifdef HAVE_KERBEROS
@@ -55,6 +55,7 @@ putil_args_new(pam_handle_t *pamh)
     args->pamh = pamh;
     args->config = NULL;
     args->user = NULL;
+    args->silent = ((flags & PAM_SILENT) == PAM_SILENT);
 
 #ifdef HAVE_KERBEROS
     args->realm = NULL;

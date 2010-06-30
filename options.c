@@ -52,11 +52,11 @@ static const size_t optlen = sizeof(options) / sizeof(options[0]);
  * parsing the arguments and getting settings from krb5.conf.
  */
 struct pam_args *
-pamafs_init(pam_handle_t *pamh, int flags UNUSED, int argc, const char **argv)
+pamafs_init(pam_handle_t *pamh, int flags, int argc, const char **argv)
 {
     struct pam_args *args;
 
-    args = putil_args_new(pamh);
+    args = putil_args_new(pamh, flags);
     if (args == NULL)
         return NULL;
     if (!putil_args_defaults(args, options, optlen))

@@ -128,7 +128,7 @@ main(void)
 
     if (pam_start(NULL, NULL, NULL, &pamh) != PAM_SUCCESS)
         sysbail("cannot create pam_handle_t");
-    args = putil_args_new(pamh);
+    args = putil_args_new(pamh, 0);
     if (args == NULL)
         sysbail("cannot create PAM argument struct");
 

@@ -36,6 +36,7 @@ struct pam_args {
     pam_handle_t *pamh;         /* Pointer back to the PAM handle. */
     struct pam_config *config;  /* Per-module PAM configuration. */
     bool debug;                 /* Log debugging information. */
+    bool silent;                /* Do not pass text to the application. */
     const char *user;           /* User being authenticated. */
 
 #ifdef HAVE_KERBEROS
@@ -54,7 +55,7 @@ BEGIN_DECLS
  * a string maintained elsewhere and don't free it here.  config must be freed
  * separately by the caller.
  */
-struct pam_args *putil_args_new(pam_handle_t *);
+struct pam_args *putil_args_new(pam_handle_t *, int flags);
 void putil_args_free(struct pam_args *);
 
 /* Undo default visibility change. */
