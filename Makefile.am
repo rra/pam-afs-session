@@ -79,26 +79,39 @@ warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)' $(check_PROGRAMS)
 
 # The bits below are for the test suite, not for the main package.
-check_PROGRAMS = tests/runtests tests/kafs/basic tests/pam-util/args-t	\
-	tests/pam-util/logging-t tests/pam-util/options-t		\
-	tests/pam-util/vector-t
+check_PROGRAMS = tests/runtests tests/kafs/basic tests/module/basic-t	\
+	tests/pam-util/args-t tests/pam-util/logging-t			\
+	tests/pam-util/options-t tests/pam-util/vector-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/fakepam/libfakepam.a tests/tap/libtap.a
 tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/api.c tests/fakepam/api.h \
-	tests/fakepam/logging.c tests/fakepam/testing.h
+	tests/fakepam/data.c tests/fakepam/logging.c tests/fakepam/testing.h
 tests_tap_libtap_a_CPPFLAGS = -I$(abs_top_srcdir)/tests
 tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h
 
-# kafs tests are buit differently depending on whether we use our local
-# libkafs replacement.
+# All the sources required to build a module test.  These are the sources
+# that need to be rebuilt in order to enable the fake PAM library.
+MODULE_SOURCES = tests/module/options.c tests/module/public.c		     \
+	tests/module/tokens.c tests/pam-util/args.c tests/pam-util/logging.c
+
+# kafs and module tests are buit differently depending on whether we use our
+# local libkafs replacement.
+tests_module_basic_t_SOURCES = tests/module/basic-t.c $(MODULE_SOURCES)
+tests_module_basic_t_LDFLAGS = $(KRB5_LDFLAGS)
 if NEED_KAFS
     tests_kafs_basic_CPPFLAGS = $(KAFS_CPPFLAGS)
     tests_kafs_basic_LDFLAGS = $(KAFS_LDFLAGS)
     tests_kafs_basic_LDADD = kafs/libkafs.la portable/libportable.la \
 	$(KAFS_LIBS)
+    tests_module_basic_t_LDADD = tests/fakepam/libfakepam.a		\
+	tests/tap/libtap.a pam-util/libpamutil.la kafs/libkafs.la	\
+	portable/libportable.la $(DEPEND_LIBS)
 else
     tests_kafs_basic_LDADD = portable/libportable.la $(KAFS_LIBS)
+    tests_module_basic_t_LDADD = tests/fakepam/libfakepam.a		  \
+	tests/tap/libtap.a pam-util/libpamutil.la portable/libportable.la \
+	$(DEPEND_LIBS)
 endif
 
 # All of the other test programs.

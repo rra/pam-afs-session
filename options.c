@@ -14,7 +14,7 @@
 #include <config.h>
 #include <portable/system.h>
 
-#include <ctype.h>
+#include <errno.h>
 
 #include <internal.h>
 #include <pam-util/args.h>
@@ -59,6 +59,11 @@ pamafs_init(pam_handle_t *pamh, int flags, int argc, const char **argv)
     args = putil_args_new(pamh, flags);
     if (args == NULL)
         return NULL;
+    args->config = calloc(1, sizeof(struct pam_config));
+    if (args->config == NULL) {
+        putil_crit(args, "cannot allocate memory: %s", strerror(errno));
+        return NULL;
+    }
     if (!putil_args_defaults(args, options, optlen))
         goto fail;
     if (!putil_args_krb5(args, "pam-afs-session", options, optlen))

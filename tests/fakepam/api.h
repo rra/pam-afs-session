@@ -42,9 +42,15 @@ struct pam_conv {
  * platform arbitrarily.  Only the ones we actually use are defined.
  */
 enum pam_status {
-    PAM_SUCCESS    = 0,
-    PAM_SYSTEM_ERR = 4,
-    PAM_BUF_ERR    = 5
+    PAM_SUCCESS     = 0,
+    PAM_OPEN_ERR    = 1,
+    PAM_SYMBOL_ERR  = 2,
+    PAM_SERVICE_ERR = 3,
+    PAM_SYSTEM_ERR  = 4,
+    PAM_BUF_ERR     = 5,
+    PAM_SESSION_ERR = 14,
+    PAM_CONV_ERR    = 19,
+    PAM_IGNORE      = 25
 };
 
 /* PAM data items.  The numbers are the same as Linux. */
@@ -61,7 +67,11 @@ enum pam_item {
 
 /* PAM flags.  The numbers are the same as Linux. */
 enum pam_flag {
-    PAM_SILENT     = 0x8000U
+    PAM_ESTABLISH_CRED    = 0x0002U,
+    PAM_DELETE_CRED       = 0x0004U,
+    PAM_REINITIALIZE_CRED = 0x0008U,
+    PAM_REFRESH_CRED      = 0x0010U,
+    PAM_SILENT            = 0x8000U
 };
 
 /* pam_handle_t is opaque to clients. */
@@ -76,7 +86,24 @@ void pam_syslog(const pam_handle_t *, int, const char *, ...);
 void pam_vsyslog(const pam_handle_t *, int, const char *, va_list);
 
 /* Setting and retrieving PAM data. */
-int pam_get_item(const pam_handle_t *, int, const void **);
+int pam_get_data(const pam_handle_t *, const char *, PAM_CONST void **);
+int pam_get_item(const pam_handle_t *, int, PAM_CONST void **);
+int pam_get_user(const pam_handle_t *, PAM_CONST char **, const char *);
+int pam_set_data(pam_handle_t *, const char *, void *,
+                 void (*)(pam_handle_t *, void *, int));
+
+/* Manipulating the environment. */
+const char *pam_getenv(pam_handle_t *, const char *);
+char **pam_getenvlist(pam_handle_t *);
+int pam_putenv(pam_handle_t *, const char *);
+
+/* Module functions. */
+int pam_sm_authenticate(pam_handle_t *, int, int, const char **);
+int pam_sm_setcred(pam_handle_t *, int, int, const char **);
+int pam_sm_acct_mgmt(pam_handle_t *, int, int, const char **);
+int pam_sm_open_session(pam_handle_t *, int, int, const char **);
+int pam_sm_close_session(pam_handle_t *, int, int, const char **);
+int pam_sm_chauthtok(pam_handle_t *, int, int, const char **);
 
 END_DECLS
 

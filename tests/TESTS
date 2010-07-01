@@ -1,6 +1,7 @@
 docs/pod
 docs/pod-spelling
 kafs/basic
+module/basic
 pam-util/args
 pam-util/logging
 pam-util/options

@@ -46,11 +46,51 @@ pam_start(const char *service_name, const char *user,
 
 
 /*
+ * Free the pam_handle_t data structure and related resources.  This is not
+ * strictly necessary since it's only used for testing, but it helps keep our
+ * memory usage clean so that we can run the test suite under valgrind.
+ */
+int
+pam_end(pam_handle_t *pamh, int status UNUSED)
+{
+    free(pamh);
+    return PAM_SUCCESS;
+}
+
+
+/*
  * The following functions are just stubs for right now and always fail.
  */
 int
+pam_get_data(const pam_handle_t *pamh UNUSED, const char *name UNUSED,
+             PAM_CONST void **data UNUSED)
+{
+    return PAM_SYSTEM_ERR;
+}
+int
 pam_get_item(const pam_handle_t *pamh UNUSED, int item UNUSED,
-             const void **data UNUSED)
+             PAM_CONST void **data UNUSED)
+{
+    return PAM_SYSTEM_ERR;
+}
+int
+pam_set_data(pam_handle_t *pamh UNUSED, const char *item UNUSED,
+             void *data UNUSED, pam_callback_type callback UNUSED)
+{
+    return PAM_SYSTEM_ERR;
+}
+const char *
+pam_getenv(pam_handle_t *pamh UNUSED, const char *name UNUSED)
+{
+    return NULL;
+}
+char **
+pam_getenvlist(pam_handle_t *pamh UNUSED)
+{
+    return NULL;
+}
+int
+pam_putenv(pam_handle_t *pamh UNUSED, const char *setting UNUSED)
 {
     return PAM_SYSTEM_ERR;
 }

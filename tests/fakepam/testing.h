@@ -25,12 +25,17 @@ struct pam_handle {
     const struct pam_conv *conversation;
 };
 
+/* The type used for the data callback function. */
+typedef void (*pam_callback_type)(pam_handle_t *, void *, int);
+
 BEGIN_DECLS
 
 /* Initialize the pam_handle_t used by all other PAM functions. */
 int pam_start(const char *service_name, const char *user,
-              const struct pam_conv *pam_conversation,
-              pam_handle_t **pamh);
+              const struct pam_conv *, pam_handle_t **);
+
+/* Free the pam_handle_t and associated resources. */
+int pam_end(pam_handle_t *, int);
 
 /*
  * Returns the accumulated messages logged with pam_syslog or pam_vsyslog
