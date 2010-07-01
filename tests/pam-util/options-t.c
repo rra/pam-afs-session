@@ -8,18 +8,16 @@
  */
 
 #include <config.h>
+#include <portable/pam.h>
 #include <portable/system.h>
 
 #include <syslog.h>
 
-#include <tests/fakepam/api.h>
-#include <tests/fakepam/testing.h>
-#include <tests/tap/basic.h>
-
-#define TESTING 1
 #include <pam-util/args.h>
 #include <pam-util/options.h>
 #include <pam-util/vector.h>
+#include <tests/fakepam/testing.h>
+#include <tests/tap/basic.h>
 
 /* The configuration struct we will use for testing. */
 struct pam_config {
@@ -112,6 +110,7 @@ main(void)
 {
     pam_handle_t *pamh;
     struct pam_args *args;
+    struct pam_conv conv = { NULL, NULL };
     bool status;
     struct vector *cells;
     char *program, *seen, *expected;
@@ -126,7 +125,7 @@ main(void)
     char *krb5conf;
 #endif
 
-    if (pam_start(NULL, NULL, NULL, &pamh) != PAM_SUCCESS)
+    if (pam_start("test", NULL, &conv, &pamh) != PAM_SUCCESS)
         sysbail("cannot create pam_handle_t");
     args = putil_args_new(pamh, 0);
     if (args == NULL)

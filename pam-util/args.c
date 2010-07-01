@@ -21,11 +21,7 @@
 #ifdef HAVE_KERBEROS
 # include <portable/krb5.h>
 #endif
-#ifdef TESTING
-# include <tests/fakepam/api.h>
-#else
-# include <portable/pam.h>
-#endif
+#include <portable/pam.h>
 #include <portable/system.h>
 
 #include <errno.h>

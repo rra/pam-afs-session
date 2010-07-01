@@ -8,25 +8,24 @@
  */
 
 #include <config.h>
+#include <portable/pam.h>
 #include <portable/system.h>
 
-#include <tests/fakepam/api.h>
+#include <pam-util/args.h>
 #include <tests/fakepam/testing.h>
 #include <tests/tap/basic.h>
-
-#define TESTING 1
-#include <pam-util/args.h>
 
 
 int
 main(void)
 {
     pam_handle_t *pamh;
+    struct pam_conv conv = { NULL, NULL };
     struct pam_args *args;
 
     plan(11);
 
-    if (pam_start(NULL, NULL, NULL, &pamh) != PAM_SUCCESS)
+    if (pam_start("test", NULL, &conv, &pamh) != PAM_SUCCESS)
         sysbail("Fake PAM initialization failed");
     args = putil_args_new(pamh, 0);
     ok(args != NULL, "New args struct is not NULL");

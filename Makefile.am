@@ -85,53 +85,43 @@ check_PROGRAMS = tests/runtests tests/kafs/basic tests/module/basic-t	\
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/fakepam/libfakepam.a tests/tap/libtap.a
-tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/api.c tests/fakepam/api.h \
-	tests/fakepam/data.c tests/fakepam/logging.c tests/fakepam/testing.h
+tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/data.c	\
+	tests/fakepam/logging.c tests/fakepam/testing.c		\
+	tests/fakepam/testing.h
 tests_tap_libtap_a_CPPFLAGS = -I$(abs_top_srcdir)/tests
 tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h
 
-# All the sources required to build a module test.  These are the sources
-# that need to be rebuilt in order to enable the fake PAM library.
-MODULE_SOURCES = tests/module/options.c tests/module/public.c		     \
-	tests/module/tokens.c tests/pam-util/args.c tests/pam-util/logging.c
-
-# kafs and module tests are buit differently depending on whether we use our
-# local libkafs replacement.
-tests_module_basic_t_SOURCES = tests/module/basic-t.c $(MODULE_SOURCES)
-tests_module_basic_t_LDFLAGS = $(KRB5_LDFLAGS)
+# kafs tests are buit differently depending on whether we use our local
+# libkafs replacement.
 if NEED_KAFS
     tests_kafs_basic_CPPFLAGS = $(KAFS_CPPFLAGS)
     tests_kafs_basic_LDFLAGS = $(KAFS_LDFLAGS)
     tests_kafs_basic_LDADD = kafs/libkafs.la portable/libportable.la \
 	$(KAFS_LIBS)
-    tests_module_basic_t_LDADD = tests/fakepam/libfakepam.a		\
-	tests/tap/libtap.a pam-util/libpamutil.la kafs/libkafs.la	\
-	portable/libportable.la $(DEPEND_LIBS)
 else
     tests_kafs_basic_LDADD = portable/libportable.la $(KAFS_LIBS)
-    tests_module_basic_t_LDADD = tests/fakepam/libfakepam.a		  \
-	tests/tap/libtap.a pam-util/libpamutil.la portable/libportable.la \
-	$(DEPEND_LIBS)
 endif
 
 # All of the other test programs.
-tests_pam_util_args_t_SOURCES = tests/pam-util/args.c \
-	tests/pam-util/logging.c tests/pam-util/args-t.c
+tests_module_basic_t_SOURCES = tests/module/basic-t.c
+tests_module_basic_t_LDFLAGS = $(KRB5_LDFLAGS)
+tests_module_basic_t_LDADD = options.lo public.lo tokens.lo		     \
+	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
+	portable/libportable.la
 tests_pam_util_args_t_LDFLAGS = $(KRB5_LDFLAGS)
-tests_pam_util_args_t_LDADD = tests/fakepam/libfakepam.a tests/tap/libtap.a \
+tests_pam_util_args_t_LDADD = pam-util/libpamutil.la	\
+	tests/fakepam/libfakepam.a tests/tap/libtap.a	\
 	portable/libportable.la $(KRB5_LIBS)
-tests_pam_util_logging_t_SOURCES = tests/pam-util/args.c \
-	tests/pam-util/logging.c tests/pam-util/logging-t.c
 tests_pam_util_logging_t_LDFLAGS = $(KRB5_LDFLAGS)
-tests_pam_util_logging_t_LDADD = tests/fakepam/libfakepam.a \
-	tests/tap/libtap.a portable/libportable.la $(KRB5_LIBS)
-tests_pam_util_options_t_SOURCES = tests/pam-util/args.c \
-	tests/pam-util/logging.c tests/pam-util/options-t.c
+tests_pam_util_logging_t_LDADD = pam-util/libpamutil.la	\
+	tests/fakepam/libfakepam.a tests/tap/libtap.a	\
+	portable/libportable.la $(KRB5_LIBS)
 tests_pam_util_options_t_LDFLAGS = $(KRB5_LDFLAGS)
-tests_pam_util_options_t_LDADD = tests/fakepam/libfakepam.a		  \
-	pam-util/libpamutil.la tests/tap/libtap.a portable/libportable.la \
-	$(KRB5_LIBS)
-tests_pam_util_vector_t_LDADD = tests/tap/libtap.a pam-util/libpamutil.la \
+tests_pam_util_options_t_LDADD = pam-util/libpamutil.la	\
+	tests/fakepam/libfakepam.a tests/tap/libtap.a	\
+	portable/libportable.la $(KRB5_LIBS)
+tests_pam_util_vector_t_LDADD = pam-util/libpamutil.la	\
+	tests/fakepam/libfakepam.a tests/tap/libtap.a	\
 	portable/libportable.la
 
 check-local: $(check_PROGRAMS)

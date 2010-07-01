@@ -19,7 +19,6 @@
  */
 
 #include <config.h>
-#include <portable/stdbool.h>
 #include <portable/system.h>
 
 #include <pam-util/vector.h>

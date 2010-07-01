@@ -8,17 +8,15 @@
  */
 
 #include <config.h>
+#include <portable/pam.h>
 #include <portable/system.h>
 
 #include <syslog.h>
 
-#include <tests/fakepam/api.h>
-#include <tests/fakepam/testing.h>
-#include <tests/tap/basic.h>
-
-#define TESTING 1
 #include <pam-util/args.h>
 #include <pam-util/logging.h>
+#include <tests/fakepam/testing.h>
+#include <tests/tap/basic.h>
 
 /* Test a normal PAM logging function. */
 #define TEST(func, p, n)                              \
@@ -63,6 +61,7 @@ main(void)
 {
     pam_handle_t *pamh;
     struct pam_args *args;
+    struct pam_conv conv = { NULL, NULL };
     char *expected, *seen;
 #ifdef HAVE_KERBEROS
     krb5_error_code code;
@@ -71,7 +70,7 @@ main(void)
 
     plan(13);
 
-    if (pam_start(NULL, NULL, NULL, &pamh) != PAM_SUCCESS)
+    if (pam_start("test", NULL, &conv, &pamh) != PAM_SUCCESS)
         sysbail("Fake PAM initialization failed");
     args = putil_args_new(pamh, 0);
     TEST(putil_crit,  LOG_CRIT,  "putil_crit");

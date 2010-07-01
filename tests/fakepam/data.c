@@ -11,9 +11,9 @@
  */
 
 #include <config.h>
+#include <portable/pam.h>
 #include <portable/system.h>
 
-#include <tests/fakepam/api.h>
 #include <tests/fakepam/testing.h>
 
 /* Used for unused parameters to silence gcc warnings. */
@@ -24,13 +24,13 @@
  * Return the user for the PAM context.
  */
 int
-pam_get_user(const pam_handle_t *pamh, PAM_CONST char **user,
+pam_get_user(pam_handle_t *pamh, PAM_CONST char **user,
              const char *prompt UNUSED)
 {
     if (pamh->user == NULL)
         return PAM_CONV_ERR;
     else {
-        *user = (char *) pamh->user;
+        *user = (PAM_CONST char *) pamh->user;
         return PAM_SUCCESS;
     }
 }

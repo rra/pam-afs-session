@@ -11,16 +11,12 @@
 #define INTERNAL_H 1
 
 #include <config.h>
-#ifdef TESTING
-# include <tests/fakepam/api.h>
-#else
-# include <portable/pam.h>
+#ifdef HAVE_KERBEROS
+# include <portable/krb5.h>
 #endif
+#include <portable/pam.h>
 #include <portable/macros.h>
 
-#ifdef HAVE_KERBEROS
-# include <krb5.h>
-#endif
 #include <stdarg.h>
 
 /* Forward declarations to avoid unnecessary includes. */

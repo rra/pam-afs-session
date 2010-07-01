@@ -13,9 +13,9 @@
  */
 
 #include <config.h>
+#include <portable/pam.h>
 #include <portable/system.h>
 
-#include <tests/fakepam/api.h>
 #include <tests/fakepam/testing.h>
 
 /* Used for unused parameters to silence gcc warnings. */
@@ -36,17 +36,22 @@ static char *messages = NULL;
 
 
 /*
- * Return the error string associated with the PAM error code.
+ * Return the error string associated with the PAM error code.  We do this as
+ * a giant case statement so that we don't assume anything about the error
+ * codes used by the system PAM library.
  */
 const char *
 pam_strerror(pam_handle_t *pamh UNUSED, int code)
 {
-    size_t index = code;
-
-    if (index >= sizeof(errors) / sizeof(errors[0]))
-        return "Unknown error";
-    else
-        return errors[index];
+    switch (code) {
+    case PAM_SUCCESS:     return "No error";
+    case PAM_OPEN_ERR:    return "Failure loading service module";
+    case PAM_SYMBOL_ERR:  return "Symbol not found";
+    case PAM_SERVICE_ERR: return "Error in service module";
+    case PAM_SYSTEM_ERR:  return "System error";
+    case PAM_BUF_ERR:     return "Memory buffer error";
+    default:              return "Unknown error";
+    }
 }
 
 

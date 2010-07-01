@@ -16,12 +16,12 @@
 #define PAM_UTIL_OPTIONS_H 1
 
 #include <config.h>
+#ifdef HAVE_KERBEROS
+# include <portable/krb5.h>
+#endif
 #include <portable/macros.h>
 #include <portable/stdbool.h>
 
-#ifdef HAVE_KERBEROS
-# include <krb5.h>
-#endif
 #include <sys/types.h>
 
 /* Forward declarations to avoid additional includes. */

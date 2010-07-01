@@ -13,9 +13,9 @@
  */
 
 #include <config.h>
+#include <portable/pam.h>
 #include <portable/system.h>
 
-#include <tests/fakepam/api.h>
 #include <tests/fakepam/testing.h>
 
 /* Used for unused parameters to silence gcc warnings. */
@@ -63,9 +63,9 @@ pam_end(pam_handle_t *pamh, int status UNUSED)
  */
 int
 pam_get_data(const pam_handle_t *pamh UNUSED, const char *name UNUSED,
-             PAM_CONST void **data UNUSED)
+             const void **data UNUSED)
 {
-    return PAM_SYSTEM_ERR;
+    return PAM_NO_MODULE_DATA;
 }
 int
 pam_get_item(const pam_handle_t *pamh UNUSED, int item UNUSED,
@@ -75,11 +75,12 @@ pam_get_item(const pam_handle_t *pamh UNUSED, int item UNUSED,
 }
 int
 pam_set_data(pam_handle_t *pamh UNUSED, const char *item UNUSED,
-             void *data UNUSED, pam_callback_type callback UNUSED)
+             void *data UNUSED,
+             void (*cleanup)(pam_handle_t *, void *, int) UNUSED)
 {
     return PAM_SYSTEM_ERR;
 }
-const char *
+PAM_CONST char *
 pam_getenv(pam_handle_t *pamh UNUSED, const char *name UNUSED)
 {
     return NULL;

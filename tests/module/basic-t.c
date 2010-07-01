@@ -8,12 +8,12 @@
  */
 
 #include <config.h>
+#include <portable/pam.h>
 #include <portable/system.h>
 
 #include <syslog.h>
 
 #include <kafs/kafs.h>
-#include <tests/fakepam/api.h>
 #include <tests/fakepam/testing.h>
 #include <tests/tap/basic.h>
 
@@ -26,13 +26,14 @@ main(void)
     pam_handle_t *pamh;
     int status;
     char *output, *expected;
+    struct pam_conv conv = { NULL, NULL };
     const char *argv_nothing[] = { "nopag", "notokens", NULL };
     const char *argv_nothing_debug[] = { "nopag", "notokens", "debug", NULL };
 
     plan(4);
 
     /* Do nothing and check for correct output status. */
-    status = pam_start("test", "testuser", NULL, &pamh);
+    status = pam_start("test", "testuser", &conv, &pamh);
     if (status != PAM_SUCCESS)
         sysbail("cannot create PAM handle");
     status = pam_sm_open_session(pamh, 0, ARRAY_SIZEOF(argv_nothing) - 1,
@@ -51,7 +52,7 @@ main(void)
     pam_end(pamh, status);
 
     /* Do nothing with debug enabled and check for correct output status. */
-    status = pam_start("test", "testuser", NULL, &pamh);
+    status = pam_start("test", "testuser", &conv, &pamh);
     if (status != PAM_SUCCESS)
         sysbail("cannot create PAM handle");
     status = pam_sm_open_session(pamh, 0, ARRAY_SIZEOF(argv_nothing_debug) - 1,
