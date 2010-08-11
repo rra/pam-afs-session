@@ -23,15 +23,3 @@ Description: PAM module to set up a PAG and obtain AFS tokens
  an external program (usually aklog) to obtain tokens from Kerberos
  tickets.  It is designed to work with a Kerberos PAM module that obtains
  the initial Kerberos tickets.
-
-Package: libpam-openafs-session
-Section: oldlibs
-Priority: extra
-Architecture: all
-Depends: libpam-afs-session
-Description: PAM module to obtain PAGs and AFS tokens (transitional package)
- The libpam-openafs-session package has been replaced with
- libpam-afs-session.  This transitional package depends on the new module
- and installs a symlink so that old PAM configurations will continue to
- work.  Once the system PAM configuration has been updated to reference
- pam_afs_session.so instead, this package can be removed.
