@@ -8,6 +8,7 @@ libpam-afs-session (1.7-2) UNRELEASED; urgency=low
   * Add ${misc:Depends} to dependencies.
   * Change section to admin to match override.
   * Update standards version to 3.9.1 (no changes required).
+  * Explicitly declare source format 1.0 for right now.
 
  -- Russ Allbery <rra@debian.org>  Wed, 11 Aug 2010 16:09:01 -0700
 
