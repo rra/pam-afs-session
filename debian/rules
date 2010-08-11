@@ -55,6 +55,9 @@ install-stamp: build-stamp
 	dh_installdirs
 	install -m 644 pam_afs_session.so \
 	    $(CURDIR)/debian/libpam-afs-session/lib/security
+	install -d debian/libpam-afs-session/usr/share/pam-configs
+	install -m 644 debian/pam-auth-update \
+	    debian/libpam-afs-session/usr/share/pam-configs/afs-session
 	touch $@
 
 binary: binary-arch binary-indep

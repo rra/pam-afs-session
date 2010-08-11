@@ -1,0 +1,9 @@
+Name: AFS session management
+Default: yes
+Priority: 64
+Auth-Type: Additional
+Auth:
+	optional			pam_afs_session.so
+Session-Type: Additional
+Session:
+	optional			pam_afs_session.so

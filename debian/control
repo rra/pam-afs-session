@@ -11,7 +11,7 @@ Vcs-Browser: http://git.debian.org/?p=pkg-k5-afs/libpam-afs-session.git
 
 Package: libpam-afs-session
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, libpam-runtime (>= 1.0.1-6~)
 Recommends: openafs-client, openafs-krb5 | heimdal-clients,
  libpam-krb5 | libpam-heimdal
 Description: PAM module to set up a PAG and obtain AFS tokens
