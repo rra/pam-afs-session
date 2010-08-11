@@ -1,5 +1,7 @@
 libpam-afs-session (1.7-2) UNRELEASED; urgency=low
 
+  * Apply upstream deltas:
+    - [3e57d766] Don't return an initialized value when notokens is set
   * Install a pam-auth-update profile for pam_afs_session that runs it
     from the additional section during both auth and session.  Thanks,
     Nate Coraor.  (Closes: #523796)
