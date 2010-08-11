@@ -1,9 +1,14 @@
 libpam-afs-session for Debian
 -----------------------------
 
-After installing this package, you must modify your PAM configuration
-for full AFS PAM support.  If you only need AFS integration for regular
-logins, adding:
+When you initially install this package, you will have the option to
+choose to automatically configure your PAM configuration to include it.
+If you do so, a standard set of PAM options will be used that will work
+for most users.  If those options do not work for you or if you can't use
+automatic PAM configuration for some reason (such as another PAM module
+that doesn't support it), see below.
+
+If you only need AFS integration for regular interactive logins, adding:
 
     session  required  pam_afs_session.so
 
@@ -49,4 +54,4 @@ option).
 
 For more information, see the pam_afs_session man page.
 
- -- Russ Allbery <rra@debian.org>, Sat,  8 Mar 2008 20:24:23 -0800
+ -- Russ Allbery <rra@debian.org>, Wed, 11 Aug 2010 16:15:10 -0700
