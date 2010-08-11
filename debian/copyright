@@ -10,7 +10,8 @@ Upstream Author:
 
 Debian packaging copyright:
 
-  Copyright 2007, 2008 Board of Trustees, Leland Stanford Jr. University
+  Copyright 2007, 2008, 2010
+      Board of Trustees, Leland Stanford Jr. University
 
   All files and modifications related to Debian packaging are covered
   under the same license terms as the rest of the package.
