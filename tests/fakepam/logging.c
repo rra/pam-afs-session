@@ -21,16 +21,6 @@
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED __attribute__((__unused__))
 
-/* The error strings returned by pam_strerror. */
-static const char * const errors[] = {
-    /* PAM_SUCCESS */     "No error",
-    /* PAM_OPEN_ERR */    "Failure loading service module",
-    /* PAM_SYMBOL_ERR */  "Symbol not found",
-    /* PAM_SERVICE_ERR */ "Error in service module",
-    /* PAM_SYSTEM_ERR */  "System error",
-    /* PAM_BUF_ERR */     "Memory buffer error"
-};
-
 /* The buffer used to accumulate log messages. */
 static char *messages = NULL;
 
