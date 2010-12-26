@@ -59,7 +59,7 @@ is_pam_call(const char *output, int expected, int seen, const char *function,
     logs = pam_output();
     if (!k_hasafs()) {
         is_int(PAM_IGNORE, seen, "%s (status)", desc);
-        if (debug) {
+        if (debug && strcmp(function, "pam_sm_authenticate") != 0) {
             if (asprintf(&p, "%d %s: entry (0x%x)"
                          "%d skipping, AFS apparently not available"
                          "%d %s: exit (ignore)", LOG_DEBUG, function,
@@ -71,7 +71,7 @@ is_pam_call(const char *output, int expected, int seen, const char *function,
             free(p);
     } else {
         is_int(expected, seen, "%s (status)", desc);
-        if (debug) {
+        if (debug && strcmp(function, "pam_sm_authenticate") != 0) {
             if (asprintf(&p, "%d %s: entry (0x%x)%s%d %s: exit (%s)",
                          LOG_DEBUG, function, flags, output, LOG_DEBUG,
                          function, ((expected == PAM_SUCCESS) ? "success"
@@ -117,9 +117,9 @@ run_tests(bool debug)
     status = pam_start("test", "testuser", &conv, &pamh);
     if (status != PAM_SUCCESS)
         sysbail("cannot create PAM handle");
-    status = pam_sm_authenticate(pamh, 0, ARGV(argv_nothing));
-    is_int(PAM_SUCCESS, status, "auth do nothing%s (status)", debug_desc);
-    ok(pam_output() == NULL, "auth do nothing%s (output)", debug_desc);
+    TEST_PAM(pam_sm_authenticate, 0, argv_nothing,
+             "", PAM_SUCCESS,
+             "do nothing");
     TEST_PAM(pam_sm_setcred, 0, argv_nothing,
              "", PAM_SUCCESS,
              "do nothing");
@@ -134,10 +134,10 @@ run_tests(bool debug)
              "refresh do nothing");
     TEST_PAM(pam_sm_open_session, 0, argv_nothing,
              "", PAM_SUCCESS,
-             "open session do nothing");
+             "do nothing");
     TEST_PAM(pam_sm_close_session, 0, argv_nothing,
              (debug ? skipping : ""), PAM_IGNORE,
-             "close session do nothing");
+             "do nothing");
     pam_end(pamh, status);
 
     free(skipping);
