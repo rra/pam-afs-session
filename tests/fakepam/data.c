@@ -145,7 +145,12 @@ fail:
  * doesn't end in an equal sign.  If it doesn't end in an equal sign, any
  * existing environment variable of that name is removed.  This follows the
  * Linux PAM semantics.
+ *
+ * On HP-UX, there is no separate PAM environment, so the module just uses the
+ * main environment.  For our tests to work on that platform, we therefore
+ * have to do the same thing.
  */
+#ifdef HAVE_PAM_GETENV
 int
 pam_putenv(pam_handle_t *pamh, const char *setting)
 {
@@ -208,3 +213,13 @@ pam_putenv(pam_handle_t *pamh, const char *setting)
     }
     return PAM_SUCCESS;
 }
+
+#else /* !HAVE_PAM_GETENV */
+
+int
+pam_putenv(pam_handle_t *pamh UNUSED, const char *setting)
+{
+    return putenv(setting);
+}
+
+#endif /* !HAVE_PAM_GETENV */
