@@ -109,7 +109,8 @@ else
 endif
 
 # All of the other test programs.
-tests_module_basic_t_SOURCES = tests/module/basic-t.c
+tests_module_basic_t_SOURCES = tests/module/basic-t.c tests/module/util.c \
+	tests/module/util.h
 tests_module_basic_t_LDFLAGS = $(KRB5_LDFLAGS)
 tests_module_basic_t_LDADD = options.lo public.lo tokens.lo		     \
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
