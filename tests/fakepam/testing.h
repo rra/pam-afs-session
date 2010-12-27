@@ -24,6 +24,7 @@ struct pam_handle {
     const char *service;
     const char *user;
     const struct pam_conv *conversation;
+    const char **environ;
 };
 
 BEGIN_DECLS

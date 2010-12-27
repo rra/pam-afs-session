@@ -40,6 +40,7 @@ pam_start(const char *service_name, const char *user,
     handle->service = service_name;
     handle->user = user;
     handle->conversation = pam_conversation;
+    handle->environ = NULL;
     *pamh = handle;
     return PAM_SUCCESS;
 }
@@ -77,21 +78,6 @@ int
 pam_set_data(pam_handle_t *pamh UNUSED, const char *item UNUSED,
              void *data UNUSED,
              void (*cleanup)(pam_handle_t *, void *, int) UNUSED)
-{
-    return PAM_SYSTEM_ERR;
-}
-PAM_CONST char *
-pam_getenv(pam_handle_t *pamh UNUSED, const char *name UNUSED)
-{
-    return NULL;
-}
-char **
-pam_getenvlist(pam_handle_t *pamh UNUSED)
-{
-    return NULL;
-}
-int
-pam_putenv(pam_handle_t *pamh UNUSED, const char *setting UNUSED)
 {
     return PAM_SYSTEM_ERR;
 }
