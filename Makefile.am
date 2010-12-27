@@ -11,8 +11,9 @@ EXTRA_DIST = .gitignore LICENSE autogen compat-aix.c			  \
 	examples/debian/common-account examples/debian/common-auth	  \
 	examples/debian/common-session examples/redhat/system-auth	  \
 	examples/solaris/pam.conf pam_afs_session.map pam_afs_session.pod \
-	tests/TESTS tests/data/fake-aklog tests/fakepam/README		  \
-	tests/kafs/basic-t tests/module/full-t tests/tap/libtap.sh
+	pam_afs_session.sym tests/TESTS tests/data/fake-aklog		  \
+	tests/fakepam/README tests/kafs/basic-t tests/module/full-t	  \
+	tests/tap/libtap.sh
 
 # The following library order matters for annoying reasons.  libafsauthent
 # contains its own com_err implementation, which we do not want to pick up.
@@ -58,11 +59,17 @@ else
     LIBKAFS = $(DEPEND_LIBS)
 endif
 
+if HAVE_LD_VERSION_SCRIPT
+    VERSION_LDFLAGS = -Wl,--version-script=${srcdir}/pam_afs_session.map
+else
+    VERSION_LDFLAGS = -export-symbols ${srcdir}/pam_afs_session.sym
+endif
+
 pamdir = $(libdir)/security
 pam_LTLIBRARIES = pam_afs_session.la
 pam_afs_session_la_SOURCES = internal.h options.c public.c tokens.c
-pam_afs_session_la_LDFLAGS = -module -shared -avoid-version $(KAFS_LDFLAGS) \
-	$(KRB5_LDFLAGS)
+pam_afs_session_la_LDFLAGS = -module -shared -avoid-version \
+	$(VERSION_LDFLAGS) $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 pam_afs_session_la_LIBADD = $(LIBKAFS) pam-util/libpamutil.la \
 	portable/libportable.la $(DEPEND_LIBS)
 dist_man_MANS = pam_afs_session.5

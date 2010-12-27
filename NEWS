@@ -19,6 +19,10 @@ pam-afs-session 1.8 (unreleased)
     than hand-configured linker rules.  This may improve portability on
     some platforms and may hurt it on other platforms.
 
+    The symbols exported by the PAM module are now limited to only the
+    public API on all platforms where Libtool supports limiting symbol
+    exports.
+
     On Linux, if configured with a prefix of /usr (rather than /usr/local,
     the default), the module will be installed into /lib/security (or
     /lib32/security or /lib64/security if they exist) rather than

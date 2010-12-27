@@ -20,6 +20,7 @@ AC_PROG_CC_C_O
 AC_PROG_INSTALL
 LT_INIT([disable-static])
 AC_CANONICAL_HOST
+RRA_LD_VERSION_SCRIPT
 
 dnl Probe for the functionality of the PAM libraries and their include file
 dnl naming.  Mac OS X puts them in pam/* instead of security/*.
@@ -88,19 +89,14 @@ dnl probably other ELF platforms, but the option is only valid with the GNU ld
 dnl and I don't know how to probe for that.
 dnl
 dnl More platforms could be handled here.  Contributions welcome.
-MAP="-Wl,--version-script=pam_afs_session.map"
 AS_CASE([$host],
-    [*-aix*],
-    [AS_IF([test x"$GCC" != x"yes"],
-        [AM_LDFLAGS="-Wl,-bexpall $AM_LDFLAGS"])],
-
     [*-hpux*],
     [AS_IF([test x"$GCC" = x"yes"],
         [AM_LDFLAGS="-Wl,-Bsymbolic $AM_LDFLAGS"],
         [AM_LDFLAGS="-Wl,+vshlibunsats $AM_LDFLAGS"])],
 
     [*-linux*],
-    [AM_LDFLAGS="-Wl,-z,defs -Wl,-Bsymbolic $MAP $AM_LDFLAGS"
+    [AM_LDFLAGS="-Wl,-z,defs -Wl,-Bsymbolic $AM_LDFLAGS"
      AS_IF([test x"${prefix}" = x"/usr"],
         [AS_IF([test x"${libdir}" = x'${exec_prefix}/lib'],
             [RRA_SET_LIBDIR])])],
