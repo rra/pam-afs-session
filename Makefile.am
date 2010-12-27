@@ -84,9 +84,9 @@ warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)' $(check_PROGRAMS)
 
 # The bits below are for the test suite, not for the main package.
-check_PROGRAMS = tests/runtests tests/kafs/basic tests/module/basic-t	\
-	tests/pam-util/args-t tests/pam-util/fakepam-t			\
-	tests/pam-util/logging-t tests/pam-util/options-t		\
+check_PROGRAMS = tests/runtests tests/kafs/basic tests/module/basic-t	    \
+	tests/module/cells-t tests/pam-util/args-t tests/pam-util/fakepam-t \
+	tests/pam-util/logging-t tests/pam-util/options-t		    \
 	tests/pam-util/vector-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
@@ -113,6 +113,12 @@ tests_module_basic_t_SOURCES = tests/module/basic-t.c tests/module/util.c \
 	tests/module/util.h
 tests_module_basic_t_LDFLAGS = $(KRB5_LDFLAGS)
 tests_module_basic_t_LDADD = options.lo public.lo tokens.lo		     \
+	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
+	portable/libportable.la
+tests_module_cells_t_SOURCES = tests/module/cells-t.c tests/module/util.c \
+	tests/module/util.h
+tests_module_cells_t_LDFLAGS = $(KRB5_LDFLAGS)
+tests_module_cells_t_LDADD = options.lo public.lo tokens.lo		     \
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
 	portable/libportable.la
 tests_pam_util_args_t_LDFLAGS = $(KRB5_LDFLAGS)
