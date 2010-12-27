@@ -104,13 +104,22 @@ run_tests(bool debug)
 {
     pam_handle_t *pamh;
     int status;
-    char *skipping;
+    char *skipping, *skiptokens, *skipsession, *program;
+    char *fake_aklog = test_file_path ("data/fake-aklog");
     struct pam_conv conv = { NULL, NULL };
     const char *debug_desc = debug ? " w/debug" : "";
     const char *argv_nothing[] = { "nopag", "notokens", "debug", NULL };
+    const char *argv_normal[] = { "program=", "debug", NULL };
 
     /* Build some messages that we'll use multiple times. */
     if (asprintf(&skipping, "%d skipping as configured", LOG_DEBUG) < 0)
+        sysbail("cannot allocate memory");
+    if (asprintf(&skiptokens, "%d skipping tokens, no Kerberos ticket cache",
+                 LOG_DEBUG) < 0)
+        sysbail("cannot allocate memory");
+    if (asprintf(&skipsession, "%d skipping, no open session", LOG_DEBUG) < 0)
+        sysbail("cannot allocate memory");
+    if (asprintf(&program, "program=%s", fake_aklog) < 0)
         sysbail("cannot allocate memory");
 
     /* Do nothing and check for correct output status. */
@@ -140,6 +149,38 @@ run_tests(bool debug)
              "do nothing");
     pam_end(pamh, status);
 
+    /*
+     * Test behavior without a Kerberos ticket.  This doesn't test actual
+     * creation of a PAG.
+     */
+    unlink("aklog-args");
+    status = pam_start("test", "testuser", &conv, &pamh);
+    if (status != PAM_SUCCESS)
+        sysbail("cannot create PAM handle");
+    argv_normal[0] = program;
+    TEST_PAM(pam_sm_authenticate, 0, argv_normal,
+             "", PAM_SUCCESS,
+             "no ticket");
+    TEST_PAM(pam_sm_setcred, 0, argv_normal,
+             (debug ? skiptokens : ""), PAM_SUCCESS,
+             "no ticket");
+    TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv_normal,
+             (debug ? skiptokens : ""), PAM_SUCCESS,
+             "reinitialize no ticket");
+    TEST_PAM(pam_sm_setcred, PAM_REFRESH_CRED, argv_normal,
+             (debug ? skiptokens : ""), PAM_SUCCESS,
+             "refresh no ticket");
+    TEST_PAM(pam_sm_open_session, 0, argv_normal,
+             (debug ? skiptokens : ""), PAM_SUCCESS,
+             "no ticket");
+    TEST_PAM(pam_sm_close_session, 0, argv_normal,
+             (debug ? skipsession : ""), PAM_SUCCESS,
+             "no ticket");
+    pam_end(pamh, status);
+    ok(access("aklog-args", F_OK) < 0, "aklog was not run");
+
+    test_file_path_free(fake_aklog);
+    free(program);
     free(skipping);
 }
 
@@ -147,7 +188,7 @@ run_tests(bool debug)
 int
 main(void)
 {
-    plan(14 * 2);
+    plan(27 * 2);
 
     run_tests(false);
     run_tests(true);
