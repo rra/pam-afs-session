@@ -34,7 +34,7 @@ else
     DEPEND_LIBS = $(KAFS_LIBS) $(KRB5_LIBS)
 endif
 
-AM_CPPFLAGS = $(KRB5_CPPFLAGS)
+AM_CPPFLAGS = $(KAFS_CPPFLAGS) $(KRB5_CPPFLAGS)
 
 noinst_LTLIBRARIES = pam-util/libpamutil.la portable/libportable.la
 portable_libportable_la_SOURCES = portable/dummy.c portable/krb5.h	\
@@ -52,9 +52,10 @@ if NEED_KAFS
     EXTRA_kafs_libkafs_la_SOURCES = kafs/sys-linux.c kafs/sys-syscall.c
     kafs_libkafs_la_SOURCES = kafs/kafs.c kafs/kafs.h portable/macros.h	\
 	portable/stdbool.h portable/system.h
-    kafs_libkafs_la_CPPFLAGS = $(KAFS_CPPFLAGS)
     kafs_libkafs_la_LDFLAGS = $(KAFS_LDFLAGS)
     LIBKAFS = kafs/libkafs.la
+else
+    LIBKAFS = $(DEPEND_LIBS)
 endif
 
 pamdir = $(libdir)/security
@@ -97,34 +98,25 @@ tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/data.c	\
 tests_tap_libtap_a_CPPFLAGS = -I$(abs_top_srcdir)/tests
 tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h
 
-# kafs tests are buit differently depending on whether we use our local
-# libkafs replacement.
-if NEED_KAFS
-    tests_kafs_basic_CPPFLAGS = $(KAFS_CPPFLAGS)
-    tests_kafs_basic_LDFLAGS = $(KAFS_LDFLAGS)
-    tests_kafs_basic_LDADD = kafs/libkafs.la portable/libportable.la \
-	$(KAFS_LIBS)
-else
-    tests_kafs_basic_LDADD = portable/libportable.la $(KAFS_LIBS)
-endif
-
-# All of the other test programs.
+# All of the test programs.
+tests_kafs_basic_LDFLAGS = $(KAFS_LDFLAGS)
+tests_kafs_basic_LDADD = portable/libportable.la $(LIBKAFS)
 tests_module_basic_t_SOURCES = tests/module/basic-t.c tests/module/util.c \
 	tests/module/util.h
-tests_module_basic_t_LDFLAGS = $(KRB5_LDFLAGS)
+tests_module_basic_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_basic_t_LDADD = options.lo public.lo tokens.lo		     \
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
-	portable/libportable.la
+	portable/libportable.la $(LIBKAFS)
 tests_module_cells_t_SOURCES = tests/module/cells-t.c tests/module/util.c \
 	tests/module/util.h
-tests_module_cells_t_LDFLAGS = $(KRB5_LDFLAGS)
+tests_module_cells_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_cells_t_LDADD = options.lo public.lo tokens.lo		     \
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
-	portable/libportable.la
-tests_module_full_LDFLAGS = $(KRB5_LDFLAGS)
+	portable/libportable.la $(LIBKAFS)
+tests_module_full_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_full_LDADD = options.lo public.lo tokens.lo	\
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
-	portable/libportable.la
+	portable/libportable.la $(LIBKAFS)
 tests_pam_util_args_t_LDFLAGS = $(KRB5_LDFLAGS)
 tests_pam_util_args_t_LDADD = pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a	\
