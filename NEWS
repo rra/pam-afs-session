@@ -24,6 +24,9 @@ pam-afs-session 1.8 (unreleased)
     --with-afs-lib configure options for finer control.  Remove obsolete
     --with-afs-headers configure option (use --with-afs-include instead).
 
+    Add an initial test suite that tests basic functionality and some
+    options.
+
     Update to rra-c-util 2.5:
 
     * Add --with-krb5-include and --with-krb5-lib configure options.
@@ -32,6 +35,7 @@ pam-afs-session 1.8 (unreleased)
     * Suppress error output from krb5-config probes.
     * Add support for the old Heimdal krb5_get_error_string interface.
     * Handle the bundled Heimdal on OpenBSD without a separate libroken.
+    * Add portability to systems with a broken snprintf or vsnprintf.
 
 pam-afs-session 1.7 (2008-07-10)
 
