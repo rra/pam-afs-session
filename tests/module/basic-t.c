@@ -104,12 +104,19 @@ run_tests(bool debug)
 {
     pam_handle_t *pamh;
     int status;
-    char *skipping, *skiptokens, *skipsession, *program;
-    char *fake_aklog = test_file_path ("data/fake-aklog");
+    char *skipping, *skiptokens, *skipsession, *program, *running, *already;
+    char *destroy;
+    char *aklog = test_file_path ("data/fake-aklog");
+    struct passwd *user;
     struct pam_conv conv = { NULL, NULL };
     const char *debug_desc = debug ? " w/debug" : "";
     const char *argv_nothing[] = { "nopag", "notokens", "debug", NULL };
     const char *argv_normal[] = { "program=", "debug", NULL };
+
+    /* Determine the user so that setuid will work. */
+    user = getpwuid(getuid());
+    if (user == NULL)
+        bail("cannot find username of current user");
 
     /* Build some messages that we'll use multiple times. */
     if (asprintf(&skipping, "%d skipping as configured", LOG_DEBUG) < 0)
@@ -119,7 +126,15 @@ run_tests(bool debug)
         sysbail("cannot allocate memory");
     if (asprintf(&skipsession, "%d skipping, no open session", LOG_DEBUG) < 0)
         sysbail("cannot allocate memory");
-    if (asprintf(&program, "program=%s", fake_aklog) < 0)
+    if (asprintf(&program, "program=%s", aklog) < 0)
+        sysbail("cannot allocate memory");
+    if (asprintf(&running, "%d running %s as UID %lu", LOG_DEBUG, aklog,
+                 (unsigned long) getuid()) < 0)
+        sysbail("cannot allocate memory");
+    if (asprintf(&already, "%d skipping, apparently already ran",
+                 LOG_DEBUG) < 0)
+        sysbail("cannot allocate memory");
+    if (asprintf(&destroy, "%d destroying tokens", LOG_DEBUG) < 0)
         sysbail("cannot allocate memory");
 
     /* Do nothing and check for correct output status. */
@@ -179,16 +194,55 @@ run_tests(bool debug)
     pam_end(pamh, status);
     ok(access("aklog-args", F_OK) < 0, "aklog was not run");
 
-    test_file_path_free(fake_aklog);
+    /*
+     * Fake the presence of a Kerberos ticket and see that aklog runs, and
+     * test suppression of multiple calls to pam_sm_setcred.
+     */
+    unlink("aklog-args");
+    status = pam_start("test", user->pw_name, &conv, &pamh);
+    if (status != PAM_SUCCESS)
+        sysbail("cannot create PAM handle");
+    if (pam_putenv(pamh, "KRB5CCNAME=krb5cc_test") != PAM_SUCCESS)
+        sysbail("cannot set PAM environment variable");
+    TEST_PAM(pam_sm_setcred, 0, argv_normal,
+             (debug ? running : ""), PAM_SUCCESS,
+             "normal");
+    ok(access("aklog-args", F_OK) == 0, "aklog was run");
+    unlink("aklog-args");
+    TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv_normal,
+             (debug ? running : ""), PAM_SUCCESS,
+             "normal reinitialize");
+    ok(access("aklog-args", F_OK) == 0, "aklog was run");
+    unlink("aklog-args");
+    TEST_PAM(pam_sm_setcred, PAM_REFRESH_CRED, argv_normal,
+             (debug ? running : ""), PAM_SUCCESS,
+             "normal refresh");
+    ok(access("aklog-args", F_OK) == 0, "aklog was run");
+    unlink("aklog-args");
+    TEST_PAM(pam_sm_setcred, 0, argv_normal,
+             (debug ? already : ""), PAM_SUCCESS,
+             "normal");
+    ok(access("aklog-args", F_OK) < 0, "aklog was not run");
+    TEST_PAM(pam_sm_close_session, 0, argv_normal,
+             (debug ? destroy : ""), PAM_SUCCESS,
+             "normal");
+    pam_end(pamh, status);
+
+    test_file_path_free(aklog);
     free(program);
     free(skipping);
+    free(skiptokens);
+    free(skipsession);
+    free(running);
+    free(already);
+    free(destroy);
 }
 
 
 int
 main(void)
 {
-    plan(27 * 2);
+    plan(41 * 2);
 
     run_tests(false);
     run_tests(true);
