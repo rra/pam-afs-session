@@ -11,6 +11,7 @@
 #include <portable/pam.h>
 #include <portable/system.h>
 
+#include <pwd.h>
 #include <syslog.h>
 
 #include <tests/fakepam/testing.h>
