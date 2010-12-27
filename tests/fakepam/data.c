@@ -128,6 +128,7 @@ pam_getenvlist(pam_handle_t *pamh)
         if (environ[i] == NULL)
             goto fail;
     }
+    environ[i] = NULL;
     return environ;
 
 fail:
