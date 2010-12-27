@@ -1,0 +1,98 @@
+#!/bin/sh
+#
+# Test suite for full pam-afs-session functionality.
+#
+# Written by Russ Allbery <rra@stanford.edu>
+# Copyright 2009, 2010 Board of Trustees, Leland Stanford Jr. University
+#
+# See LICENSE for licensing terms.
+
+. "$SOURCE/tap/libtap.sh"
+cd "$BUILD/module"
+
+# Check whether we already have a token.
+if tokens | grep -i 'tokens for ' >/dev/null ; then
+    tokens=true
+else
+    tokens=false
+fi
+
+# Run the helper program and save its output and error.
+./full > basic-output 2> basic-errors
+status=$?
+
+# If it exited with status 2, AFS is apparently not running and we should skip
+# all of the tests.  If it exited with status 3, we were unable to get tokens
+# and should skip all the tests.  If it exited with status 4, something failed
+# badly; bail out.
+if [ "$status" -eq 2 ] ; then
+    rm -f basic-output basic-errors
+    skip_all 'AFS not available'
+fi
+if [ "$status" -eq 3 ] ; then
+    rm -f basic-output basic-errors
+    skip_all 'Unable to get tokens'
+fi
+if [ "$status" -eq 4 ] ; then
+    sed 's/^/ #/' basic-errors
+    rm -f basic-output basic-errors
+    plan 5
+    bail
+fi
+
+# Check the first tokens output and be sure that there are tokens going in to
+# the module.  If there aren't, similarly skip the test.
+if sed -n '/^=== tokens .aklog./,/^===/p' basic-output \
+        | grep -i 'tokens for ' > /dev/null ; then
+    :
+else
+    rm -f basic-output basic-errors
+    skip_all 'Unable to get tokens'
+fi
+
+# Start the actual tests.
+plan 5
+
+# Check that there are no tokens at the start.
+if sed -n '/^=== tokens .before./,/^===/p' basic-output \
+        | grep -i 'tokens for ' > /dev/null ; then
+    ok 'no token present at start of test' false
+else
+    ok 'no token present at start of test' true
+fi
+
+# In the middle of the session, there should be tokens.
+if sed -n '/^=== tokens .session./,/^===/p' basic-output \
+        | grep -i 'tokens for ' > /dev/null ; then
+    ok 'token present inside session' true
+else
+    ok 'token present inside session' false
+fi
+
+# After the session, no tokens.
+if sed -n '/^=== tokens .after./,/^===/p' basic-output \
+        | grep -i 'tokens for ' > /dev/null ; then
+    ok 'token removed at end of session' false
+else
+    ok 'token removed at end of session' true
+fi
+
+# Be sure that everything succeeded; otherwise print out the errors file.
+if [ "$status" -ne 0 ] ; then
+    sed 's/^/# /' basic-errors
+fi
+ok 'all PAM calls succeeded' [ "$status" -eq 0 ]
+
+# Ensure that none of this affected our starting token.
+if [ "$tokens" = true ] ; then
+    if tokens | grep -i 'tokens for ' >/dev/null ; then
+        ok 'still have initial token' true
+    else
+        ok 'still have initial token' false
+    fi
+else
+    skip 'no existing tokens'
+fi
+
+# Clean up.
+rm -f basic-output basic-errors
