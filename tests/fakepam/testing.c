@@ -41,19 +41,33 @@ pam_start(const char *service_name, const char *user,
     handle->user = user;
     handle->conversation = pam_conversation;
     handle->environ = NULL;
+    handle->data = NULL;
     *pamh = handle;
     return PAM_SUCCESS;
 }
 
 
 /*
- * Free the pam_handle_t data structure and related resources.  This is not
- * strictly necessary since it's only used for testing, but it helps keep our
- * memory usage clean so that we can run the test suite under valgrind.
+ * Free the pam_handle_t data structure and related resources.  This is
+ * important to test the data cleanups.  Freeing the memory is not strictly
+ * required since it's only used for testing, but it helps keep our memory
+ * usage clean so that we can run the test suite under valgrind.
  */
 int
-pam_end(pam_handle_t *pamh, int status UNUSED)
+pam_end(pam_handle_t *pamh, int status)
 {
+    struct fakepam_data *item, *next;
+
+    if (pamh->environ != NULL)
+        free(pamh->environ);
+    for (item = pamh->data; item != NULL; ) {
+        if (item->cleanup != NULL)
+            item->cleanup (pamh, item->data, status);
+        free(item->name);
+        next = item->next;
+        free(item);
+        item = next;
+    }
     free(pamh);
     return PAM_SUCCESS;
 }
@@ -63,21 +77,8 @@ pam_end(pam_handle_t *pamh, int status UNUSED)
  * The following functions are just stubs for right now and always fail.
  */
 int
-pam_get_data(const pam_handle_t *pamh UNUSED, const char *name UNUSED,
-             const void **data UNUSED)
-{
-    return PAM_NO_MODULE_DATA;
-}
-int
 pam_get_item(const pam_handle_t *pamh UNUSED, int item UNUSED,
              PAM_CONST void **data UNUSED)
-{
-    return PAM_SYSTEM_ERR;
-}
-int
-pam_set_data(pam_handle_t *pamh UNUSED, const char *item UNUSED,
-             void *data UNUSED,
-             void (*cleanup)(pam_handle_t *, void *, int) UNUSED)
 {
     return PAM_SYSTEM_ERR;
 }

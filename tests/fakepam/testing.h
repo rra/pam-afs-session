@@ -19,12 +19,21 @@
 #include <portable/pam.h>
 #include <portable/macros.h>
 
+/* Used inside the fake PAM library to hold data items. */
+struct fakepam_data {
+    char *name;
+    void *data;
+    void (*cleanup)(pam_handle_t *, void *, int);
+    struct fakepam_data *next;
+};
+
 /* This is an opaque data structure, so we can put whatever we want in it. */
 struct pam_handle {
     const char *service;
     const char *user;
     const struct pam_conv *conversation;
     const char **environ;
+    struct fakepam_data *data;
 };
 
 BEGIN_DECLS

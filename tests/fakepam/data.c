@@ -22,6 +22,57 @@
 
 
 /*
+ * Return a stored PAM data element in the provided data variable.
+ */
+int
+pam_get_data(const pam_handle_t *pamh, const char *name, const void **data)
+{
+    struct fakepam_data *item;
+
+    for (item = pamh->data; item != NULL; item = item->next)
+        if (strcmp(item->name, name) == 0) {
+            *data = item->data;
+            return PAM_SUCCESS;
+        }
+    return PAM_NO_MODULE_DATA;
+}
+
+
+/*
+ * Store a data item.  Replaces the existing data item (calling its cleanup)
+ * if it is already set; otherwise, add a new data item.
+ */
+int
+pam_set_data(pam_handle_t *pamh, const char *item, void *data,
+             void (*cleanup)(pam_handle_t *, void *, int))
+{
+    struct fakepam_data *p;
+
+    for (p = pamh->data; p != NULL; p = p->next)
+        if (strcmp(p->name, item) == 0) {
+            if (p->cleanup != NULL)
+                p->cleanup (pamh, p->data, PAM_DATA_REPLACE);
+            p->data = data;
+            p->cleanup = cleanup;
+            return PAM_SUCCESS;
+        }
+    p = malloc(sizeof(struct fakepam_data));
+    if (p == NULL)
+        return PAM_BUF_ERR;
+    p->name = strdup(item);
+    if (p->name == NULL) {
+        free(p);
+        return PAM_BUF_ERR;
+    }
+    p->data = data;
+    p->cleanup = cleanup;
+    p->next = pamh->data;
+    pamh->data = p;
+    return PAM_SUCCESS;
+}
+
+
+/*
  * Return the user for the PAM context.
  */
 int
