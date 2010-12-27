@@ -27,6 +27,15 @@ main(void)
     char **environ, *p;
     size_t i;
 
+    /*
+     * Skip this test if the native PAM library doesn't support a PAM
+     * environment, since we "break" pam_putenv to mirror the native behavior
+     * in that case.
+     */
+#ifndef HAVE_PAM_GETENV
+    skip_all("system doesn't support PAM environment");
+#endif
+
     plan(33);
 
     /* Basic environment manipulation. */
