@@ -19,6 +19,16 @@ pam-afs-session 1.8 (unreleased)
     than hand-configured linker rules.  This may improve portability on
     some platforms and may hurt it on other platforms.
 
+    On Linux, if configured with a prefix of /usr (rather than /usr/local,
+    the default), the module will be installed into /lib/security (or
+    /lib32/security or /lib64/security if they exist) rather than
+    /usr/lib/security to match the default PAM configuration.
+
+    The module is now installed under $libdir/security except for the
+    above exception, rather than a lib32 or lib64 directory, except for
+    the special case of /usr.  To install into another lib32 or lib64
+    directory, use the --libdir option to configure.
+
     Update the embedded kafs code to rra-c-util 2.3, adding
     --with-libkafs-include, --with-libkafs-lib, --with-afs-include, and
     --with-afs-lib configure options for finer control.  Remove obsolete

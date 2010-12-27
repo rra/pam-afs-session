@@ -75,73 +75,40 @@ dnl Solaris.
 AC_DEFINE([_REENTRANT], [1],
     [Define to 1 on Solaris for correct errno handling with threads.])
 
-dnl Try to add the compiler flags for position-independent code and try to
-dnl specify the binding so that any references within the PAM module are
-dnl resolved to the functions in that module in preference to any external
+dnl Try to specify the binding so that any references within the PAM module
+dnl are resolved to the functions in that module in preference to any external
 dnl function.
 dnl
 dnl Also, if and only if we're on Linux, make sure that all the symbols in the
 dnl module are resolved, try to adjust for the 32-bit vs. 64-bit library
-dnl paths, and use a version script to be sure that we hide internal
-dnl functions.  The version script could also be used on Solaris and probably
-dnl other ELF platforms, but the option is only valid with the GNU ld and I
-dnl don't know how to probe for that.
+dnl paths, install into /lib or /lib64 instead of /usr/lib or /usr/lib64 if
+dnl the prefix is /usr, and use a version script to be sure that we hide
+dnl internal functions.  The version script could also be used on Solaris and
+dnl probably other ELF platforms, but the option is only valid with the GNU ld
+dnl and I don't know how to probe for that.
 dnl
 dnl More platforms could be handled here.  Contributions welcome.
 MAP="-Wl,--version-script=pam_afs_session.map"
-case "$host" in
-*-aix*)
-    AS_IF([test "$GCC" = "yes"],
-        [CFLAGS="-fPIC $CFLAGS"
-         LD="$CC"
-         LDFLAGS="-fPIC -shared $LDFLAGS"],
-        [LD=ld
-         LDFLAGS="-G -bnoentry -bexpall $LDFLAGS"])
-    ;;
-*-darwin*)
-    AS_IF([test "$GCC" = "yes"],
-        [LD="$CC"
-         LDFLAGS="-bundle $LDFLAGS"],
-        [AC_MSG_ERROR([Only know compiler flags for gcc on this platform])])
-    ;;
-*-hpux*)
-    AS_IF([test "$GCC" = "yes"],
-        [CFLAGS="-fPIC $CFLAGS"
-         LD="$CC"
-         LDFLAGS="-fPIC -shared -Wl,-Bsymbolic $LDFLAGS"],
-        [CFLAGS="+z $CFLAGS"
-         LD="ld"
-         LDFLAGS="+vshlibunsats -b $LDFLAGS"])
-    ;;
-x86_64-*-linux*)
-    CFLAGS="-fPIC $CFLAGS"
-    LD="$CC"
-    LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $MAP $LDFLAGS"
-    AS_IF([test x"$libdir" = x'${exec_prefix}/lib'],
-        [libdir='${exec_prefix}/lib64'])
-    ;;
-*-linux*)
-    CFLAGS="-fPIC $CFLAGS"
-    LD="$CC"
-    LDFLAGS="-fPIC -shared -Wl,-z,defs -Wl,-Bsymbolic $MAP $LDFLAGS"
-    ;;
-*-solaris2*)
-    AS_IF([test "$GCC" = "yes"],
-        [CFLAGS="-fPIC $CFLAGS"
-         LDFLAGS="-fPIC -shared -Wl,-Bsymbolic $LDFLAGS"],
-        [CFLAGS="-KPIC $CFLAGS"
-         LDFLAGS="-G -xldscope=symbolic $LDFLAGS"])
-    LD="$CC"
-    ;;
-*)
-    AS_IF([test "$GCC" = "yes"],
-        [CFLAGS="-fPIC $CFLAGS"
-         LD="$CC"
-         LDFLAGS="-fPIC -shared $LDFLAGS"],
-        [AC_MSG_ERROR([Only know compiler flags for gcc on this platform])])
-    ;;
-esac
-AC_SUBST([LD])
+AS_CASE([$host],
+    [*-aix*],
+    [AS_IF([test x"$GCC" != x"yes"],
+        [AM_LDFLAGS="-Wl,-bexpall $AM_LDFLAGS"])],
+
+    [*-hpux*],
+    [AS_IF([test x"$GCC" = x"yes"],
+        [AM_LDFLAGS="-Wl,-Bsymbolic $AM_LDFLAGS"],
+        [AM_LDFLAGS="-Wl,+vshlibunsats $AM_LDFLAGS"])],
+
+    [*-linux*],
+    [AM_LDFLAGS="-Wl,-z,defs -Wl,-Bsymbolic $MAP $AM_LDFLAGS"
+     AS_IF([test x"${prefix}" = x"/usr"],
+        [AS_IF([test x"${libdir}" = x'${exec_prefix}/lib'],
+            [RRA_SET_LIBDIR])])],
+
+    [*-solaris2*],
+    [AS_IF([test x"$GCC" = x"yes"],
+        [AM_LDFLAGS="-Wl,-Bsymbolic $AM_LDFLAGS"],
+        [AM_LDFLAGS="-Wl,-xldscope=symbolic $AM_LDFLAGS"])])
 
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_FILES([Makefile])

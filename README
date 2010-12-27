@@ -148,12 +148,13 @@ COMPILING AND INSTALLING
       make install
 
   You can change the installation locations with the --prefix, --mandir,
-  and --libdir options to configure.  The module will be installed in a
-  subdirectory of $libdir named security and, on x86_64 Linux, $libdir
-  will be changed to lib64 to match the default PAM configuration.
-  Alternately, you can simply copy pam_afs_session.so to whatever
-  directory you use for PAM modules.  On Solaris, you will need to make
-  the module executable.
+  and --libdir options to configure.  The module will normally be
+  installed in a subdirectory of $libdir named security, but if --prefix
+  is set to /usr (rather than /usr/local, the default), the module will be
+  installed in /lib/security (or /lib32/security or /lib64/security if
+  they exist) to match the default PAM configuration.  Alternately, you
+  can simply copy pam_afs_session.so to whatever directory you use for PAM
+  modules.  On Solaris, you will need to make the module executable.
 
   By default, if libkafs or libkopenafs are available, pam-afs-session
   will use them in preference to its own system call implementation.  If
