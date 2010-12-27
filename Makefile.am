@@ -24,6 +24,10 @@ EXTRA_DIST = .gitignore LICENSE autogen compat-aix.c			  \
 # want to link with the AFS libraries first, since otherwise in the
 # --enable-reduced-depends case the linker may try to resolve the com_err
 # symbols in libkrb5 from the AFS libraries.
+#
+# This is thankfully all fixed in later versions of AFS, which rename all
+# the com_err symbols so that they don't conflict.  But we still support
+# older versions.
 if KRB5_USES_COM_ERR
     DEPEND_LIBS = $(KRB5_LIBS) $(KAFS_LIBS)
 else
