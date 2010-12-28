@@ -71,6 +71,7 @@ AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([sys/bittypes.h])
 AC_CHECK_DECLS([snprintf, vsnprintf])
 AC_TYPE_LONG_LONG_INT
+AC_TYPE_UINT32_T
 RRA_FUNC_SNPRINTF
 AC_REPLACE_FUNCS([asprintf issetuidgid strlcat strlcpy])
 
