@@ -162,6 +162,7 @@ AC_DEFUN([RRA_LIB_KAFS],
 
  dnl If we may use the system libkafs, see if we can find one.  Enable the
  dnl Kerberos libraries if we found any, in case libkafs depends on Kerberos.
+ AC_CHECK_HEADERS([sys/ioccom.h])
  AS_IF([test x"$rra_libkafs" != xfalse],
     [_RRA_LIB_KAFS_PATHS
      AS_IF([test x"$rra_use_kerberos" = xtrue],
@@ -187,8 +188,7 @@ AC_DEFUN([RRA_LIB_KAFS],
  AS_IF([test x"$rra_libkafs" = xtrue],
     [AC_DEFINE([HAVE_K_HASAFS], 1,
         [Define to 1 if you have the k_hasafs function.])],
-    [AC_CHECK_HEADERS([sys/ioccom.h])
-     AC_LIBOBJ([k_haspag])
+    [AC_LIBOBJ([k_haspag])
      AS_CASE([$host],
         [[*-apple-darwin[89]*]],
         [rra_build_kafs=true
