@@ -19,8 +19,10 @@ dnl RRA_LIB_KFS_SWITCH.
 dnl
 dnl Sets HAVE_K_HASAFS if the k_hasafs function was found in a libkafs
 dnl library.  Sets HAVE_LSETPAG if building against the AFS libraries and the
-dnl lsetpag function is present.  Defines HAVE_KAFS_LINUX or HAVE_KAFS_SYSCALL
-dnl as appropriate if the replacement kafs library is needed.
+dnl lsetpag function is present.  Sets HAVE_KAFS_REPLACEMENT if building the
+dnl replacement kafs library.  Defines HAVE_KAFS_DARWIN8, HAVE_KAFS_DARWIN10,
+dnl HAVE_KAFS_LINUX, HAVE_KAFS_SOLARIS, or HAVE_KAFS_SYSCALL as appropriate if
+dnl the replacement kafs library is needed.
 dnl
 dnl If building a replacement library is needed, sets rra_build_kafs to true.
 dnl Otherwise, sets it to false.  This is intended for use with an Automake
@@ -181,11 +183,15 @@ AC_DEFUN([RRA_LIB_KAFS],
      AS_CASE([$host],
         [[*-apple-darwin[89]*]],
         [rra_build_kafs=true
+         AC_DEFINE([HAVE_KAFS_REPLACEMENT], [1],
+            [Define to 1 if the libkafs replacement is built.])
          AC_DEFINE([HAVE_KAFS_DARWIN8], [1],
             [Define to 1 to use the Mac OS X 10.4 /dev interface.])],
 
         [*-apple-darwin1*],
         [rra_build_kafs=true
+         AC_DEFINE([HAVE_KAFS_REPLACEMENT], [1],
+            [Define to 1 if the libkafs replacement is built.])
          AC_DEFINE([HAVE_KAFS_DARWIN10], [1],
             [Define to 1 to use the Mac OS X 10.6 /dev interface.])],
 
@@ -194,13 +200,19 @@ AC_DEFUN([RRA_LIB_KAFS],
 
         [*-linux*],
         [rra_build_kafs=true
+         AC_DEFINE([HAVE_KAFS_REPLACEMENT], [1],
+            [Define to 1 if the libkafs replacement is built.])
          AC_DEFINE([HAVE_KAFS_LINUX], [1],
             [Define to 1 to use the Linux AFS /proc interface.])],
 
         [[*-solaris2.1[12345678]*]],
         [rra_build_kafs=true
+         AC_DEFINE([HAVE_KAFS_REPLACEMENT], [1],
+            [Define to 1 if the libkafs replacement is built.])
          AC_DEFINE([HAVE_KAFS_SOLARIS], [1],
-            [Define to 1 to use the Solaris 11 /dev interface.])],
+            [Define to 1 to use the Solaris 11 /dev interface.])
+         AC_DEFINE([_REENTRANT], [1],
+            [Define to 1 on Solaris for threaded errno handling.])],
 
         [*],
         [rra_build_kafs=true
@@ -208,6 +220,8 @@ AC_DEFUN([RRA_LIB_KAFS],
          RRA_LIB_KAFS_SWITCH
          AC_CHECK_HEADERS([afs/param.h sys/ioccom.h])
          RRA_LIB_KAFS_RESTORE
+         AC_DEFINE([HAVE_KAFS_REPLACEMENT], [1],
+            [Define to 1 if the libkafs replacement is built.])
          AC_DEFINE([HAVE_KAFS_SYSCALL], [1],
             [Define to 1 to use the AFS syscall interface.])
          AC_DEFINE([_REENTRANT], [1],
