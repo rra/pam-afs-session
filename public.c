@@ -35,6 +35,7 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
                     const char *argv[])
 {
     struct pam_args *args;
+    int status;
     int pamret = PAM_SUCCESS;
     const void *dummy;
 
@@ -57,9 +58,13 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
      * PAG.  Do this even if we're otherwise ignoring the user.
      */
     if (pam_get_data(pamh, "pam_afs_session", &dummy) == PAM_SUCCESS) {
-        putil_debug(args, "skipping, apparently already ran");
-        pamret = PAM_SUCCESS;
-        goto done;
+        if (!k_haspag() && !args->config->nopag)
+            putil_notice(args, "PAG apparently lost, recreating");
+        else {
+            putil_debug(args, "skipping, apparently already ran");
+            pamret = PAM_SUCCESS;
+            goto done;
+        }
     }
     if (!args->config->nopag && k_setpag() != 0) {
         putil_err(args, "PAG creation failed: %s", strerror(errno));
@@ -144,8 +149,12 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
     if (!(flags & (PAM_REINITIALIZE_CRED | PAM_REFRESH_CRED))) {
         status = pam_get_data(pamh, "pam_afs_session", &dummy);
         if (status == PAM_SUCCESS) {
-            putil_debug(args, "skipping, apparently already ran");
-            goto done;
+            if (!k_haspag() && !args->config->nopag)
+                putil_notice(args, "PAG apparently lost, recreating");
+            else {
+                putil_debug(args, "skipping, apparently already ran");
+                goto done;
+            }
         }
         if (!args->config->nopag && k_setpag() != 0) {
             putil_err(args, "PAG creation failed: %s", strerror(errno));

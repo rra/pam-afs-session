@@ -1,6 +1,14 @@
                    User-Visible pam-afs-session Changes
 
-pam-afs-session 1.8 (unreleased)
+pam-afs-session 2.0 (unreleased)
+
+    If there is no PAG, create a new one and obtain tokens in pam_setcred
+    and pam_open_session even if the module has already run.  This works
+    around destruction of the PAG on Linux by keyring initialization
+    modules, which can otherwise be hard to avoid due to the ordering
+    between the auth and session stacks.  This support uses the
+    VIOC_GETPAG AFS system call if it is available and falls back on
+    analyzing the supplemental group list if it is not.
 
     Add untested support for the ioctl AFS system call methods on Mac OS X
     and Solaris 11 to the included kafs library, which is used if neither
@@ -8,14 +16,6 @@ pam-afs-session 1.8 (unreleased)
 
     Avoid returning an uninitialized value from pam_open_session when
     notokens is set.  Thanks, Ian Ward Comfort.
-
-    Document bad interactions between pam_keyinit and pam_afs_session with
-    OpenSSH in README.
-
-    Fix a configure error when built --without-krb5.
-
-    When debugging is enabled, log an exit status of PAM_IGNORE as ignore
-    rather than failure.
 
     pam-afs-session is now built using Automake and Libtool to bring it
     more in line with other software packages.  This means that it now
@@ -36,6 +36,11 @@ pam-afs-session 1.8 (unreleased)
     above exception, rather than a lib32 or lib64 directory, except for
     the special case of /usr.  To install into another lib32 or lib64
     directory, use the --libdir option to configure.
+
+    Fix a configure error when built --without-krb5.
+
+    When debugging is enabled, log an exit status of PAM_IGNORE as ignore
+    rather than failure.
 
     Update the embedded kafs code to rra-c-util 2.3, adding
     --with-libkafs-include, --with-libkafs-lib, --with-afs-include, and
