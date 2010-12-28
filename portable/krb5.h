@@ -54,6 +54,14 @@ void krb5_free_error_message(krb5_context, const char *);
 # define krb5_free_default_realm(c, r) free(r)
 #endif
 
+/*
+ * MIT-specific.  Heimdal automatically ignores environment variables if
+ * called in a setuid context.
+ */
+#ifndef HAVE_KRB5_INIT_SECURE_CONTEXT
+# define krb5_init_secure_context(c) krb5_init_context(c)
+#endif
+
 /* Undo default visibility change. */
 #pragma GCC visibility pop
 

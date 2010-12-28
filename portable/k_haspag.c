@@ -41,7 +41,7 @@ k_haspag(void)
 
     iob.in = NULL;
     iob.in_size = 0;
-    iob.out = &pag;
+    iob.out = (void *) &pag;
     iob.out_size = sizeof(pag);
     result = k_pioctl(NULL, _IOW('C', 13, struct ViceIoctl), &iob, 0);
     if (result == 0)

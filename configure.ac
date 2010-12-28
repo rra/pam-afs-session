@@ -57,7 +57,10 @@ RRA_LIB_KRB5_OPTIONAL
 RRA_LIB_KRB5_SWITCH
 AS_IF([test x"$rra_use_kerberos" != xfalse],
     [AC_CHECK_HEADERS([k5profile.h])
-     AC_CHECK_FUNCS([krb5_appdefault_string krb5_free_default_realm])
+     AC_CHECK_FUNCS([krb5_appdefault_string \
+         krb5_free_default_realm \
+         krb5_init_secure_context])
+     AC_CHECK_TYPES([krb5_realm], , , [#include <krb5.h>])
      AC_LIBOBJ([krb5-extra])])
 RRA_LIB_KRB5_RESTORE
 RRA_LIB_KAFS
