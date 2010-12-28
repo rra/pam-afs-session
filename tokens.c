@@ -182,7 +182,6 @@ pamafs_afslog(struct pam_args *args, const char *cachename,
               struct passwd *pwd)
 {
     krb5_error_code ret;
-    krb5_context ctx;
     krb5_ccache cache;
     size_t i;
 
@@ -201,14 +200,14 @@ pamafs_afslog(struct pam_args *args, const char *cachename,
         ret = krb5_afslog_uid_home(args->ctx, cache, NULL, NULL, pwd->pw_uid,
                                    pwd->pw_dir);
         if (ret != 0)
-            putil_err_krb5(ctx, ret, "cannot obtain tokens for path %s",
+            putil_err_krb5(args, ret, "cannot obtain tokens for path %s",
                            pwd->pw_dir);
     } else if (args->config->afs_cells == NULL) {
         putil_debug(args, "obtaining tokens for UID %lu",
                     (unsigned long) pwd->pw_uid);
         ret = krb5_afslog_uid(args->ctx, cache, NULL, NULL, pwd->pw_uid);
         if (ret != 0)
-            putil_err_krb5(ctx, ret, "cannot obtain tokens");
+            putil_err_krb5(args, ret, "cannot obtain tokens");
     } else {
         for (i = 0; i < args->config->afs_cells->count; i++) {
             putil_debug(args, "obtaining tokens for UID %lu in cell %s",
@@ -218,7 +217,7 @@ pamafs_afslog(struct pam_args *args, const char *cachename,
                                   args->config->afs_cells->strings[i], NULL,
                                   pwd->pw_uid);
             if (ret != 0)
-                putil_err_krb5(ctx, ret, "cannot obtain tokens for cell %s",
+                putil_err_krb5(args, ret, "cannot obtain tokens for cell %s",
                                args->config->afs_cells->strings[i]);
         }
     }

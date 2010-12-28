@@ -98,7 +98,7 @@ test_aklog(void)
 {
     krb5_error_code status;
     krb5_context ctx;
-    krb5_ccache cache;
+    krb5_ccache ccache;
 
     status = krb5_init_context(&ctx);
     if (status == 0)

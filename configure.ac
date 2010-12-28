@@ -64,6 +64,9 @@ AS_IF([test x"$rra_use_kerberos" != xfalse],
      AC_LIBOBJ([krb5-extra])])
 RRA_LIB_KRB5_RESTORE
 RRA_LIB_KAFS
+RRA_LIB_KAFS_SWITCH
+AC_CHECK_FUNCS([krb5_afslog])
+RRA_LIB_KAFS_RESTORE
 AM_CONDITIONAL([NEED_KAFS], [test x"$rra_build_kafs" = xtrue])
 
 dnl Other portability checks.
