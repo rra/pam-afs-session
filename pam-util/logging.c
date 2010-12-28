@@ -140,9 +140,10 @@ log_pam(struct pam_args *pargs, int priority, int status, const char *fmt,
         log_pam(pargs, priority, status, fmt, args);                    \
         va_end(args);                                                   \
     }
-LOG_FUNCTION(crit,  LOG_CRIT)
-LOG_FUNCTION(err,   LOG_ERR)
-LOG_FUNCTION(debug, LOG_DEBUG)
+LOG_FUNCTION(crit,   LOG_CRIT)
+LOG_FUNCTION(err,    LOG_ERR)
+LOG_FUNCTION(notice, LOG_NOTICE)
+LOG_FUNCTION(debug,  LOG_DEBUG)
 
 
 /*
@@ -232,8 +233,9 @@ log_krb5(struct pam_args *pargs, int priority, int status, const char *fmt,
         log_krb5(pargs, priority, status, fmt, args);                   \
         va_end(args);                                                   \
     }
-LOG_FUNCTION_KRB5(crit,  LOG_CRIT)
-LOG_FUNCTION_KRB5(err,   LOG_ERR)
-LOG_FUNCTION_KRB5(debug, LOG_DEBUG)
+LOG_FUNCTION_KRB5(crit,   LOG_CRIT)
+LOG_FUNCTION_KRB5(err,    LOG_ERR)
+LOG_FUNCTION_KRB5(notice, LOG_NOTICE)
+LOG_FUNCTION_KRB5(debug,  LOG_DEBUG)
 
 #endif /* HAVE_KERBEROS */

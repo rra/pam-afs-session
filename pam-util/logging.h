@@ -40,6 +40,10 @@ void putil_err(struct pam_args *, const char *, ...)
     __attribute__((__format__(printf, 2, 3)));
 void putil_err_pam(struct pam_args *, int, const char *, ...)
     __attribute__((__format__(printf, 3, 4)));
+void putil_notice(struct pam_args *, const char *, ...)
+    __attribute__((__format__(printf, 2, 3)));
+void putil_notice_pam(struct pam_args *, const char *, ...)
+    __attribute__((__format__(printf, 2, 3)));
 void putil_debug(struct pam_args *, const char *, ...)
     __attribute__((__format__(printf, 2, 3)));
 void putil_debug_pam(struct pam_args *, int, const char *, ...)
@@ -54,6 +58,8 @@ void putil_debug_pam(struct pam_args *, int, const char *, ...)
 void putil_crit_krb5(struct pam_args *, int, const char *, ...)
     __attribute__((__format__(printf, 3, 4)));
 void putil_err_krb5(struct pam_args *, int, const char *, ...)
+    __attribute__((__format__(printf, 3, 4)));
+void putil_notice_krb5(struct pam_args *, int, const char *, ...)
     __attribute__((__format__(printf, 3, 4)));
 void putil_debug_krb5(struct pam_args *, int, const char *, ...)
     __attribute__((__format__(printf, 3, 4)));
