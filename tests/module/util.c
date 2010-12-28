@@ -12,12 +12,12 @@
  */
 
 #include <config.h>
+#include <portable/kafs.h>
 #include <portable/pam.h>
 #include <portable/system.h>
 
 #include <syslog.h>
 
-#include <kafs/kafs.h>
 #include <tests/fakepam/testing.h>
 #include <tests/module/util.h>
 #include <tests/tap/basic.h>

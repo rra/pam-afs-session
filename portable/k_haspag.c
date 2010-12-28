@@ -13,14 +13,13 @@
  */
 
 #include <config.h>
+#include <portable/kafs.h>
 #include <portable/system.h>
 
 #ifdef HAVE_SYS_IOCCOM_H
 # include <sys/ioccom.h>
 #endif
 #include <sys/ioctl.h>
-
-#include <kafs/kafs.h>
 
 
 /*

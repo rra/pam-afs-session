@@ -1,8 +1,9 @@
 /*
  * Portability wrapper around the kafs API.
  *
- * This header includes kafs.h if it's available, provides k_hasafs, k_setpag,
- * and k_unlog replacements imlemented in terms of our system call layer or
+ * This header includes kafs.h if it's available, prototypes k_hasafs,
+ * k_setpag, and k_unlog replacements (generally provided by the kafs
+ * replacement library) imlemented in terms of our system call layer or
  * lsetpag if it is available and libkafs isn't, and as a last resort provides
  * a k_hasafs function that always fails and k_setpag and k_unlog functions
  * that always succeed.

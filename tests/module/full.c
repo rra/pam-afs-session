@@ -27,6 +27,7 @@
  */
 
 #include <config.h>
+#include <portable/kafs.h>
 #ifdef HAVE_KERBEROS
 # include <portable/krb5.h>
 #endif
@@ -35,7 +36,6 @@
 
 #include <errno.h>
 
-#include <kafs/kafs.h>
 #include <tests/fakepam/testing.h>
 
 

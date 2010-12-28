@@ -12,9 +12,9 @@
  */
 
 #include <config.h>
+#include <portable/kafs.h>
 #include <portable/system.h>
 
-#include <kafs/kafs.h>
 #include <tests/tap/basic.h>
 
 

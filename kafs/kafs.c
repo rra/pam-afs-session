@@ -21,6 +21,7 @@
  */
 
 #include <config.h>
+#include <portable/kafs.h>
 #include <portable/system.h>
 
 #include <errno.h>
@@ -31,8 +32,6 @@
 #endif
 #include <sys/ioctl.h>
 #include <sys/stat.h>
-
-#include <kafs/kafs.h>
 
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED __attribute__((__unused__))

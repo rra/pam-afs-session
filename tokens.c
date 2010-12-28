@@ -14,6 +14,7 @@
  */
 
 #include <config.h>
+#include <portable/kafs.h>
 #include <portable/pam.h>
 #include <portable/system.h>
 
@@ -26,7 +27,6 @@
 #include <sys/wait.h>
 
 #include <internal.h>
-#include <kafs/kafs.h>
 #include <pam-util/args.h>
 #include <pam-util/logging.h>
 #include <pam-util/vector.h>

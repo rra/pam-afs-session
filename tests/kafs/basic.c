@@ -17,11 +17,10 @@
  */
 
 #include <config.h>
+#include <portable/kafs.h>
 #include <portable/system.h>
 
 #include <errno.h>
-
-#include <kafs/kafs.h>
 
 /*
  * If the program that includes this test case uses aklog for other purposes,
