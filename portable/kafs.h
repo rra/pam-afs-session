@@ -23,9 +23,16 @@
 #define PORTABLE_KAFS_H 1
 
 #include <config.h>
+#ifdef HAVE_KERBEROS
+# include <portable/krb5.h>
+#endif
 #include <portable/macros.h>
 
 #include <errno.h>
+#ifdef HAVE_SYS_IOCCOM_H
+# include <sys/ioccom.h>
+#endif
+#include <sys/ioctl.h>
 
 BEGIN_DECLS
 
