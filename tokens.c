@@ -15,14 +15,14 @@
 
 #include <config.h>
 #include <portable/kafs.h>
+#ifdef HAVE_KERBEROS
+# include <portable/krb5.h>
+#endif
 #include <portable/pam.h>
 #include <portable/system.h>
 
 #include <errno.h>
 #include <fcntl.h>
-#ifdef HAVE_KERBEROS
-# include <krb5.h>
-#endif
 #include <pwd.h>
 #include <sys/wait.h>
 
