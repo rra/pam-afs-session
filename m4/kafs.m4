@@ -30,7 +30,8 @@ dnl
 dnl Depends on RRA_SET_LDFLAGS.
 dnl
 dnl Written by Russ Allbery <rra@stanford.edu>
-dnl Copyright 2008, 2009 Board of Trustees, Leland Stanford Jr. University
+dnl Copyright 2008, 2009, 2010
+dnl     Board of Trustees, Leland Stanford Jr. University
 dnl
 dnl See LICENSE for licensing terms.
 
@@ -176,15 +177,30 @@ AC_DEFUN([RRA_LIB_KAFS],
  AS_IF([test x"$rra_libkafs" = xtrue],
     [AC_DEFINE([HAVE_K_HASAFS], 1,
         [Define to 1 if you have the k_hasafs function.])],
-    [AS_CASE([$host],
-        [*-linux*],
+    [AC_CHECK_HEADERS([sys/ioccom.h])
+     AS_CASE([$host],
+        [[*-apple-darwin[89]*]],
         [rra_build_kafs=true
-         AC_CHECK_HEADERS([sys/ioccom.h])
-         AC_DEFINE([HAVE_KAFS_LINUX], [1],
-            [Define to 1 to use the Linux AFS /proc interface.])],
+         AC_DEFINE([HAVE_KAFS_DARWIN8], [1],
+            [Define to 1 to use the Mac OS X 10.4 /dev interface.])],
+
+        [*-apple-darwin1*],
+        [rra_build_kafs=true
+         AC_DEFINE([HAVE_KAFS_DARWIN10], [1],
+            [Define to 1 to use the Mac OS X 10.6 /dev interface.])],
 
         [*-aix*|*-irix*],
         [_RRA_LIB_KAFS_LSETPAG],
+
+        [*-linux*],
+        [rra_build_kafs=true
+         AC_DEFINE([HAVE_KAFS_LINUX], [1],
+            [Define to 1 to use the Linux AFS /proc interface.])],
+
+        [[*-solaris2.1[12345678]*]],
+        [rra_build_kafs=true
+         AC_DEFINE([HAVE_KAFS_SOLARIS], [1],
+            [Define to 1 to use the Solaris 11 /dev interface.])],
 
         [*],
         [rra_build_kafs=true

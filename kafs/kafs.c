@@ -47,8 +47,14 @@ static int k_syscall(long, long, long, long, long, int *);
  *
  * The included file must provide a k_syscall implementation.
  */
-#if defined(HAVE_KAFS_LINUX)
+#if defined(HAVE_KAFS_DARWIN8)
+# include <kafs/sys-darwin8.c>
+#elif defined(HAVE_KAFS_DARWIN10)
+# include <kafs/sys-darwin10.c>
+#elif defined(HAVE_KAFS_LINUX)
 # include <kafs/sys-linux.c>
+#elif defined(HAVE_KAFS_SOLARIS)
+# include <kafs/sys-solaris.c>
 #elif defined(HAVE_KAFS_SYSCALL)
 # include <kafs/sys-syscall.c>
 #else
