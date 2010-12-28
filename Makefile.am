@@ -55,8 +55,6 @@ if NEED_KAFS
 	portable/stdbool.h portable/system.h
     kafs_libkafs_la_LDFLAGS = $(KAFS_LDFLAGS)
     LIBKAFS = kafs/libkafs.la
-else
-    LIBKAFS = $(DEPEND_LIBS)
 endif
 
 if HAVE_LD_VERSION_SCRIPT
@@ -70,8 +68,8 @@ pam_LTLIBRARIES = pam_afs_session.la
 pam_afs_session_la_SOURCES = internal.h options.c public.c tokens.c
 pam_afs_session_la_LDFLAGS = -module -shared -avoid-version \
 	$(VERSION_LDFLAGS) $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
-pam_afs_session_la_LIBADD = $(LIBKAFS) pam-util/libpamutil.la \
-	portable/libportable.la $(DEPEND_LIBS)
+pam_afs_session_la_LIBADD = pam-util/libpamutil.la portable/libportable.la \
+	$(LIBKAFS) $(DEPEND_LIBS)
 dist_man_MANS = pam_afs_session.5
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/compile		 \
@@ -92,10 +90,11 @@ warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)' $(check_PROGRAMS)
 
 # The bits below are for the test suite, not for the main package.
-check_PROGRAMS = tests/runtests tests/kafs/basic tests/module/basic-t	\
-	tests/module/cells-t tests/module/full tests/pam-util/args-t	\
-	tests/pam-util/fakepam-t tests/pam-util/logging-t		\
-	tests/pam-util/options-t tests/pam-util/vector-t
+check_PROGRAMS = tests/runtests tests/kafs/basic tests/kafs/haspag-t	\
+	tests/module/basic-t tests/module/cells-t tests/module/full	\
+	tests/pam-util/args-t tests/pam-util/fakepam-t			\
+	tests/pam-util/logging-t tests/pam-util/options-t		\
+	tests/pam-util/vector-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/fakepam/libfakepam.a tests/tap/libtap.a
@@ -107,23 +106,26 @@ tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h
 
 # All of the test programs.
 tests_kafs_basic_LDFLAGS = $(KAFS_LDFLAGS)
-tests_kafs_basic_LDADD = portable/libportable.la $(LIBKAFS)
+tests_kafs_basic_LDADD = portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
+tests_kafs_haspag_t_LDFLAGS = $(KAFS_LDFLAGS)
+tests_kafs_haspag_t_LDADD = tests/tap/libtap.a portable/libportable.la \
+	$(LIBKAFS) $(DEPEND_LIBS)
 tests_module_basic_t_SOURCES = tests/module/basic-t.c tests/module/util.c \
 	tests/module/util.h
 tests_module_basic_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_basic_t_LDADD = options.lo public.lo tokens.lo		     \
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
-	portable/libportable.la $(LIBKAFS)
+	portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
 tests_module_cells_t_SOURCES = tests/module/cells-t.c tests/module/util.c \
 	tests/module/util.h
 tests_module_cells_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_cells_t_LDADD = options.lo public.lo tokens.lo		     \
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
-	portable/libportable.la $(LIBKAFS)
+	portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
 tests_module_full_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_full_LDADD = options.lo public.lo tokens.lo	\
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
-	portable/libportable.la $(LIBKAFS)
+	portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
 tests_pam_util_args_t_LDFLAGS = $(KRB5_LDFLAGS)
 tests_pam_util_args_t_LDADD = pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a	\

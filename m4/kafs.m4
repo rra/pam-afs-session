@@ -108,7 +108,9 @@ AC_DEFUN([_RRA_LIB_KAFS_LSETPAG],
  RRA_LIB_KAFS_RESTORE])
 
 dnl The public entry point.  Sets up the --with options and then decides what
-dnl to do based on the system.
+dnl to do based on the system.  Either RRA_LIB_KRB5 or RRA_LIB_KRB5_OPTIONAL
+dnl must be called before this function or the Heimdal libkafs may not be
+dnl available.
 AC_DEFUN([RRA_LIB_KAFS],
 [AC_REQUIRE([AC_CANONICAL_HOST])
  rra_libkafs=true
@@ -158,12 +160,12 @@ AC_DEFUN([RRA_LIB_KAFS],
     [AS_IF([test x"$withval" != xyes && test x"$withval" != xno],
         [rra_afs_libdir="$withval"])])
 
- dnl If we may use the system libkafs, see if we can find one.  We don't even
- dnl attempt to find additional dependent libraries for static linking or
- dnl shared libraries without transitive dependencies here.  Hopefully it no
- dnl longer matters.
+ dnl If we may use the system libkafs, see if we can find one.  Enable the
+ dnl Kerberos libraries if we found any, in case libkafs depends on Kerberos.
  AS_IF([test x"$rra_libkafs" != xfalse],
     [_RRA_LIB_KAFS_PATHS
+     AS_IF([test x"$rra_use_kerberos" = xtrue],
+         [RRA_LIB_KRB5_SWITCH])
      RRA_LIB_KAFS_SWITCH
      AC_CHECK_LIB([kafs], [k_hasafs],
         [KAFS_LIBS="-lkafs"
@@ -172,7 +174,13 @@ AC_DEFUN([RRA_LIB_KAFS],
             [KAFS_LIBS="-lkopenafs"
              AC_CHECK_HEADERS([kopenafs.h])],
             [rra_libkafs=false])])
-     RRA_LIB_KAFS_RESTORE])
+     RRA_LIB_KAFS_RESTORE
+     RRA_LIB_KAFS_SWITCH
+     AC_CHECK_FUNCS([k_pioctl])
+     AC_REPLACE_FUNCS([k_haspag])
+     RRA_LIB_KAFS_RESTORE
+     AS_IF([test x"$rra_use_kerberos" = xtrue],
+         [RRA_LIB_KRB5_RESTORE])])
 
  dnl If we found a libkafs, we have k_hasafs.  Set the appropriate
  dnl preprocessor define.  Otherwise, we'll use our portability layer.
@@ -180,6 +188,7 @@ AC_DEFUN([RRA_LIB_KAFS],
     [AC_DEFINE([HAVE_K_HASAFS], 1,
         [Define to 1 if you have the k_hasafs function.])],
     [AC_CHECK_HEADERS([sys/ioccom.h])
+     AC_LIBOBJ([k_haspag])
      AS_CASE([$host],
         [[*-apple-darwin[89]*]],
         [rra_build_kafs=true

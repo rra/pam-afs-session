@@ -62,16 +62,6 @@ static int k_syscall(long, long, long, long, long, int *);
 #endif
 
 /*
- * The struct passed to unlog as an argument.  All the values are NULL or 0,
- * but we need the struct to be the right size.
- */
-struct ViceIoctl {
-    void *in, *out;
-    short in_size;
-    short out_size;
-};
-
-/*
  * On some platforms, k_hasafs needs to try a system call.  This attempt may
  * fail with SIGSYS.  We therefore set a signal handler that changes a static
  * variable if SIGSYS is received.
@@ -104,15 +94,11 @@ sigsys_handler(int s UNUSED)
 
 
 /*
- * The other system calls are implemented in terms of k_pioctl.  This is a
- * standard part of the kafs interface, but we don't export it here since our
- * code never needs to call it directly and therefore doesn't need to know the
- * constants that it uses.
- *
- * This interface assumes that all pointers can be represented in a long, but
- * then so does the whole AFS system call interface.
+ * The other system calls are implemented in terms of k_pioctl.  This
+ * interface assumes that all pointers can be represented in a long, but then
+ * so does the whole AFS system call interface.
  */
-static int
+int
 k_pioctl(const char *path, int cmd, const void *cmarg, int follow)
 {
     int err, rval;

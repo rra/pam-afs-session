@@ -20,6 +20,7 @@
 /pam_afs_session.5
 /stamp-h1
 /tests/kafs/basic
+/tests/kafs/haspag-t
 /tests/module/basic-t
 /tests/module/cells-t
 /tests/module/full

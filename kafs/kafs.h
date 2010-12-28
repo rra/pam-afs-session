@@ -31,12 +31,18 @@ BEGIN_DECLS
 /* Assume we have some AFS support available and #undef below if not. */
 #define HAVE_KAFS 1
 
+/* We have a libkafs or libkopenafs library. */
 #if HAVE_K_HASAFS
 # if HAVE_KAFS_H
 #  include <kafs.h>
 # elif HAVE_KOPENAFS_H
 #  include <kopenafs.h>
 # endif
+# ifndef HAVE_K_HASPAG
+int k_haspag(void);
+# endif
+
+/* We're linking directly to the OpenAFS libraries. */
 #elif HAVE_LSETPAG
 # if HAVE_AFS_AFSSYSCALLS_H
 #  include <afs/afssyscalls.h>
@@ -46,13 +52,30 @@ int lsetpag(void);
 # define k_hasafs() (1)
 # define k_setpag() lsetpag()
 # define k_unlog()  (errno = ENOSYS, -1)
-#elif defined(HAVE_AFS_PARAM_H) || defined(HAVE_KAFS_REPLACEMENT)
+
+int k_haspag(void);
+
+/* We're using our local kafs replacement. */
+#elif HAVE_KAFS_REPLACEMENT
+# define HAVE_K_PIOCTL 1
+
+struct ViceIoctl {
+    void *in, *out;
+    short in_size;
+    short out_size;
+};
+
 int k_hasafs(void);
+int k_haspag(void);
+int k_pioctl(const char *, int, const void *, int);
 int k_setpag(void);
 int k_unlog(void);
+
+/* We have no kafs implementation available. */
 #else
 # undef HAVE_KAFS
 # define k_hasafs() (0)
+# define k_haspag() (0)
 # define k_setpag() (errno = ENOSYS, -1)
 # define k_unlog()  (errno = ENOSYS, -1)
 #endif
