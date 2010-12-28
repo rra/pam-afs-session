@@ -24,7 +24,7 @@ main(void)
 {
     pam_handle_t *pamh;
     struct pam_conv conv = { NULL, NULL };
-    char **environ, *p;
+    char **environ;
     size_t i;
 
     /*
@@ -36,13 +36,11 @@ main(void)
     skip_all("system doesn't support PAM environment");
 #endif
 
-    plan(33);
+    plan(32);
 
     /* Basic environment manipulation. */
     if (pam_start("test", NULL, &conv, &pamh) != PAM_SUCCESS)
         sysbail("Fake PAM initialization failed");
-    p = NULL;
-    is_int(PAM_PERM_DENIED, pam_putenv(pamh, p), "putenv NULL");
     is_int(PAM_BAD_ITEM, pam_putenv(pamh, "TEST"), "delete when NULL");
     ok(pam_getenv(pamh, "TEST") == NULL, "getenv when NULL");
     ok(pam_getenvlist(pamh) == NULL, "getenvlist when NULL");
