@@ -3,8 +3,10 @@
 
                 Written by Russ Allbery <rra@stanford.edu>
 
-  See the LICENSE file, included in this distribution, for copyright and
-  redistribution information.
+  Copyright 2005, 2006, 2007, 2008, 2010 Board of Trustees, Leland
+  Stanford Jr. University.  This software is distributed under a BSD-style
+  license.  See the LICENSE file, included in this distribution, for
+  copyright and redistribution information.
 
 BLURB
 
@@ -57,6 +59,10 @@ DESCRIPTION
 
   This module does not support getting tokens for the rmtsys AFS network
   redirection interface (generally used with the NFS translator).
+
+  pam-afs-session is primarily tested on Linux.  I rely on reports from
+  users to ensure it continues working on other platforms.  Please let me
+  know if any problems you run into.
 
 REQUIREMENTS
 
@@ -183,6 +189,20 @@ COMPILING AND INSTALLING
   distributions to avoid encoding unnecessary shared library dependencies
   that make shared library migrations more difficult.  If none of the
   above made any sense to you, don't bother with this flag.
+
+TESTING
+
+  pam-afs-session comes with a test suite, which you can run after
+  building pam-afs-session with:
+
+      make check
+
+  If a test case fails, please run the that individual test case with
+  verbose output using:
+
+      tests/runtests -o <name-of-test>
+
+  and send me the output when reporting the problem.
 
 CONFIGURING
 
