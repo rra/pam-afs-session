@@ -52,6 +52,22 @@ is modified with the program option, the default aklog binary to run is
 /usr/bin/aklog (so Heimdal afslog users will want to set the program
 option).
 
+Please be aware that proper creation and use of PAGs requires a Linux
+kernel built with keyring support.  The standard Debian kernel has keyring
+support and Linux includes keyring support by default, but if you have a
+custom kernel, you may need to explicitly enable it.
+
+If you are using this module in a vserver guest, you have to expose the
+/proc interface used by the OpenAFS cache manager in order for the module
+to detect AFS, create a PAG, and remove tokens.  Running:
+
+    setattr --~hide /proc/fs/
+    setattr --~hide /proc/fs/openafs
+    setattr --~hide /proc/fs/openafs/afs_ioctl
+
+on the host system reportedly makes the necessary files available to
+vserver guests.
+
 For more information, see the pam_afs_session man page.
 
- -- Russ Allbery <rra@debian.org>, Wed, 11 Aug 2010 16:15:10 -0700
+ -- Russ Allbery <rra@debian.org>, Wed, 29 Dec 2010 15:25:06 -0800

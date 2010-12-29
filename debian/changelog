@@ -8,6 +8,11 @@ libpam-afs-session (2.0-1) UNRELEASED; urgency=low
       the module has already run, for better behavior in the rare case of
       opening multiple sessions using the same PAM handle.
     - Log an ignore status properly when debugging is enabled.
+  * Document the Linux kernel requirement for keyring support to use AFS
+    PAGs properly in README.Debian.  (Closes: #516864)
+  * Document the requirement for vserver guests to have access to the
+    /proc file used by the OpenAFS cache manager for AFS system calls in
+    README.Debian.  (Closes: #485049)
 
  -- Russ Allbery <rra@debian.org>  Wed, 29 Dec 2010 15:18:02 -0800
 
