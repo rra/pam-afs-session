@@ -288,7 +288,7 @@ pamafs_token_get(struct pam_args *args)
         putil_err_pam(args, status, "no user set");
         return PAM_SESSION_ERR;
     }
-    pwd = getpwnam(user);
+    pwd = pam_modutil_getpwnam(args->pamh, user);
     if (pwd == NULL) {
         putil_err(args, "cannot find UID for %s: %s", user, strerror(errno));
         return PAM_SESSION_ERR;
