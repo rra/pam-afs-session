@@ -1,7 +1,24 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the <afs/afssyscalls.h> header file. */
+#undef HAVE_AFS_AFSSYSCALLS_H
+
 /* Define to 1 if you have the <afs/param.h> header file. */
 #undef HAVE_AFS_PARAM_H
+
+/* Define to 1 if you have the `asprintf' function. */
+#undef HAVE_ASPRINTF
+
+/* Define to 1 if you have the declaration of `snprintf', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SNPRINTF
+
+/* Define to 1 if you have the declaration of `vsnprintf', and to 0 if you
+   don't. */
+#undef HAVE_DECL_VSNPRINTF
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
 
 /* Define to 1 if you have the <et/com_err.h> header file. */
 #undef HAVE_ET_COM_ERR_H
@@ -12,11 +29,32 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `issetuidgid' function. */
+#undef HAVE_ISSETUIDGID
+
 /* Define to 1 if you have the <k5profile.h> header file. */
 #undef HAVE_K5PROFILE_H
 
+/* Define to 1 to use the Mac OS X 10.6 /dev interface. */
+#undef HAVE_KAFS_DARWIN10
+
+/* Define to 1 to use the Mac OS X 10.4 /dev interface. */
+#undef HAVE_KAFS_DARWIN8
+
 /* Define to 1 if you have the <kafs.h> header file. */
 #undef HAVE_KAFS_H
+
+/* Define to 1 to use the Linux AFS /proc interface. */
+#undef HAVE_KAFS_LINUX
+
+/* Define to 1 if the libkafs replacement is built. */
+#undef HAVE_KAFS_REPLACEMENT
+
+/* Define to 1 to use the Solaris 11 /dev interface. */
+#undef HAVE_KAFS_SOLARIS
+
+/* Define to 1 to use the AFS syscall interface. */
+#undef HAVE_KAFS_SYSCALL
 
 /* Define to enable Kerberos features. */
 #undef HAVE_KERBEROS
@@ -30,17 +68,47 @@
 /* Define to 1 if you have the `krb5_appdefault_string' function. */
 #undef HAVE_KRB5_APPDEFAULT_STRING
 
+/* Define to 1 if you have the `krb5_free_default_realm' function. */
+#undef HAVE_KRB5_FREE_DEFAULT_REALM
+
 /* Define to 1 if you have the `krb5_free_error_message' function. */
 #undef HAVE_KRB5_FREE_ERROR_MESSAGE
 
 /* Define to 1 if you have the `krb5_get_error_message' function. */
 #undef HAVE_KRB5_GET_ERROR_MESSAGE
 
+/* Define to 1 if you have the `krb5_get_error_string' function. */
+#undef HAVE_KRB5_GET_ERROR_STRING
+
 /* Define to 1 if you have the `krb5_get_err_txt' function. */
 #undef HAVE_KRB5_GET_ERR_TXT
 
+/* Define to 1 if you have the `krb5_get_profile' function. */
+#undef HAVE_KRB5_GET_PROFILE
+
+/* Define to 1 if you have the `krb5_init_secure_context' function. */
+#undef HAVE_KRB5_INIT_SECURE_CONTEXT
+
+/* Define to 1 if the system has the type `krb5_realm'. */
+#undef HAVE_KRB5_REALM
+
 /* Define to 1 if you have the `krb5_svc_get_msg' function. */
 #undef HAVE_KRB5_SVC_GET_MSG
+
+/* Define to 1 if you have the k_hasafs function. */
+#undef HAVE_K_HASAFS
+
+/* Define to 1 if you have the `k_haspag' function. */
+#undef HAVE_K_HASPAG
+
+/* Define to 1 if you have the `k_pioctl' function. */
+#undef HAVE_K_PIOCTL
+
+/* Define to 1 if the system has the type `long long int'. */
+#undef HAVE_LONG_LONG_INT
+
+/* Define to 1 if you have the OpenAFS lsetpag function. */
+#undef HAVE_LSETPAG
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -51,11 +119,41 @@
 /* Define to 1 if you have the `pam_getenvlist' function. */
 #undef HAVE_PAM_GETENVLIST
 
+/* Define to 1 if you have the `pam_modutil_getpwnam' function. */
+#undef HAVE_PAM_MODUTIL_GETPWNAM
+
 /* Define to 1 if you have the <pam/pam_appl.h> header file. */
 #undef HAVE_PAM_PAM_APPL_H
 
+/* Define to 1 if you have the <pam/pam_ext.h> header file. */
+#undef HAVE_PAM_PAM_EXT_H
+
+/* Define to 1 if you have the <pam/pam_modutil.h> header file. */
+#undef HAVE_PAM_PAM_MODUTIL_H
+
+/* Define to 1 if you have the `pam_syslog' function. */
+#undef HAVE_PAM_SYSLOG
+
+/* Define to 1 if you have the `pam_vsyslog' function. */
+#undef HAVE_PAM_VSYSLOG
+
+/* Define to 1 if you have the <profile.h> header file. */
+#undef HAVE_PROFILE_H
+
 /* Define to 1 if you have the <security/pam_appl.h> header file. */
 #undef HAVE_SECURITY_PAM_APPL_H
+
+/* Define to 1 if you have the <security/pam_ext.h> header file. */
+#undef HAVE_SECURITY_PAM_EXT_H
+
+/* Define to 1 if you have the <security/pam_modutil.h> header file. */
+#undef HAVE_SECURITY_PAM_MODUTIL_H
+
+/* Define if your system has a working snprintf function. */
+#undef HAVE_SNPRINTF
+
+/* Define to 1 if stdbool.h conforms to C99. */
+#undef HAVE_STDBOOL_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -69,6 +167,15 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
+/* Define to 1 if you have the `strlcat' function. */
+#undef HAVE_STRLCAT
+
+/* Define to 1 if you have the `strlcpy' function. */
+#undef HAVE_STRLCPY
+
+/* Define to 1 if you have the <sys/bittypes.h> header file. */
+#undef HAVE_SYS_BITTYPES_H
+
 /* Define to 1 if you have the <sys/ioccom.h> header file. */
 #undef HAVE_SYS_IOCCOM_H
 
@@ -80,6 +187,19 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if the system has the type `_Bool'. */
+#undef HAVE__BOOL
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
+/* Name of package */
+#undef PACKAGE
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -93,6 +213,9 @@
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
 
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
@@ -102,21 +225,55 @@
 /* Full path to aklog binary. */
 #undef PATH_AKLOG
 
-/* Define as the return type of signal handlers (`int' or `void'). */
-#undef RETSIGTYPE
+/* The size of `long', as computed by sizeof. */
+#undef SIZEOF_LONG
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Define to 1 if on AIX 3.
-   System headers sometimes define this.
-   We just want to avoid a redefinition error message.  */
+/* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
 #endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+/* Enable threading extensions on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# undef _POSIX_PTHREAD_SEMANTICS
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# undef _TANDEM_SOURCE
+#endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# undef __EXTENSIONS__
+#endif
 
-/* Define to 1 on Linux to get full prototypes. */
-#undef _GNU_SOURCE
+
+/* Version number of package */
+#undef VERSION
+
+/* Define to 1 if on MINIX. */
+#undef _MINIX
+
+/* Define to 2 if the system does not provide POSIX.1 features except with
+   this defined. */
+#undef _POSIX_1_SOURCE
+
+/* Define to 1 if you need to in order for `stat' and other things to work. */
+#undef _POSIX_SOURCE
 
 /* Define to 1 on Solaris for correct errno handling with threads. */
 #undef _REENTRANT
+
+/* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
+#undef _UINT32_T
+
+/* Define to the type of an unsigned integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+#undef uint32_t

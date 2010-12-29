@@ -1,5 +1,76 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 2.0 (2010-12-29)
+
+    If there is no PAG, create a new one and obtain tokens in pam_setcred
+    and pam_open_session even if the module has already run.  This works
+    around destruction of the PAG on Linux by keyring initialization
+    modules, which can otherwise be hard to avoid due to the ordering
+    between the auth and session stacks.  This support uses the
+    VIOC_GETPAG AFS system call if it is available and falls back on
+    analyzing the supplemental group list if it is not.
+
+    Add untested support for the ioctl AFS system call methods on Mac OS X
+    and Solaris 11 to the included kafs library, which is used if neither
+    libkafs nor libkopenafs is available.
+
+    Avoid returning an uninitialized value from pam_open_session when
+    notokens is set.  Thanks, Ian Ward Comfort.
+
+    pam_close_session now removes the module data indicating that tokens
+    were already obtained so that opening another session using the same
+    PAM handle will work correctly.
+
+    pam-afs-session is now built using Automake and Libtool to bring it
+    more in line with other software packages.  This means that it now
+    relies on Libtool to know how to generate a loadable module rather
+    than hand-configured linker rules.  This may improve portability on
+    some platforms and may hurt it on other platforms.
+
+    The symbols exported by the PAM module are now limited to only the
+    public API on all platforms where Libtool supports limiting symbol
+    exports.
+
+    On Linux, if configured with a prefix of /usr (rather than /usr/local,
+    the default), the module will be installed into /lib/security (or
+    /lib32/security or /lib64/security if they exist) rather than
+    /usr/lib/security to match the default PAM configuration.
+
+    The module is now installed under $libdir/security except for the
+    above exception, rather than a lib32 or lib64 directory, except for
+    the special case of /usr.  To install into another lib32 or lib64
+    directory, use the --libdir option to configure.
+
+    Fix a configure error when built --without-krb5.
+
+    When debugging is enabled, log an exit status of PAM_IGNORE as ignore
+    rather than failure.
+
+    Update the embedded kafs code to rra-c-util 3.0, adding
+    --with-libkafs-include, --with-libkafs-lib, --with-afs-include, and
+    --with-afs-lib configure options for finer control.  Remove obsolete
+    --with-afs-headers configure option (use --with-afs-include instead).
+
+    Add an initial test suite that tests basic functionality and some
+    options.
+
+    Update to rra-c-util 3.0:
+
+    * Add --with-krb5-include and --with-krb5-lib configure options.
+    * Don't break if the user clobbers CPPFLAGS at build time.
+    * Fall back on manual probing if krb5-config results don't work.
+    * Suppress error output from krb5-config probes.
+    * Search for krb5-config in /usr/kerberos/bin for Red Hat systems.
+    * Add support for the old Heimdal krb5_get_error_string interface.
+    * Handle the bundled Heimdal on OpenBSD without a separate libroken.
+    * Add portability to systems with a broken snprintf or vsnprintf.
+    * Update make warnings flags for gcc 4.4.
+
+    Update to C TAP Harness 1.6:
+
+    * Flush standard error before results in the C TAP library.
+    * Improve test failure output formatting in some edge cases.
+
 pam-afs-session 1.7 (2008-07-10)
 
     Return PAM_IGNORE instead of PAM_SUCCESS from all functions when AFS

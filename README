@@ -1,10 +1,12 @@
-                           pam-afs-session 1.7
+                           pam-afs-session 2.0
                    (PAM module for AFS PAGs and tokens)
 
                 Written by Russ Allbery <rra@stanford.edu>
 
-  See the LICENSE file, included in this distribution, for copyright and
-  redistribution information.
+  Copyright 2005, 2006, 2007, 2008, 2010 Board of Trustees, Leland
+  Stanford Jr. University.  This software is distributed under a BSD-style
+  license.  See the LICENSE file, included in this distribution, for
+  copyright and redistribution information.
 
 BLURB
 
@@ -13,8 +15,8 @@ BLURB
   session in a PAG regardless of whether it was authenticated with
   Kerberos and either uses Heimdal's libkafs or runs a configurable
   external program to obtain tokens.  It supports using Heimdal's libkafs
-  for the AFS interface and falls back to an internal implementation if
-  libkafs isn't available.
+  or OpenAFS's libkopenafs for the AFS interface and falls back to an
+  internal implementation if libkafs isn't available.
 
 DESCRIPTION
 
@@ -45,24 +47,71 @@ DESCRIPTION
      login.
 
   For the AFS system call layer, pam-afs-session supports linking with the
-  Heimdal libkafs library.  As a fallback, and to support a low-dependency
-  build, it also comes with a simple AFS system call implementation for
-  either Linux or platforms that use syscall to call AFS functions.  To
-  use the built-in system call interface on Linux, the system must run a
-  new enough version of OpenAFS or Arla to support AFS system calls
-  through ioctl on a file in proc.  On other systems, configure must be
-  able to find the AFS header afs/param.h in order to get the system call
-  numbers for that platform.
+  Heimdal libkafs library or OpenAFS's libkopenafs library.  As a
+  fallback, and to support a low-dependency build, it also comes with a
+  simple AFS system call implementation for either Linux or platforms that
+  use syscall to call AFS functions.  It can also link with the older
+  OpenAFS libraries when libkopenafs isn't available.
+
+  The module can optionally be linked with Kerberos libraries to obtain
+  configuration information from krb5.conf, to support the kdestroy
+  option, and to use libkafs's functions for obtaining tokens.
+
+  This module does not support getting tokens for the rmtsys AFS network
+  redirection interface (generally used with the NFS translator).
+
+  pam-afs-session is primarily tested on Linux.  I rely on reports from
+  users to ensure it continues working on other platforms.  Please let me
+  know if any problems you run into.
+
+REQUIREMENTS
 
   Right now, this module will probably only work on Linux, Solaris, HP-UX,
   AIX, and Mac OS X, and will require gcc to even attempt to build on any
   other platform.  Other PAM implementations will likely require some
   porting work.
 
-  The module can optionally be linked with Kerberos libraries to obtain
-  configuration information from krb5.conf, to support the kdestroy
-  option, and to use libkafs's functions for obtaining tokens.  Either MIT
-  Kerberos or Heimdal should work.
+  Either Heimdal's libkafs or OpenAFS's libkopenafs are the preferred ways
+  of making AFS system calls.  If neither are present during compile time,
+  pam-afs-session will attempt to fall back on a built-in AFS system call
+  layer.  To use the built-in AFS system call interface on Linux, the
+  system must run a new enough version of OpenAFS or Arla to support AFS
+  system calls through ioctl on a file in proc.  On other systems with a
+  simple system call interface, configure must be able to find the AFS
+  header afs/param.h in order to get the system call numbers for that
+  platform.  On AIX and IRIX, configure will attempt to locate the
+  necessary OpenAFS libraries for lsetpag (either libafsauthent or
+  libsys).
+
+  To obtain configuration information from krb5.conf, to support the
+  kdestroy option, and to use libkafs's functions for obtaining tokens,
+  the Kerberos libraries from either MIT Kerberos or Heimdal are required.
+
+  Testing the module requires a system with AFS installed and working so
+  that the PAG creation and manipulation can be tested.  Running the
+  complete test suite also requires that you have an existing ticket cache
+  and working aklog program.  Those portions of the test suite will be
+  skipped if AFS or a Kerberos ticket cache do not appear to be available.
+
+  To run the POD test suite, you must have the Perl 5.006 or later and the
+  modules Test::More and Test::Pod installed.  Test::More comes with Perl
+  5.8 or later.  Test::Pod is available from CPAN and currently must be
+  installed separately, but the POD tests will be skipped without
+  interfering with the rest of the tests if it's not installed.
+
+  To check spelling in the POD documentation, Pod::Spell (available from
+  CPAN) and either aspell or ispell with the american dictionary are also
+  required.  The user's path is searched for aspell or ispell and aspell
+  is preferred.  Spelling tests are disabled by default since spelling
+  dictionaries differ too much between systems.  To enable those tests,
+  set RRA_MAINTAINER_TESTS to a true value.
+
+  To bootstrap from a Git checkout, or if you change the Automake files
+  and need to regenerate Makefile.in, you will need Automake 1.11 or
+  later.  For bootstrap or if you change configure.ac or any of the m4
+  files it includes and need to regenerate configure or config.h.in, you
+  will need Autoconf 2.64 or later.  Perl is also required to generate the
+  manual pages from a fresh Git checkout.
 
 COMPILING AND INSTALLING
 
@@ -105,12 +154,13 @@ COMPILING AND INSTALLING
       make install
 
   You can change the installation locations with the --prefix, --mandir,
-  and --libdir options to configure.  The module will be installed in a
-  subdirectory of $libdir named security and, on x86_64 Linux, $libdir
-  will be changed to lib64 to match the default PAM configuration.
-  Alternately, you can simply copy pam_afs_session.so to whatever
-  directory you use for PAM modules.  On Solaris, you will need to make
-  the module executable.
+  and --libdir options to configure.  The module will normally be
+  installed in a subdirectory of $libdir named security, but if --prefix
+  is set to /usr (rather than /usr/local, the default), the module will be
+  installed in /lib/security (or /lib32/security or /lib64/security if
+  they exist) to match the default PAM configuration.  Alternately, you
+  can simply copy pam_afs_session.so to whatever directory you use for PAM
+  modules.  On Solaris, you will need to make the module executable.
 
   By default, if libkafs or libkopenafs are available, pam-afs-session
   will use them in preference to its own system call implementation.  If
@@ -139,6 +189,20 @@ COMPILING AND INSTALLING
   distributions to avoid encoding unnecessary shared library dependencies
   that make shared library migrations more difficult.  If none of the
   above made any sense to you, don't bother with this flag.
+
+TESTING
+
+  pam-afs-session comes with a test suite, which you can run after
+  building pam-afs-session with:
+
+      make check
+
+  If a test case fails, please run the that individual test case with
+  verbose output using:
+
+      tests/runtests -o <name-of-test>
+
+  and send me the output when reporting the problem.
 
 CONFIGURING
 
@@ -189,11 +253,13 @@ CONFIGURING
   On Red Hat systems, modify /etc/pam.d/system-auth instead; it contains
   all of the configuration for the different stacks.
 
-  Be careful if your PAM configuration uses pam_keyinit.  This module
-  initializes a new kernel keyring and will remove the keyring created by
-  pam_afs_session to hold your tokens.  When using pam_afs_session, either
-  remove this PAM module or call pam_afs_session after it in the PAM
-  session group.
+  Be aware that the pam_keyinit module can have a bad interaction with
+  this module.  pam_keyinit initializes a new kernel keyring and will
+  remove the keyring created by pam_afs_session to represent your PAG and
+  hold your tokens.  pam_afs_session will attempt to detect this and add
+  the PAG and tokens back, but to do so it must run after pam_keyinit in
+  the session stack.  To be safe, you may want to remove this PAM module
+  unless you're using it.
 
   Note that this is not an authentication module and will always return
   PAM_SUCCESS to any authentication attempt, so never make this module
@@ -309,6 +375,24 @@ IMPLEMENTATION NOTES
   and primary GID.  If calling krb5_afslog, that user's UID is used for
   the "AFS ID" field in the tokens display (which is entirely cosmetic).
 
+HOMEPAGE AND SOURCE REPOSITORY
+
+  The pam-afs-session web page at:
+
+      http://www.eyrie.org/~eagle/software/pam-afs-session/
+
+  will always have the current version of this package, the current
+  documentation, and pointers to any additional resources.
+
+  pam-afs-session is maintained using Git.  You can access the current
+  source by cloning the repository at:
+
+      git://git.eyrie.org/afs/pam-afs-session.git
+
+  or view the repository via the web at:
+
+      http://git.eyrie.org/?p=afs/pam-afs-session.git
+
 THANKS
 
   Some of the ideas behind this PAM module (although not the code) are
@@ -334,12 +418,3 @@ THANKS
   Thanks to Markus Moeller for multiple patches and suggestions for
   improved portability for pam-krb5, from which this module has also
   benefitted.
-
-SOURCE REPOSITORY
-
-  pam-afs-session is maintained using Git.  You can access the current
-  source by pointing a Git client at:
-
-      http://archives.eyrie.org/software/git/pam-afs-session.git
-
-  No gitweb interface is available (yet).
