@@ -342,6 +342,7 @@ int
 pamafs_token_delete(struct pam_args *args)
 {
     const void *dummy;
+    int status;
 
     /*
      * Do nothing if open_session (or setcred) didn't run.  Otherwise, we may
@@ -358,5 +359,15 @@ pamafs_token_delete(struct pam_args *args)
         putil_err(args, "unable to delete credentials: %s", strerror(errno));
         return PAM_SESSION_ERR;
     }
+
+    /*
+     * Remove our module data, just in case someone wants to create a new
+     * session again later inside the same PAM session.  Just complain but
+     * don't fail if we can't delete it, since this is unlikely.
+     */
+    status = pam_set_data(args->pamh, "pam_afs_session", NULL, NULL);
+    if (status != PAM_SUCCESS)
+        putil_err_pam(args, status, "unable to remove module data");
+
     return PAM_SUCCESS;
 }
