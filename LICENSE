@@ -32,8 +32,8 @@ Collected copyright notices for the entire package:
       Free Software Foundation, Inc.
   Copyright 1994 X Consortium
 
-compat-aix.c is taken from the MIT Kerberos distribution and is covered by
-the following copyright and license:
+portable/krb5-profile.c is taken from the MIT Kerberos distribution and is
+covered by the following copyright and license:
 
   Copyright (C) 1985-2005 by the Massachusetts Institute of Technology.
 
