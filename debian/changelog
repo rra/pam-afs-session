@@ -15,6 +15,10 @@ libpam-afs-session (2.0-1) UNRELEASED; urgency=low
     README.Debian.  (Closes: #485049)
   * Update to debhelper compatibility level V8.
     - Use debhelper rule minimization.
+  * Switch to 3.0 (quilt) source format.  Force a single Debian patch and
+    include a custom patch header explaining that it is a rollup of any
+    fixes cherry-picked from upstream and breaking those patches out
+    separately would be work for no gain.
 
  -- Russ Allbery <rra@debian.org>  Wed, 29 Dec 2010 15:18:02 -0800
 
