@@ -186,6 +186,7 @@ run_tests(bool debug)
 
     /* Clean up. */
     pam_end(pamh, 0);
+    unlink("aklog-args");
     free(running);
     free(already);
     free(destroy);
