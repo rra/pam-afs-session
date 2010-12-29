@@ -50,8 +50,9 @@ pam_util_libpamutil_la_LIBADD = $(DEPEND_LIBS)
 
 if NEED_KAFS
     noinst_LTLIBRARIES += kafs/libkafs.la
-    EXTRA_kafs_libkafs_la_SOURCES = kafs/sys-linux.c kafs/sys-syscall.c
-    kafs_libkafs_la_SOURCES = kafs/kafs.c kafs/kafs.h portable/macros.h	\
+    EXTRA_kafs_libkafs_la_SOURCES = kafs/sys-darwin10.c kafs/sys-darwin8.c \
+	kafs/sys-linux.c kafs/sys-solaris.c kafs/sys-syscall.c
+    kafs_libkafs_la_SOURCES = kafs/kafs.c portable/kafs.h portable/macros.h \
 	portable/stdbool.h portable/system.h
     kafs_libkafs_la_LDFLAGS = $(KAFS_LDFLAGS)
     LIBKAFS = kafs/libkafs.la
