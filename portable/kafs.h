@@ -75,7 +75,7 @@ struct ViceIoctl {
 
 int k_hasafs(void);
 int k_haspag(void);
-int k_pioctl(const char *, int, const void *, int);
+int k_pioctl(char *, int, struct ViceIoctl *, int);
 int k_setpag(void);
 int k_unlog(void);
 

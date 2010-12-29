@@ -98,7 +98,7 @@ sigsys_handler(int s UNUSED)
  * so does the whole AFS system call interface.
  */
 int
-k_pioctl(const char *path, int cmd, const void *cmarg, int follow)
+k_pioctl(char *path, int cmd, struct ViceIoctl *cmarg, int follow)
 {
     int err, rval;
 
