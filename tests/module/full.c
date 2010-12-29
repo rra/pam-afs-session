@@ -35,6 +35,7 @@
 #include <portable/system.h>
 
 #include <errno.h>
+#include <pwd.h>
 
 #include <tests/fakepam/testing.h>
 
