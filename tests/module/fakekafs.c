@@ -90,7 +90,7 @@ k_unlog(void)
  * functions are prototyped to take Kerberos data types, they're only
  * available if built with Kerberos support.
  */
-#ifdef HAVE_KERBEROS
+#if defined(HAVE_KERBEROS) && defined(HAVE_KRB5_AFSLOG)
 krb5_error_code
 krb5_afslog_uid(krb5_context context UNUSED, krb5_ccache id UNUSED,
                 const char *cell UNUSED, krb5_const_realm realm UNUSED,
@@ -108,4 +108,4 @@ krb5_afslog_uid_home(krb5_context context UNUSED, krb5_ccache id UNUSED,
     fakekafs_token = true;
     return 0;
 }
-#endif /* HAVE_KERBEROS */
+#endif /* HAVE_KERBEROS && HAVE_KRB5_AFSLOG */
