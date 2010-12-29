@@ -16,6 +16,8 @@
 #include <portable/pam.h>
 #include <portable/system.h>
 
+#include <pwd.h>
+
 #include <tests/fakepam/testing.h>
 
 /* Used for unused parameters to silence gcc warnings. */
@@ -71,6 +73,19 @@ pam_end(pam_handle_t *pamh, int status)
     free(pamh);
     return PAM_SUCCESS;
 }
+
+
+/*
+ * For testing purposes, pam_modutil_getpwnam can just call getpwnam.
+ * (Normally, it's a thread-safe wrapper that does some data caching.
+ */
+#ifdef HAVE_PAM_MODUTIL_GETPWNAM
+struct passwd *
+pam_modutil_getpwnam(pam_handle_t *pamh UNUSED, const char *name)
+{
+    return getpwnam(name);
+}
+#endif
 
 
 /*
