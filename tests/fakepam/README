@@ -5,15 +5,8 @@ problems as needing configuration files in /etc/pam.d or needing changes
 to the system configuration to run a testing PAM module instead of the
 normal system PAM modules.
 
-In order to be tested with the code here, source files should support
-multiple compilation against either the system PAM libraries or the files
-here.  To do that, change the include of <portable/pam.h> to:
-
-    #ifdef TESTING
-    # include <fakepam/api.h>
-    #else
-    # include <portable/pam.h>
-    #endif
-
-The goal of this library is that all other code should be able to be left
-unchanged.
+The goal of this library is that all PAM code should be able to be left
+unchanged and the code just linked with the fakepam library rather than
+the regular PAM library.  The testing code can then call pam_start and
+pam_end as defind in the fakepam/testing.h header file and inspect
+internal PAM state as needed.
