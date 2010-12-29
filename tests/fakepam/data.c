@@ -22,7 +22,8 @@
 
 
 /*
- * Return a stored PAM data element in the provided data variable.
+ * Return a stored PAM data element in the provided data variable.  As a
+ * special case, if the data is NULL, pretend it doesn't exist.
  */
 int
 pam_get_data(const pam_handle_t *pamh, const char *name, const void **data)
@@ -31,6 +32,8 @@ pam_get_data(const pam_handle_t *pamh, const char *name, const void **data)
 
     for (item = pamh->data; item != NULL; item = item->next)
         if (strcmp(item->name, name) == 0) {
+            if (item->data == NULL)
+                return PAM_NO_MODULE_DATA;
             *data = item->data;
             return PAM_SUCCESS;
         }
