@@ -1,3 +1,16 @@
+libpam-afs-session (2.0-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    - If there is no PAG, create a new one and obtain tokens even if the
+      module has already run.  Works around destruction of the PAG on
+      Linux by keyring initialization PAM modules.
+    - pam_close_session now removes module-specific data indicating that
+      the module has already run, for better behavior in the rare case of
+      opening multiple sessions using the same PAM handle.
+    - Log an ignore status properly when debugging is enabled.
+
+ -- Russ Allbery <rra@debian.org>  Wed, 29 Dec 2010 15:18:02 -0800
+
 libpam-afs-session (1.7-2) unstable; urgency=low
 
   * Apply upstream deltas:
