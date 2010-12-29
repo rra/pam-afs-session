@@ -8,6 +8,7 @@
  */
 
 #include <config.h>
+#include <portable/kafs.h>
 #include <portable/pam.h>
 #include <portable/system.h>
 
@@ -167,6 +168,9 @@ run_tests(bool debug)
 int
 main(void)
 {
+    if (!k_hasafs())
+        skip_all("AFS not available");
+
     plan(41 * 2);
 
     run_tests(false);
