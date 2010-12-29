@@ -30,6 +30,10 @@
 /tests/pam-util/logging-t
 /tests/pam-util/options-t
 /tests/pam-util/vector-t
+/tests/portable/asprintf-t
+/tests/portable/snprintf-t
+/tests/portable/strlcat-t
+/tests/portable/strlcpy-t
 /tests/runtests
 .deps/
 .dirstamp

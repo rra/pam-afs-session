@@ -11,3 +11,7 @@ pam-util/fakepam
 pam-util/logging
 pam-util/options
 pam-util/vector
+portable/asprintf
+portable/snprintf
+portable/strlcat
+portable/strlcpy
