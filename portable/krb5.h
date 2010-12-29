@@ -23,15 +23,27 @@
 #ifndef PORTABLE_KRB5_H
 #define PORTABLE_KRB5_H 1
 
-#include <config.h>
+/*
+ * Allow inclusion of config.h to be skipped, since sometimes we have to use a
+ * stripped-down version of config.h with a different name.
+ */
+#ifndef CONFIG_H_INCLUDED
+# include <config.h>
+#endif
 #include <portable/macros.h>
 
 #include <krb5.h>
+#include <stdlib.h>
 
 BEGIN_DECLS
 
 /* Default to a hidden visibility for all portability functions. */
 #pragma GCC visibility push(hidden)
+
+/* MIT-specific.  The Heimdal documentation says to use free(). */
+#ifndef HAVE_KRB5_FREE_DEFAULT_REALM
+# define krb5_free_default_realm(c, r) free(r)
+#endif
 
 /*
  * krb5_{get,free}_error_message are the preferred APIs for both current MIT
@@ -47,11 +59,6 @@ const char *krb5_get_error_message(krb5_context, krb5_error_code);
 #endif
 #ifndef HAVE_KRB5_FREE_ERROR_MESSAGE
 void krb5_free_error_message(krb5_context, const char *);
-#endif
-
-/* MIT-specific.  The Heimdal documentation says to use free(). */
-#ifndef HAVE_KRB5_FREE_DEFAULT_REALM
-# define krb5_free_default_realm(c, r) free(r)
 #endif
 
 /*

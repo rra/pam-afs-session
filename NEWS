@@ -46,7 +46,7 @@ pam-afs-session 2.0 (unreleased)
     When debugging is enabled, log an exit status of PAM_IGNORE as ignore
     rather than failure.
 
-    Update the embedded kafs code to rra-c-util 2.3, adding
+    Update the embedded kafs code to rra-c-util 3.0, adding
     --with-libkafs-include, --with-libkafs-lib, --with-afs-include, and
     --with-afs-lib configure options for finer control.  Remove obsolete
     --with-afs-headers configure option (use --with-afs-include instead).
@@ -54,15 +54,21 @@ pam-afs-session 2.0 (unreleased)
     Add an initial test suite that tests basic functionality and some
     options.
 
-    Update to rra-c-util 2.5:
+    Update to rra-c-util 3.0:
 
     * Add --with-krb5-include and --with-krb5-lib configure options.
     * Don't break if the user clobbers CPPFLAGS at build time.
     * Fall back on manual probing if krb5-config results don't work.
     * Suppress error output from krb5-config probes.
+    * Search for krb5-config in /usr/kerberos/bin for Red Hat systems.
     * Add support for the old Heimdal krb5_get_error_string interface.
     * Handle the bundled Heimdal on OpenBSD without a separate libroken.
     * Add portability to systems with a broken snprintf or vsnprintf.
+
+    Update to C TAP Harness 1.6:
+
+    * Flush standard error before results in the C TAP library.
+    * Improve test failure output formatting in some edge cases.
 
 pam-afs-session 1.7 (2008-07-10)
 
