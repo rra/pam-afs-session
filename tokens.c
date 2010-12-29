@@ -7,39 +7,29 @@
  * already been called.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008
+ * Copyright 2006, 2007, 2008, 2010
  *     Board of Trustees, Leland Stanford Jr. University
+ *
  * See LICENSE for licensing terms.
  */
 
-#include "config.h"
+#include <config.h>
+#include <portable/kafs.h>
+#ifdef HAVE_KERBEROS
+# include <portable/krb5.h>
+#endif
+#include <portable/pam.h>
+#include <portable/system.h>
 
 #include <errno.h>
 #include <fcntl.h>
 #include <pwd.h>
-#ifdef HAVE_SECURITY_PAM_APPL_H
-# include <security/pam_appl.h>
-# include <security/pam_modules.h>
-#elif HAVE_PAM_PAM_APPL_H
-# include <pam/pam_appl.h>
-# include <pam/pam_modules.h>
-#endif
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
-#ifdef HAVE_KERBEROS
-# include <krb5.h>
-#endif
-
-#if HAVE_KAFS_H
-# include <kafs.h>
-#elif HAVE_KOPENAFS_H
-# include <kopenafs.h>
-#endif
+#include <internal.h>
+#include <pam-util/args.h>
+#include <pam-util/logging.h>
+#include <pam-util/vector.h>
 
 /*
  * HP-UX doesn't have a separate environment maintained in the PAM
@@ -53,7 +43,6 @@
 # define pam_getenv(p, e)       getenv(e)
 #endif
 
-#include "internal.h"
 
 /*
  * Free the results of pam_getenvlist, but only if we have pam_getenvlist.
@@ -77,19 +66,21 @@ pamafs_free_envlist(char **env)
  * have a low-numbered UID and we were configured to ignore such users.
  * Returns true if we should ignore them, false otherwise.
  */
-static int
+static bool
 pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
 {
-    if (args->ignore_root && strcmp("root", pwd->pw_name) == 0) {
-        pamafs_debug(args, "ignoring root user");
-        return 1;
+    long minimum_uid = args->config->minimum_uid;
+
+    if (args->config->ignore_root && strcmp("root", pwd->pw_name) == 0) {
+        putil_debug(args, "ignoring root user");
+        return true;
     }
-    if (args->minimum_uid > 0 && pwd->pw_uid < (unsigned) args->minimum_uid) {
-        pamafs_debug(args, "ignoring low-UID user (%lu < %d)",
-                    (unsigned long) pwd->pw_uid, args->minimum_uid);
-        return 1;
+    if (minimum_uid > 0 && pwd->pw_uid < (unsigned long) minimum_uid) {
+        putil_debug(args, "ignoring low-UID user (%lu < %ld)",
+                    (unsigned long) pwd->pw_uid, minimum_uid);
+        return true;
     }
-    return 0;
+    return false;
 }
 
 
@@ -100,38 +91,43 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
  * PAM_SESSION_ERR.
  */
 static int
-pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
+pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
 {
-    int res, argc, arg, i;
+    int res, argc, arg;
+    size_t i;
     char **env;
     const char **argv;
     pid_t child;
 
     /* Sanity check that we have some program to run. */
-    if (args->program == NULL) {
-        pamafs_error("no token program set in PAM arguments");
+    if (args->config->program == NULL) {
+        putil_err(args, "no token program set in PAM arguments");
         return PAM_SESSION_ERR;
     }
 
     /* Build the options for the program. */
-    argc = (args->aklog_homedir ? 2 : 0) + args->cell_count * 2;
+    argc = (args->config->aklog_homedir ? 2 : 0);
+    if (args->config->afs_cells != NULL)
+        argc += args->config->afs_cells->count * 2;
     argv = malloc((argc + 2) * sizeof(char *));
     if (argv == NULL) {
-        pamafs_error("cannot allocate memory: %s", strerror(errno));
+        putil_crit(args, "cannot allocate memory: %s", strerror(errno));
         return PAM_SESSION_ERR;
     }
-    argv[0] = args->program;
+    argv[0] = args->config->program;
     arg = 1;
-    if (args->aklog_homedir) {
+    if (args->config->aklog_homedir) {
         argv[arg++] = "-p";
         argv[arg++] = pwd->pw_dir;
-        pamafs_debug(args, "passing -p %s to aklog", pwd->pw_dir);
+        putil_debug(args, "passing -p %s to aklog", pwd->pw_dir);
     }
-    for (i = 0; i < args->cell_count; i++) {
-        argv[arg++] = "-c";
-        argv[arg++] = args->cells[i];
-        pamafs_debug(args, "passing -c %s to aklog", args->cells[i]);
-    }
+    if (args->config->afs_cells != NULL)
+        for (i = 0; i < args->config->afs_cells->count; i++) {
+            argv[arg++] = "-c";
+            argv[arg++] = args->config->afs_cells->strings[i];
+            putil_debug(args, "passing -c %s to aklog",
+                        args->config->afs_cells->strings[i]);
+        }
     argv[arg] = NULL;
 
     /*
@@ -139,17 +135,17 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
      * subprocess so that we won't run exit handlers or double-flush stdio
      * buffers in the child process.
      */
-    pamafs_debug(args, "running %s as UID %lu", args->program,
-                 (unsigned long) pwd->pw_uid);
-    env = pam_getenvlist(pamh);
+    putil_debug(args, "running %s as UID %lu", args->config->program,
+                (unsigned long) pwd->pw_uid);
+    env = pam_getenvlist(args->pamh);
     child = fork();
     if (child < 0) {
-        pamafs_error("cannot fork: %s", strerror(errno));
+        putil_crit(args, "cannot fork: %s", strerror(errno));
         return PAM_SESSION_ERR;
     } else if (child == 0) {
         if (setuid(pwd->pw_uid) < 0) {
-            pamafs_error("cannot setuid to UID %lu: %s",
-                         (unsigned long) pwd->pw_uid, strerror(errno));
+            putil_crit(args, "cannot setuid to UID %lu: %s",
+                       (unsigned long) pwd->pw_uid, strerror(errno));
             _exit(1);
         }
         close(0);
@@ -158,16 +154,20 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
         open("/dev/null", O_RDONLY);
         open("/dev/null", O_WRONLY);
         open("/dev/null", O_WRONLY);
-        execve(args->program, (char **) argv, env);
-        pamafs_error("cannot exec %s: %s", args->program, strerror(errno));
+        execve(args->config->program, (char **) argv, env);
+        putil_err(args, "cannot exec %s: %s", args->config->program,
+                  strerror(errno));
         _exit(1);
     }
     free(argv);
     pamafs_free_envlist(env);
     if (waitpid(child, &res, 0) && WIFEXITED(res) && WEXITSTATUS(res) == 0)
         return PAM_SUCCESS;
-    else
+    else {
+        putil_err(args, "aklog program %s returned %d", args->config->program,
+                  WEXITSTATUS(res));
         return PAM_SESSION_ERR;
+    }
 }
 
 
@@ -178,50 +178,47 @@ pamafs_run_aklog(pam_handle_t *pamh, struct pam_args *args, struct passwd *pwd)
  */
 #ifdef HAVE_KRB5_AFSLOG
 static int
-pamafs_afslog(pam_handle_t *pamh, struct pam_args *args,
-              const char *cachename, struct passwd *pwd)
+pamafs_afslog(struct pam_args *args, const char *cachename,
+              struct passwd *pwd)
 {
     krb5_error_code ret;
-    krb5_context ctx;
     krb5_ccache cache;
-    int i;
+    size_t i;
 
     if (cachename == NULL) {
-        pamafs_debug(args, "skipping tokens, no Kerberos ticket cache");
+        putil_debug(args, "skipping tokens, no Kerberos ticket cache");
         return PAM_SUCCESS;
     }
-    ret = krb5_init_context(&ctx);
+    ret = krb5_cc_resolve(args->ctx, cachename, &cache);
     if (ret != 0) {
-        pamafs_error_krb5(NULL, "cannot initialize Kerberos", ret);
+        putil_err_krb5(args, ret, "cannot open Kerberos ticket cache");
         return PAM_SESSION_ERR;
     }
-    ret = krb5_cc_resolve(ctx, cachename, &cache);
-    if (ret != 0) {
-        pamafs_error_krb5(ctx, "cannot open Kerberos ticket cache", ret);
-        return PAM_SESSION_ERR;
-    }
-    if (args->aklog_homedir) {
-        pamafs_debug(args, "obtaining tokens for UID %lu and directory %s",
-                     (unsigned long) pwd->pw_uid, pwd->pw_dir);
-        ret = krb5_afslog_uid_home(ctx, cache, NULL, NULL, pwd->pw_uid,
-                                      pwd->pw_dir);
+    if (args->config->aklog_homedir) {
+        putil_debug(args, "obtaining tokens for UID %lu and directory %s",
+                    (unsigned long) pwd->pw_uid, pwd->pw_dir);
+        ret = krb5_afslog_uid_home(args->ctx, cache, NULL, NULL, pwd->pw_uid,
+                                   pwd->pw_dir);
         if (ret != 0)
-            pamafs_error_krb5(ctx, "cannot obtain tokens for path", ret);
-    } else if (args->cells == NULL) {
-        pamafs_debug(args, "obtaining tokens for UID %lu",
-                     (unsigned long) pwd->pw_uid);
-        ret = krb5_afslog_uid(ctx, cache, NULL, NULL, pwd->pw_uid);
+            putil_err_krb5(args, ret, "cannot obtain tokens for path %s",
+                           pwd->pw_dir);
+    } else if (args->config->afs_cells == NULL) {
+        putil_debug(args, "obtaining tokens for UID %lu",
+                    (unsigned long) pwd->pw_uid);
+        ret = krb5_afslog_uid(args->ctx, cache, NULL, NULL, pwd->pw_uid);
         if (ret != 0)
-            pamafs_error_krb5(ctx, "cannot obtain tokens", ret);
-    }
-    if (args->cells != NULL) {
-        for (i = 0; i < args->cell_count; i++) {
-            pamafs_debug(args, "obtaining tokens for UID %lu in cell %s",
-                         (unsigned long) pwd->pw_uid, args->cells[i]);
-            ret = krb5_afslog_uid(ctx, cache, args->cells[i], NULL,
+            putil_err_krb5(args, ret, "cannot obtain tokens");
+    } else {
+        for (i = 0; i < args->config->afs_cells->count; i++) {
+            putil_debug(args, "obtaining tokens for UID %lu in cell %s",
+                        (unsigned long) pwd->pw_uid,
+                        args->config->afs_cells->strings[i]);
+            ret = krb5_afslog_uid(args->ctx, cache,
+                                  args->config->afs_cells->strings[i], NULL,
                                   pwd->pw_uid);
             if (ret != 0)
-                pamafs_error_krb5(ctx, "cannot obtain tokens for cell", ret);
+                putil_err_krb5(args, ret, "cannot obtain tokens for cell %s",
+                               args->config->afs_cells->strings[i]);
         }
     }
     if (ret == 0)
@@ -241,25 +238,19 @@ static void
 maybe_destroy_cache(struct pam_args *args, const char *cache)
 {
     krb5_error_code ret;
-    krb5_context c;
     krb5_ccache ccache;
 
-    if (!args->kdestroy)
+    if (!args->config->kdestroy)
         return;
-    ret = krb5_init_context(&c);
+    ret = krb5_cc_resolve(args->ctx, cache, &ccache);
     if (ret != 0) {
-        pamafs_error_krb5(NULL, "cannot initialize Kerberos", ret);
+        putil_err_krb5(args, ret, "cannot open Kerberos ticket cache");
         return;
     }
-    ret = krb5_cc_resolve(c, cache, &ccache);
-    if (ret != 0) {
-        pamafs_error_krb5(c, "cannot open Kerberos ticket cache", ret);
-        return;
-    }
-    pamafs_debug(args, "destroying ticket cache");
-    ret = krb5_cc_destroy(c, ccache);
+    putil_debug(args, "destroying ticket cache");
+    ret = krb5_cc_destroy(args->ctx, ccache);
     if (ret != 0)
-        pamafs_error_krb5(c, "cannot destroy Kerberos ticket cache", ret);
+        putil_err_krb5(args, ret, "cannot destroy Kerberos ticket cache");
 }
 #else /* !HAVE_KERBEROS */
 static void
@@ -271,14 +262,13 @@ maybe_destroy_cache(struct pam_args *args UNUSED, const char *cache UNUSED)
 
 
 /*
- * Obtain AFS tokens, currently always by running aklog but eventually via the
- * kafs interface as well.  Does various sanity checks first, ensuring that we
- * have a K5 ticket cache, that we can resolve the username, and that we're
- * not supposed to ignore this user.  Sets our flag data item if tokens were
+ * Obtain AFS tokens.  Does various sanity checks first, ensuring that we have
+ * a K5 ticket cache, that we can resolve the username, and that we're not
+ * supposed to ignore this user.  Sets our flag data item if tokens were
  * successfully obtained.  Returns either PAM_SUCCESS or PAM_SESSION_ERR.
  */
 int
-pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
+pamafs_token_get(struct pam_args *args)
 {
     int status;
     PAM_CONST char *user;
@@ -286,21 +276,21 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
     struct passwd *pwd;
 
     /* Don't try to get a token unless we have a K5 ticket cache. */
-    cache = pam_getenv(pamh, "KRB5CCNAME");
-    if (cache == NULL && !args->always_aklog) {
-        pamafs_debug(args, "skipping tokens, no Kerberos ticket cache");
+    cache = pam_getenv(args->pamh, "KRB5CCNAME");
+    if (cache == NULL && !args->config->always_aklog) {
+        putil_debug(args, "skipping tokens, no Kerberos ticket cache");
         return PAM_SUCCESS;
     }
 
     /* Get the user, look them up, and see if we should skip this user. */
-    status = pam_get_user(pamh, &user, NULL);
+    status = pam_get_user(args->pamh, &user, NULL);
     if (status != PAM_SUCCESS || user == NULL) {
-        pamafs_error("no user set: %s", pam_strerror(pamh, status));
+        putil_err_pam(args, status, "no user set");
         return PAM_SESSION_ERR;
     }
-    pwd = getpwnam(user);
+    pwd = pam_modutil_getpwnam(args->pamh, user);
     if (pwd == NULL) {
-        pamafs_error("cannot find UID for %s: %s", user, strerror(errno));
+        putil_err(args, "cannot find UID for %s: %s", user, strerror(errno));
         return PAM_SESSION_ERR;
     }
     if (pamafs_should_ignore(args, pwd))
@@ -322,18 +312,18 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
      * too many options.
      */
 #ifdef HAVE_KRB5_AFSLOG
-    if (args->program == NULL)
-        status = pamafs_afslog(pamh, args, cache, pwd);
+    if (args->config->program == NULL)
+        status = pamafs_afslog(args, cache, pwd);
     else
-        status = pamafs_run_aklog(pamh, args, pwd);
+        status = pamafs_run_aklog(args, pwd);
 #else
-    status = pamafs_run_aklog(pamh, args, pwd);
+    status = pamafs_run_aklog(args, pwd);
 #endif
     if (status == PAM_SUCCESS) {
-        status = pam_set_data(pamh, "pam_afs_session", (char *) "yes", NULL);
+        status = pam_set_data(args->pamh, "pam_afs_session", (char *) "yes",
+                              NULL);
         if (status != PAM_SUCCESS) {
-            pamafs_error("cannot set success data: %s",
-                         pam_strerror(pamh, status));
+            putil_err_pam(args, status, "cannot set success data");
             status = PAM_SESSION_ERR;
         }
         if (status == PAM_SUCCESS)
@@ -349,24 +339,35 @@ pamafs_token_get(pam_handle_t *pamh, struct pam_args *args)
  * PAM_SUCCESS or PAM_SESSION_ERR.
  */
 int
-pamafs_token_delete(pam_handle_t *pamh, struct pam_args *args)
+pamafs_token_delete(struct pam_args *args)
 {
     const void *dummy;
+    int status;
 
     /*
      * Do nothing if open_session (or setcred) didn't run.  Otherwise, we may
      * be wiping out some other token that we aren't responsible for.
      */
-    if (pam_get_data(pamh, "pam_afs_session", &dummy) != PAM_SUCCESS) {
-        pamafs_debug(args, "skipping, no open session");
+    if (pam_get_data(args->pamh, "pam_afs_session", &dummy) != PAM_SUCCESS) {
+        putil_debug(args, "skipping, no open session");
         return PAM_SUCCESS;
     }
 
     /* Okay, go ahead and delete the tokens. */
-    pamafs_debug(args, "destroying tokens");
+    putil_debug(args, "destroying tokens");
     if (k_unlog() != 0) {
-        pamafs_error("unable to delete credentials: %s", strerror(errno));
+        putil_err(args, "unable to delete credentials: %s", strerror(errno));
         return PAM_SESSION_ERR;
     }
+
+    /*
+     * Remove our module data, just in case someone wants to create a new
+     * session again later inside the same PAM session.  Just complain but
+     * don't fail if we can't delete it, since this is unlikely.
+     */
+    status = pam_set_data(args->pamh, "pam_afs_session", NULL, NULL);
+    if (status != PAM_SUCCESS)
+        putil_err_pam(args, status, "unable to remove module data");
+
     return PAM_SUCCESS;
 }

@@ -1,0 +1,17 @@
+docs/pod
+docs/pod-spelling
+kafs/basic
+kafs/haspag
+module/basic
+module/cells
+module/full
+module/pag
+pam-util/args
+pam-util/fakepam
+pam-util/logging
+pam-util/options
+pam-util/vector
+portable/asprintf
+portable/snprintf
+portable/strlcat
+portable/strlcpy

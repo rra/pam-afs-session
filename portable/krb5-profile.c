@@ -6,18 +6,21 @@
  * libk5profile with a separate k5profile.h header file).
  *
  * This file is therefore (apart from the includes, opening and closing
- * comments, and the spots marked with a PAM comment) a verbatim copy of
- * src/lib/krb5/krb/appdefault.c from MIT Kerberos 1.4.4.
+ * comments, and the spots marked with an rra-c-util comment) a verbatim copy
+ * of src/lib/krb5/krb/appdefault.c from MIT Kerberos 1.4.4.
  *
  * Copyright (C) 1985-2005 by the Massachusetts Institute of Technology.
  * For license information, see the end of this file.
  */
 
-#include "config.h"
+#include <config.h>
 
 #include <krb5.h>
 #ifdef HAVE_K5PROFILE_H
 # include <k5profile.h>
+#endif
+#ifdef HAVE_PROFILE_H
+# include <profile.h>
 #endif
 #include <stdio.h>
 #include <string.h>
@@ -57,13 +60,18 @@ static krb5_error_code appdefault_get(krb5_context context, const char *appname,
 	const char * realmstr =  realm?realm->data:NULL;
 
         /*
-         * PAM: The magic values are internal, so a magic check for the
-         * context struct was removed here.
+         * rra-c-util: The magic values are internal, so a magic check for the
+         * context struct was removed here.  Call krb5_get_profile if it's
+         * available since the krb5_context struct may be opaque.
          */
 	    if (!context) 
 	    return KV5M_CONTEXT;
 
+#ifdef HAVE_KRB5_GET_PROFILE
+            krb5_get_profile(context, &profile);
+#else
 	    profile = context->profile;
+#endif
 	    
 	/*
 	 * Try number one:
