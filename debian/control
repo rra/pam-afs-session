@@ -4,7 +4,8 @@ Priority: optional
 Maintainer: Russ Allbery <rra@debian.org>
 Uploaders: Sam Hartman <hartmans@debian.org>
 Standards-Version: 3.9.1
-Build-Depends: debhelper (>= 8), libpam0g-dev, libkrb5-dev, comerr-dev
+Build-Depends: debhelper (>= 8), comerr-dev, libkrb5-dev, libpam0g-dev,
+ libtest-pod-perl
 Homepage: http://www.eyrie.org/~eagle/software/pam-afs-session/
 Vcs-Git: git://git.debian.org/git/pkg-k5-afs/libpam-afs-session.git
 Vcs-Browser: http://git.debian.org/?p=pkg-k5-afs/libpam-afs-session.git
