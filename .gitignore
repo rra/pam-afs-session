@@ -24,6 +24,7 @@
 /tests/module/basic-t
 /tests/module/cells-t
 /tests/module/full
+/tests/module/pag-t
 /tests/pam-util/args-t
 /tests/pam-util/fakepam-t
 /tests/pam-util/logging-t

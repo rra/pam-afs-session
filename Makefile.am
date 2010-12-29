@@ -90,17 +90,19 @@ warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)' $(check_PROGRAMS)
 
 # The bits below are for the test suite, not for the main package.
-check_PROGRAMS = tests/runtests tests/kafs/basic tests/kafs/haspag-t	\
-	tests/module/basic-t tests/module/cells-t tests/module/full	\
-	tests/pam-util/args-t tests/pam-util/fakepam-t			\
-	tests/pam-util/logging-t tests/pam-util/options-t		\
+check_PROGRAMS = tests/runtests tests/kafs/basic tests/kafs/haspag-t	  \
+	tests/module/basic-t tests/module/cells-t tests/module/full	  \
+	tests/module/pag-t tests/pam-util/args-t tests/pam-util/fakepam-t \
+	tests/pam-util/logging-t tests/pam-util/options-t		  \
 	tests/pam-util/vector-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
-check_LIBRARIES = tests/fakepam/libfakepam.a tests/tap/libtap.a
+check_LIBRARIES = tests/fakepam/libfakepam.a tests/module/libfakekafs.a	\
+	tests/tap/libtap.a
 tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/data.c	\
 	tests/fakepam/logging.c tests/fakepam/testing.c		\
 	tests/fakepam/testing.h
+tests_module_libfakekafs_a_SOURCES = tests/module/fakekafs.c
 tests_tap_libtap_a_CPPFLAGS = -I$(abs_top_srcdir)/tests
 tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h
 
@@ -126,6 +128,13 @@ tests_module_full_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_full_LDADD = options.lo public.lo tokens.lo	\
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
 	portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
+tests_module_pag_t_SOURCES = tests/module/pag-t.c tests/module/util.c \
+	tests/module/util.h
+tests_module_pag_t_LDFLAGS = $(KRB5_LDFLAGS)
+tests_module_pag_t_LDADD = options.lo public.lo tokens.lo	\
+	tests/module/libfakekafs.a pam-util/libpamutil.la	\
+	tests/fakepam/libfakepam.a tests/tap/libtap.a		\
+	portable/libportable.la
 tests_pam_util_args_t_LDFLAGS = $(KRB5_LDFLAGS)
 tests_pam_util_args_t_LDADD = pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a	\
