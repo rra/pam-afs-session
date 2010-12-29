@@ -78,10 +78,15 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/config.guess	\
 	configure m4/libtool.m4 m4/ltoptions.m4 m4/ltsugar.m4		\
 	m4/ltversion.m4 m4/lt~obsolete.m4 pam_afs_session.5
 
-# A set of flags for warnings.	Add -O because gcc won't find some warnings
-# without optimization turned on, and add -DDEBUG=1 so we'll also compile all
-# debugging code and test it.
-WARNINGS = -g -O -DDEBUG=1 -Wall -W -Wendif-labels -Wpointer-arith \
+# A set of flags for warnings.  Add -O because gcc won't find some warnings
+# without optimization turned on.  Desirable warnings that can't be turned
+# on due to other problems:
+#
+#     -Wconversion      http://bugs.debian.org/488884 (htons warnings)
+#
+# Last checked against gcc 4.4 (2010-08-15).
+WARNINGS = -g -O -Wall -Wextra -Wendif-labels -Wformat=2 -Winit-self \
+	-Wswitch-enum -Wdeclaration-after-statement -Wshadow -Wpointer-arith \
 	-Wbad-function-cast -Wwrite-strings -Wstrict-prototypes \
 	-Wmissing-prototypes -Wnested-externs -Werror
 

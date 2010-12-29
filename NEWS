@@ -64,6 +64,7 @@ pam-afs-session 2.0 (unreleased)
     * Add support for the old Heimdal krb5_get_error_string interface.
     * Handle the bundled Heimdal on OpenBSD without a separate libroken.
     * Add portability to systems with a broken snprintf or vsnprintf.
+    * Update make warnings flags for gcc 4.4.
 
     Update to C TAP Harness 1.6:
 
