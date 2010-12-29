@@ -23,7 +23,7 @@ main(void)
 {
     if (!k_hasafs())
         skip_all("AFS not available");
-    
+
     plan(2);
 
     is_int(0, k_setpag(), "k_setpag succeeds");

@@ -116,28 +116,28 @@ pam_getenv(pam_handle_t *pamh, const char *name)
 char **
 pam_getenvlist(pam_handle_t *pamh)
 {
-    char **environ;
+    char **env;
     size_t i;
 
     if (pamh->environ == NULL)
         return NULL;
     for (i = 0; pamh->environ[i] != NULL; i++)
         ;
-    environ = malloc((i + 1) * sizeof(char *));
-    if (environ == NULL)
+    env = malloc((i + 1) * sizeof(char *));
+    if (env == NULL)
         return NULL;
     for (i = 0; pamh->environ[i] != NULL; i++) {
-        environ[i] = strdup(pamh->environ[i]);
-        if (environ[i] == NULL)
+        env[i] = strdup(pamh->environ[i]);
+        if (env[i] == NULL)
             goto fail;
     }
-    environ[i] = NULL;
-    return environ;
+    env[i] = NULL;
+    return env;
 
 fail:
-    for (i = 0; environ[i] != NULL; i++)
-        free(environ[i]);
-    free(environ);
+    for (i = 0; env[i] != NULL; i++)
+        free(env[i]);
+    free(env);
     return NULL;
 }
 
@@ -162,7 +162,7 @@ pam_putenv(pam_handle_t *pamh, const char *setting)
     bool delete = false;
     bool found = false;
     size_t i, j;
-    const char **environ;
+    const char **env;
 
     if (setting == NULL)
         return PAM_PERM_DENIED;
@@ -207,10 +207,10 @@ pam_putenv(pam_handle_t *pamh, const char *setting)
     if (!found) {
         if (delete)
             return PAM_BAD_ITEM;
-        environ = realloc(pamh->environ, (i + 2) * sizeof(char *));
-        if (environ == NULL)
+        env = realloc(pamh->environ, (i + 2) * sizeof(char *));
+        if (env == NULL)
             return PAM_BUF_ERR;
-        pamh->environ = environ;
+        pamh->environ = env;
         pamh->environ[i] = setting;
         pamh->environ[i + 1] = NULL;
     }

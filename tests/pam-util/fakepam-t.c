@@ -24,7 +24,7 @@ main(void)
 {
     pam_handle_t *pamh;
     struct pam_conv conv = { NULL, NULL };
-    char **environ;
+    char **env;
     size_t i;
 
     /*
@@ -68,15 +68,15 @@ main(void)
     is_string("baz", pam_getenv(pamh, "BAR"), "getenv BAR");
 
     /* pam_getenvlist. */
-    environ = pam_getenvlist(pamh);
-    ok(environ != NULL, "getenvlist not NULL");
-    is_string("TEST=foo", environ[0], "getenvlist TEST");
-    is_string("BAR=baz", environ[1], "getenvlist BAR");
-    is_string("FOON=bar=n", environ[2], "getenvlist FOON");
-    ok(environ[3] == NULL, "getenvlist length");
-    for (i = 0; environ[i] != NULL; i++)
-        free(environ[i]);
-    free(environ);
+    env = pam_getenvlist(pamh);
+    ok(env != NULL, "getenvlist not NULL");
+    is_string("TEST=foo", env[0], "getenvlist TEST");
+    is_string("BAR=baz", env[1], "getenvlist BAR");
+    is_string("FOON=bar=n", env[2], "getenvlist FOON");
+    ok(env[3] == NULL, "getenvlist length");
+    for (i = 0; env[i] != NULL; i++)
+        free(env[i]);
+    free(env);
     is_int(PAM_SUCCESS, pam_putenv(pamh, "FOO=foo"), "putenv FOO");
     is_string("TEST=foo", pamh->environ[0], "pamh environ TEST");
     is_string("BAR=baz", pamh->environ[1], "pamh environ BAR");
