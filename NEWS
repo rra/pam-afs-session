@@ -17,6 +17,10 @@ pam-afs-session 2.0 (unreleased)
     Avoid returning an uninitialized value from pam_open_session when
     notokens is set.  Thanks, Ian Ward Comfort.
 
+    pam_close_session now removes the module data indicating that tokens
+    were already obtained so that opening another session using the same
+    PAM handle will work correctly.
+
     pam-afs-session is now built using Automake and Libtool to bring it
     more in line with other software packages.  This means that it now
     relies on Libtool to know how to generate a loadable module rather
