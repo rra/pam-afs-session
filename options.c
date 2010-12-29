@@ -22,7 +22,7 @@
 #include <pam-util/options.h>
 #include <pam-util/vector.h>
 
-#if defined(HAVE_KRB5_AKLOG)
+#ifdef HAVE_KRB5_AFSLOG
 # undef PATH_AKLOG
 #endif
 #if !defined(PATH_AKLOG)
