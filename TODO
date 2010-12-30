@@ -2,18 +2,10 @@
 
 General:
 
- * Add support for k_haspag and recreation of the PAG and tokens even if
-   the module has already run if there is no longer a PAG.
-
  * Providing a way to pass command-line arguments to the aklog program
    would be nice, even if not strictly necessary.  If set in krb5.conf,
    one should be able to just use spaces.  PAM options will require some
    other workaround (maybe using commas).
-
-AFS System Calls:
-
- * Support the ioctl calls used on Mac OS X and Solaris 11 in the kafs
-   portability layer.
 
 PAM API:
 
@@ -23,11 +15,6 @@ PAM API:
  * Double-check the return statuses of all of the PAM API functions to
    ensure that they're within the documented and permitted set.
 
-Build System:
-
- * Fix probe for krb5_afslog and test that code.
-
 Tests:
 
- * Add a test case for k_hasafs failure, using a fake kafs library.  With
-   that fake library, also test that k_setpag is called correctly.
+ * Add a test case for k_hasafs failure, using a fake kafs library.
