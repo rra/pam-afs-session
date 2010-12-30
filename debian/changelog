@@ -1,4 +1,4 @@
-libpam-afs-session (2.0-1) UNRELEASED; urgency=low
+libpam-afs-session (2.0-1) experimental; urgency=low
 
   * New upstream release.
     - If there is no PAG, create a new one and obtain tokens even if the
@@ -21,7 +21,7 @@ libpam-afs-session (2.0-1) UNRELEASED; urgency=low
     fixes cherry-picked from upstream and breaking those patches out
     separately would be work for no gain.
 
- -- Russ Allbery <rra@debian.org>  Wed, 29 Dec 2010 15:18:02 -0800
+ -- Russ Allbery <rra@debian.org>  Wed, 29 Dec 2010 16:28:44 -0800
 
 libpam-afs-session (1.7-2) unstable; urgency=low
 
