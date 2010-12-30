@@ -36,10 +36,10 @@ pam-afs-session 2.0 (2010-12-29)
     /lib32/security or /lib64/security if they exist) rather than
     /usr/lib/security to match the default PAM configuration.
 
-    The module is now installed under $libdir/security except for the
-    above exception, rather than a lib32 or lib64 directory, except for
-    the special case of /usr.  To install into another lib32 or lib64
-    directory, use the --libdir option to configure.
+    The module is now installed under $libdir/security, rather than a
+    lib32 or lib64 directory, except for the special case of /usr.  To
+    install into another lib32 or lib64 directory, use the --libdir option
+    to configure.
 
     Fix a configure error when built --without-krb5.
 
