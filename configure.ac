@@ -36,6 +36,10 @@ AC_CHECK_HEADERS([security/pam_ext.h], ,
     [AC_CHECK_HEADERS([pam/pam_ext.h])])
 RRA_HEADER_PAM_CONST
 
+dnl Needed for the pam_vsyslog replacement function.
+AC_DEFINE([MODULE_NAME], ["pam_afs_session"],
+    [The name of the PAM module, used by the pam_vsyslog replacement.])
+
 dnl Determine the path to aklog.  If we can't figure it out, the user will
 dnl have to set program in the PAM options.
 AC_ARG_WITH([aklog],

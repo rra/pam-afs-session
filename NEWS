@@ -1,5 +1,10 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 2.1 (unreleased)
+
+    Fix compilation of the pam_syslog and pam_vsyslog replacement
+    functions for platforms whose PAM libraries lack those functions.
+
 pam-afs-session 2.0 (2010-12-29)
 
     If there is no PAG, create a new one and obtain tokens in pam_setcred
