@@ -2,7 +2,8 @@
  * PAM utility vector library test suite.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2009, 2010 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2009, 2010, 2011
+ *     Board of Trustees, Leland Stanford Jr. University
  * Copyright (c) 2004, 2005, 2006
  *     by Internet Systems Consortium, Inc. ("ISC")
  * Copyright (c) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
@@ -26,8 +27,10 @@ main(void)
     struct vector *vector, *ovector;
     const char cstring[] = "This is a\ttest.  ";
     char *string;
+    char buffer[BUFSIZ];
+    pid_t child;
 
-    plan(41);
+    plan(45);
 
     vector = vector_new();
     ok(vector != NULL, "vector_new returns non-NULL");
@@ -83,6 +86,20 @@ main(void)
     is_string("foo", vector->strings[0], "...first string");
     vector = vector_split_multi(", ,  ", ", ", vector);
     is_int(0, vector->count, "vector_split_multi with only separators");
+    vector_free(vector);
+
+    vector = vector_new();
+    ok(vector_add(vector, "/bin/sh"), "vector_add succeeds");
+    ok(vector_add(vector, "-c"), "vector_add succeeds");
+    snprintf(buffer, sizeof(buffer), "echo ok %lu - vector_exec", testnum++);
+    ok(vector_add(vector, buffer), "vector_add succeeds");
+    child = fork();
+    if (child < 0)
+        sysbail("unable to fork");
+    else if (child == 0)
+        if (vector_exec("/bin/sh", vector) < 0)
+            sysdiag("unable to exec /bin/sh");
+    waitpid(child, NULL, 0);
     vector_free(vector);
 
     return 0;

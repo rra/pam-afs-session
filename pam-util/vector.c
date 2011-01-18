@@ -214,3 +214,20 @@ fail:
         vector_free(vector);
     return NULL;
 }
+
+
+/*
+ * Given a vector and a path to a program, exec that program with the vector
+ * as its arguments.  This requires adding a NULL terminator to the vector and
+ * casting it appropriately.  Returns 0 on success and -1 on error, like exec
+ * does.
+ */
+int
+vector_exec(const char *path, struct vector *vector)
+{
+    if (vector->allocated == vector->count)
+        if (!vector_resize(vector, vector->count + 1))
+            return -1;
+    vector->strings[vector->count] = NULL;
+    return execv(path, (char * const *) vector->strings);
+}

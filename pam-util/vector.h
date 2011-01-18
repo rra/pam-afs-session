@@ -78,6 +78,14 @@ struct vector *vector_split_multi(const char *string, const char *seps,
                                   struct vector *)
     __attribute((__nonnull__(1, 2)));
 
+/*
+ * Exec the given program with the vector as its arguments.  Return behavior
+ * is the same as execv.  Note the argument order is different than the other
+ * vector functions (but the same as execv).
+ */
+int vector_exec(const char *path, struct vector *)
+    __attribute__((__nonnull__));
+
 /* Undo default visibility change. */
 #pragma GCC visibility pop
 
