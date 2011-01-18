@@ -76,6 +76,8 @@ k_syscall(long call, long param1, long param2, long param3, long param4,
         syscall_data.param5 = 0;
         syscall_data.param6 = 0;
         code = ioctl(fd, _IOWR('C', 2, struct afssysargs64), &syscall_data);
+        if (code == 0)
+            *rval = syscall_data.retval;
     } else {
         struct afssysargs syscall_data;
 
@@ -87,9 +89,9 @@ k_syscall(long call, long param1, long param2, long param3, long param4,
         syscall_data.param5 = 0;
         syscall_data.param6 = 0;
         code = ioctl(fd, _IOWR('C', 1, struct afssysargs), &syscall_data);
+        if (code == 0)
+            *rval = syscall_data.retval;
     }
-    if (code == 0)
-        *rval = syscall_data.retval;
 
     oerrno = errno;
     close(fd);

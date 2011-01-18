@@ -5,6 +5,9 @@ pam-afs-session 2.1 (unreleased)
     Fix compilation of the pam_syslog and pam_vsyslog replacement
     functions for platforms whose PAM libraries lack those functions.
 
+    Fix compilation of the embedded kafs layer for Mac OS X 10.6.  Thanks,
+    Andy Cobaugh.
+
 pam-afs-session 2.0 (2010-12-29)
 
     If there is no PAG, create a new one and obtain tokens in pam_setcred
