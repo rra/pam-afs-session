@@ -231,3 +231,22 @@ vector_exec(const char *path, struct vector *vector)
     vector->strings[vector->count] = NULL;
     return execv(path, (char * const *) vector->strings);
 }
+
+
+/*
+ * Given a vector, a path to a program, and the environment, exec that program
+ * with the vector as its arguments and the given environment.  This requires
+ * adding a NULL terminator to the vector and casting it appropriately.
+ * Returns 0 on success and -1 on error, like exec does.
+ */
+int
+vector_exec_env(const char *path, struct vector *vector,
+                const char * const env[])
+{
+    if (vector->allocated == vector->count)
+        if (!vector_resize(vector, vector->count + 1))
+            return -1;
+    vector->strings[vector->count] = NULL;
+    return execve(path, (char * const *) vector->strings,
+                  (char * const *) env);
+}

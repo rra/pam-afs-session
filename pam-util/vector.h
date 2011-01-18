@@ -81,9 +81,12 @@ struct vector *vector_split_multi(const char *string, const char *seps,
 /*
  * Exec the given program with the vector as its arguments.  Return behavior
  * is the same as execv.  Note the argument order is different than the other
- * vector functions (but the same as execv).
+ * vector functions (but the same as execv).  The vector_exec_env variant
+ * calls execve and passes in the environment for the program.
  */
 int vector_exec(const char *path, struct vector *)
+    __attribute__((__nonnull__));
+int vector_exec_env(const char *path, struct vector *, const char *const env[])
     __attribute__((__nonnull__));
 
 /* Undo default visibility change. */

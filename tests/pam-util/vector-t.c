@@ -28,9 +28,10 @@ main(void)
     const char cstring[] = "This is a\ttest.  ";
     char *string;
     char buffer[BUFSIZ];
+    const char * const env[] = { buffer, NULL };
     pid_t child;
 
-    plan(45);
+    plan(49);
 
     vector = vector_new();
     ok(vector != NULL, "vector_new returns non-NULL");
@@ -98,6 +99,21 @@ main(void)
         sysbail("unable to fork");
     else if (child == 0)
         if (vector_exec("/bin/sh", vector) < 0)
+            sysdiag("unable to exec /bin/sh");
+    waitpid(child, NULL, 0);
+    vector_free(vector);
+
+    vector = vector_new();
+    ok(vector_add(vector, "/bin/sh"), "vector_add succeeds");
+    ok(vector_add(vector, "-c"), "vector_add succeeds");
+    ok(vector_add(vector, "echo ok $NUMBER - vector_exec_env"),
+       "vector_add succeeds");
+    snprintf(buffer, sizeof(buffer), "NUMBER=%lu", testnum++);
+    child = fork();
+    if (child < 0)
+        sysbail("unable to fork");
+    else if (child == 0)
+        if (vector_exec_env("/bin/sh", vector, env) < 0)
             sysdiag("unable to exec /bin/sh");
     waitpid(child, NULL, 0);
     vector_free(vector);
