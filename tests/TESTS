@@ -15,3 +15,4 @@ portable/asprintf
 portable/snprintf
 portable/strlcat
 portable/strlcpy
+portable/strndup

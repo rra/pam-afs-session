@@ -102,7 +102,7 @@ check_PROGRAMS = tests/runtests tests/kafs/basic tests/kafs/haspag-t	  \
 	tests/pam-util/logging-t tests/pam-util/options-t		  \
 	tests/pam-util/vector-t tests/portable/asprintf-t		  \
 	tests/portable/snprintf-t tests/portable/strlcat-t		  \
-	tests/portable/strlcpy-t
+	tests/portable/strlcpy-t tests/portable/strndup-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/fakepam/libfakepam.a tests/module/libfakekafs.a	\
@@ -172,6 +172,9 @@ tests_portable_strlcat_t_LDADD = tests/tap/libtap.a portable/libportable.la
 tests_portable_strlcpy_t_SOURCES = tests/portable/strlcpy-t.c \
 	tests/portable/strlcpy.c
 tests_portable_strlcpy_t_LDADD = tests/tap/libtap.a portable/libportable.la
+tests_portable_strndup_t_SOURCES = tests/portable/strndup-t.c \
+	tests/portable/strndup.c
+tests_portable_strndup_t_LDADD = tests/tap/libtap.a portable/libportable.la
 
 check-local: $(check_PROGRAMS)
 	cd tests && ./runtests $(abs_top_srcdir)/tests/TESTS
