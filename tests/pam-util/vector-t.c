@@ -24,14 +24,15 @@
 int
 main(void)
 {
-    struct vector *vector, *ovector;
+    struct vector *vector, *ovector, *copy;
     const char cstring[] = "This is a\ttest.  ";
     char *string;
     char buffer[BUFSIZ];
     const char * const env[] = { buffer, NULL };
     pid_t child;
+    size_t i;
 
-    plan(49);
+    plan(60);
 
     vector = vector_new();
     ok(vector != NULL, "vector_new returns non-NULL");
@@ -53,6 +54,16 @@ main(void)
     ok(vector->strings[2] != vector->strings[3], "each pointer is different");
     ok(vector->strings[3] != vector->strings[0], "each pointer is different");
     ok(vector->strings[0] != cstring, "each pointer is different");
+    copy = vector_copy(vector);
+    ok(copy != NULL, "vector_copy returns non-NULL");
+    is_int(4, copy->count, "...and has right count");
+    is_int(4, copy->allocated, "...and has right allocated count");
+    for (i = 0; i < 4; i++) {
+        is_string(cstring, copy->strings[i], "...and string %d is right", i);
+        ok(copy->strings[i] != vector->strings[i],
+           "...and pointer %d is different", i);
+    }
+    vector_free(copy);
     vector_clear(vector);
     is_int(0, vector->count, "vector_clear works");
     is_int(4, vector->allocated, "...but doesn't free the allocation");

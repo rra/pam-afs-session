@@ -43,6 +43,33 @@ vector_new(void)
 
 
 /*
+ * Allocate a new vector that's a copy of an existing vector.  Returns NULL if
+ * memory allocation fails.
+ */
+struct vector *
+vector_copy(struct vector *old)
+{
+    struct vector *vector;
+    size_t i;
+
+    vector = vector_new();
+    if (!vector_resize(vector, old->count)) {
+        vector_free(vector);
+        return NULL;
+    }
+    vector->count = old->count;
+    for (i = 0; i < old->count; i++) {
+        vector->strings[i] = strdup(old->strings[i]);
+        if (vector->strings[i] == NULL) {
+            vector_free(vector);
+            return NULL;
+        }
+    }
+    return vector;
+}
+
+
+/*
  * Resize a vector (using realloc to resize the table).  Return false if
  * memory allocation fails.
  */
@@ -102,7 +129,8 @@ vector_clear(struct vector *vector)
     size_t i;
 
     for (i = 0; i < vector->count; i++)
-        free(vector->strings[i]);
+        if (vector->strings[i] != NULL)
+            free(vector->strings[i]);
     vector->count = 0;
 }
 

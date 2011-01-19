@@ -38,6 +38,13 @@ struct vector *vector_new(void)
     __attribute__((__malloc__));
 
 /*
+ * Create a new vector that's a copy of an existing vector.  Returns NULL on
+ * memory allocation failure.
+ */
+struct vector *vector_copy(struct vector *)
+    __attribute__((__malloc__, __nonnull__));
+
+/*
  * Add a string to a vector.  Resizes the vector if necessary.  Returns false
  * on failure to allocate memory.
  */
