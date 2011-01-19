@@ -1,12 +1,5 @@
                         pam-afs-session To-Do List
 
-General:
-
- * Providing a way to pass command-line arguments to the aklog program
-   would be nice, even if not strictly necessary.  If set in krb5.conf,
-   one should be able to just use spaces.  PAM options will require some
-   other workaround (maybe using commas).
-
 PAM API:
 
  * Tighter verification that all of our flags are valid might be a good

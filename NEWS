@@ -2,6 +2,15 @@
 
 pam-afs-session 2.1 (unreleased)
 
+    The program setting can now include arguments to pass to the program
+    to run to obtain tokens, separated by commas (or spaces or tabs if
+    your PAM configuration syntax supports it).  If program is set in
+    krb5.conf, additional options can be specified separated by spaces.
+    As a side effect, program paths containing spaces or commas will no
+    longer work correctly since the text after the space or comma will be
+    interpreted as an argument.  Please let me know if this was a feature
+    that you were using.
+
     Fix compilation of the pam_syslog and pam_vsyslog replacement
     functions for platforms whose PAM libraries lack those functions.
 

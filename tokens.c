@@ -7,7 +7,7 @@
  * already been called.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008, 2010
+ * Copyright 2006, 2007, 2008, 2010, 2011
  *     Board of Trustees, Leland Stanford Jr. University
  *
  * See LICENSE for licensing terms.
@@ -93,10 +93,10 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
 static int
 pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
 {
-    int res, argc, arg;
+    int res;
     size_t i;
     char **env;
-    const char **argv;
+    struct vector *argv = NULL;
     pid_t child;
 
     /* Sanity check that we have some program to run. */
@@ -106,36 +106,31 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
     }
 
     /* Build the options for the program. */
-    argc = (args->config->aklog_homedir ? 2 : 0);
-    if (args->config->afs_cells != NULL)
-        argc += args->config->afs_cells->count * 2;
-    argv = malloc((argc + 2) * sizeof(char *));
-    if (argv == NULL) {
-        putil_crit(args, "cannot allocate memory: %s", strerror(errno));
-        return PAM_SESSION_ERR;
-    }
-    argv[0] = args->config->program;
-    arg = 1;
+    argv = vector_copy(args->config->program);
+    if (argv == NULL)
+        goto fail;
     if (args->config->aklog_homedir) {
-        argv[arg++] = "-p";
-        argv[arg++] = pwd->pw_dir;
+        if (!vector_add(argv, "-p") || !vector_add(argv, pwd->pw_dir))
+            goto fail;
         putil_debug(args, "passing -p %s to aklog", pwd->pw_dir);
     }
     if (args->config->afs_cells != NULL)
         for (i = 0; i < args->config->afs_cells->count; i++) {
-            argv[arg++] = "-c";
-            argv[arg++] = args->config->afs_cells->strings[i];
+            if (!vector_add(argv, "-c"))
+                goto fail;
+            if (!vector_add(argv, args->config->afs_cells->strings[i]))
+                goto fail;
             putil_debug(args, "passing -c %s to aklog",
                         args->config->afs_cells->strings[i]);
         }
-    argv[arg] = NULL;
 
     /*
      * Run the program.  Be sure to use _exit instead of exit in the
      * subprocess so that we won't run exit handlers or double-flush stdio
      * buffers in the child process.
      */
-    putil_debug(args, "running %s as UID %lu", args->config->program,
+    putil_debug(args, "running %s as UID %lu",
+                args->config->program->strings[0],
                 (unsigned long) pwd->pw_uid);
     env = pam_getenvlist(args->pamh);
     child = fork();
@@ -154,20 +149,28 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
         open("/dev/null", O_RDONLY);
         open("/dev/null", O_WRONLY);
         open("/dev/null", O_WRONLY);
-        execve(args->config->program, (char **) argv, env);
-        putil_err(args, "cannot exec %s: %s", args->config->program,
-                  strerror(errno));
+        vector_exec_env(args->config->program->strings[0], argv,
+                        (const char * const *) env);
+        putil_err(args, "cannot exec %s: %s",
+                  args->config->program->strings[0], strerror(errno));
         _exit(1);
     }
-    free(argv);
+    vector_free(argv);
+    argv = NULL;
     pamafs_free_envlist(env);
     if (waitpid(child, &res, 0) && WIFEXITED(res) && WEXITSTATUS(res) == 0)
         return PAM_SUCCESS;
     else {
-        putil_err(args, "aklog program %s returned %d", args->config->program,
-                  WEXITSTATUS(res));
+        putil_err(args, "aklog program %s returned %d",
+                  args->config->program->strings[0], WEXITSTATUS(res));
         return PAM_SESSION_ERR;
     }
+
+fail:
+    putil_crit(args, "cannot allocate memory: %s", strerror(errno));
+    if (argv != NULL)
+        vector_free(argv);
+    return PAM_SESSION_ERR;
 }
 
 
