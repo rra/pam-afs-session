@@ -41,7 +41,7 @@ struct vector *vector_new(void)
  * Create a new vector that's a copy of an existing vector.  Returns NULL on
  * memory allocation failure.
  */
-struct vector *vector_copy(struct vector *)
+struct vector *vector_copy(const struct vector *)
     __attribute__((__malloc__, __nonnull__));
 
 /*

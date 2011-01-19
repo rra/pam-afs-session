@@ -47,7 +47,7 @@ vector_new(void)
  * memory allocation fails.
  */
 struct vector *
-vector_copy(struct vector *old)
+vector_copy(const struct vector *old)
 {
     struct vector *vector;
     size_t i;

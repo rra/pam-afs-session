@@ -51,27 +51,17 @@ copy_default_list(struct pam_args *args, struct vector **setting,
                   const struct vector *defval)
 {
     struct vector *result = NULL;
-    size_t i;
 
     *setting = NULL;
     if (defval != NULL && defval->strings != NULL) {
-        result = vector_new();
-        if (result == NULL)
-            goto fail;
-        if (!vector_resize(result, defval->count))
-            goto fail;
-        for (i = 0; i < defval->count; i++)
-            if (!vector_add(result, defval->strings[i]))
-                goto fail;
+        result = vector_copy(defval);
+        if (result == NULL) {
+            putil_crit(args, "cannot allocate memory: %s", strerror(errno));
+            return false;
+        }
         *setting = result;
     }
     return true;
-
-fail:
-    putil_crit(args, "cannot allocate memory: %s", strerror(errno));
-    if (result != NULL)
-        vector_free(result);
-    return false;
 }
 
 
