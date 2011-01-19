@@ -49,7 +49,7 @@ struct vector *vector_copy(struct vector *)
  * on failure to allocate memory.
  */
 bool vector_add(struct vector *, const char *string)
-    __attribute((__nonnull__));
+    __attribute__((__nonnull__));
 
 /*
  * Resize the array of strings to hold size entries.  Saves reallocation work
@@ -57,7 +57,7 @@ bool vector_add(struct vector *, const char *string)
  * Returns false on failure to allocate memory.
  */
 bool vector_resize(struct vector *, size_t size)
-    __attribute((__nonnull__));
+    __attribute__((__nonnull__));
 
 /*
  * Reset the number of elements to zero, freeing all of the strings for a
@@ -65,11 +65,11 @@ bool vector_resize(struct vector *, size_t size)
  * allocations if the vector will be reused).
  */
 void vector_clear(struct vector *)
-    __attribute((__nonnull__));
+    __attribute__((__nonnull__));
 
 /* Free the vector and all resources allocated for it. */
 void vector_free(struct vector *)
-    __attribute((__nonnull__));
+    __attribute__((__nonnull__));
 
 /*
  * Split functions build a vector from a string.  vector_split_multi splits on
@@ -83,7 +83,7 @@ void vector_free(struct vector *)
  */
 struct vector *vector_split_multi(const char *string, const char *seps,
                                   struct vector *)
-    __attribute((__nonnull__(1, 2)));
+    __attribute__((__nonnull__(1, 2)));
 
 /*
  * Exec the given program with the vector as its arguments.  Return behavior
