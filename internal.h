@@ -2,7 +2,7 @@
  * Internal prototypes and structures for pam-afs-session.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008, 2010
+ * Copyright 2006, 2007, 2008, 2010, 2011
  *     Board of Trustees, Leland Stanford Jr. University
  * See LICENSE for licensing terms.
  */

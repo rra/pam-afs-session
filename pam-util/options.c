@@ -6,7 +6,7 @@
  * from a Kerberos krb5.conf file and fill out the struct.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008, 2010
+ * Copyright 2006, 2007, 2008, 2010, 2011
  *     Board of Trustees, Leland Stanford Jr. University
  *
  * See LICENSE for licensing terms.

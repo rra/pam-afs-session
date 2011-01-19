@@ -7,7 +7,7 @@
  * risk of clashes.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2010, 2011 Board of Trustees, Leland Stanford Jr. University
  *
  * See LICENSE for licensing terms.
  */
