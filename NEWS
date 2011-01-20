@@ -14,8 +14,9 @@ pam-afs-session 2.1 (unreleased)
     Fix compilation of the pam_syslog and pam_vsyslog replacement
     functions for platforms whose PAM libraries lack those functions.
 
-    Fix compilation of the embedded kafs layer for Mac OS X 10.6.  Thanks,
-    Andy Cobaugh.
+    Fix compilation of the embedded kafs layer for Mac OS X 10.6 and
+    hopefully fix detection of whether AFS is present.  Thanks, Andy
+    Cobaugh.
 
     Fix broken GCC attribute markers that may have caused compilation
     problems with any non-GCC compiler.

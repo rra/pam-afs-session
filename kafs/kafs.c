@@ -138,7 +138,9 @@ k_hasafs(void)
     signal(SIGSYS, saved_func);
 #endif
 
-    okay = (result == 0 && syscall_okay && err == -1 && errno == EINVAL);
+    if (result == 0)
+        result = err;
+    okay = (syscall_okay && result == -1 && errno == EINVAL);
     errno = saved_errno;
     return okay;
 }
