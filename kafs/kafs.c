@@ -118,7 +118,7 @@ int
 k_hasafs(void)
 {
     struct ViceIoctl iob;
-    int rval, err, saved_errno, okay;
+    int rval, saved_errno, okay;
     void (*saved_func)(int);
 
     saved_errno = errno;
@@ -137,9 +137,7 @@ k_hasafs(void)
     signal(SIGSYS, saved_func);
 #endif
 
-    if (rval != 0)
-        err = rval;
-    okay = (syscall_okay && err == -1 && errno == EINVAL);
+    okay = (syscall_okay && rval == -1 && errno == EINVAL);
     errno = saved_errno;
     return okay;
 }
