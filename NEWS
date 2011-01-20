@@ -24,6 +24,9 @@ pam-afs-session 2.1 (unreleased)
     Add a replacement for strndup if the system C library doesn't provide
     the function (such as on Mac OS X).
 
+    Document that "nopag" should be added to the configuration on Mac OS X
+    where PAGs are not supported.
+
 pam-afs-session 2.0 (2010-12-29)
 
     If there is no PAG, create a new one and obtain tokens in pam_setcred

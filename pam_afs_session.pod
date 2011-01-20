@@ -208,6 +208,9 @@ managing the login.  If B<sshd>, for instance, is started in a PAG, every
 user who logs in via ssh will be put in the same PAG and will share tokens
 if this option is used.
 
+Add this option on Mac OS X, where PAGs are not supported (at least as of
+Mac OS X 10.6 and earlier).
+
 =item notokens
 
 If this option is set, the AFS session PAM module will only create a PAG

@@ -339,6 +339,9 @@ CONFIGURING
   tokens with forwarded tickets via GSS-API or tickets obtained via
   KerberosAuthentication.
 
+  Note that PAGs are not supported on Mac OS X, so you will need to add
+  the "nopag" parameter to the PAM configuration for this module.
+
 IMPLEMENTATION NOTES
 
   pam-afs-session supports three basic usage patterns: creating a new
