@@ -340,7 +340,11 @@ CONFIGURING
   KerberosAuthentication.
 
   Note that PAGs are not supported on Mac OS X, so you will need to add
-  the "nopag" parameter to the PAM configuration for this module.
+  the "nopag" parameter to the PAM configuration for this module.  Note
+  also that while the latest Mac OS X ssh daemon supports GSS-API
+  authentication, it apparently doesn't make the forwarded tickets
+  available to the PAM stack, so pam-afs-session cannot properly set up
+  tokens during GSS-API login.
 
 IMPLEMENTATION NOTES
 
