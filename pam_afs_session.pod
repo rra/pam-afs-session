@@ -1,7 +1,7 @@
 =for stopwords
-AFS PAG auth Heimdal libkafs aklog KRB5CCNAME kaserver appdefaults API
-unlog kdestroy nopag notokens SIGSYS krb524 Kerberos username login sshd
-Kerberos-v5-derived
+AFS PAG PAGs auth Heimdal libkafs aklog KRB5CCNAME kaserver appdefaults
+API unlog kdestroy nopag notokens SIGSYS krb524 Kerberos username login
+sshd Kerberos-v5-derived
 
 =head1 NAME
 
