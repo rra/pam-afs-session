@@ -1,6 +1,6 @@
                    User-Visible pam-afs-session Changes
 
-pam-afs-session 2.1 (unreleased)
+pam-afs-session 2.1 (2011-01-23)
 
     The program setting can now include arguments to pass to the program
     to run to obtain tokens, separated by commas (or spaces or tabs if
