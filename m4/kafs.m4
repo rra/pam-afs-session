@@ -33,9 +33,11 @@ dnl Depends on RRA_SET_LDFLAGS.
 dnl
 dnl Written by Russ Allbery <rra@stanford.edu>
 dnl Copyright 2008, 2009, 2010
-dnl     Board of Trustees, Leland Stanford Jr. University
+dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
-dnl See LICENSE for licensing terms.
+dnl This file is free software; the authors give unlimited permission to copy
+dnl and/or distribute it, with or without modifications, as long as this
+dnl notice is preserved.
 
 dnl Save the current CPPFLAGS, LDFLAGS, and LIBS settings and switch to
 dnl versions that include the libkafs flags.  Used as a wrapper, with
@@ -86,11 +88,11 @@ AC_DEFUN([_RRA_LIB_KAFS_LSETPAG],
 [RRA_LIB_KAFS_SWITCH
  LIBS=
  AC_SEARCH_LIBS([pthread_getspecific], [pthread])
- AC_SEARCH_LIBS([res_search], [resolv], ,
+ AC_SEARCH_LIBS([res_search], [resolv], [],
     [AC_SEARCH_LIBS([__res_search], [resolv])])
  AC_SEARCH_LIBS([gethostbyname], [nsl])
- AC_SEARCH_LIBS([socket], [socket], ,
-    [AC_CHECK_LIB([nsl], [socket], [LIBS="-lnsl -lsocket $LIBS"], ,
+ AC_SEARCH_LIBS([socket], [socket], [],
+    [AC_CHECK_LIB([nsl], [socket], [LIBS="-lnsl -lsocket $LIBS"], [],
         [-lsocket])])
  rra_kafs_extra="$LIBS"
  LIBS="$rra_kafs_save_LIBS"
@@ -101,7 +103,7 @@ AC_DEFUN([_RRA_LIB_KAFS_LSETPAG],
     [AC_CHECK_LIB([sys], [lsetpag],
         [KAFS_LIBS="-lsys $rra_kafs_extra"
          AC_DEFINE([HAVE_LSETPAG], [1],
-            [Define to 1 if you have the OpenAFS lsetpag function.])], ,
+            [Define to 1 if you have the OpenAFS lsetpag function.])], [],
         [$rra_kafs_extra])],
     [-lafsrpc $rra_kafs_extra])
  AC_CHECK_HEADERS([afs/afssyscalls.h])

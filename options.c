@@ -5,8 +5,8 @@
  * allocated structure with those details.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008, 2010
- *     Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2006, 2007, 2008, 2010, 2011
+ *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
@@ -32,17 +32,17 @@
 /* Our option definition. */
 #define K(name) (#name), offsetof(struct pam_config, name)
 static const struct option options[] = {
-    { K(afs_cells),          true, LIST   (NULL)       },
-    { K(aklog_homedir),      true, BOOL   (false)      },
-    { K(always_aklog),       true, BOOL   (false)      },
-    { K(debug),              true, BOOL   (false)      },
-    { K(ignore_root),        true, BOOL   (false)      },
-    { K(kdestroy),           true, BOOL   (false)      },
-    { K(minimum_uid),        true, NUMBER (0)          },
-    { K(nopag),              true, BOOL   (false)      },
-    { K(notokens),           true, BOOL   (false)      },
-    { K(program),            true, STRING (PATH_AKLOG) },
-    { K(retain_after_close), true, BOOL   (false)      },
+    { K(afs_cells),          true, LIST    (NULL)       },
+    { K(aklog_homedir),      true, BOOL    (false)      },
+    { K(always_aklog),       true, BOOL    (false)      },
+    { K(debug),              true, BOOL    (false)      },
+    { K(ignore_root),        true, BOOL    (false)      },
+    { K(kdestroy),           true, BOOL    (false)      },
+    { K(minimum_uid),        true, NUMBER  (0)          },
+    { K(nopag),              true, BOOL    (false)      },
+    { K(notokens),           true, BOOL    (false)      },
+    { K(program),            true, STRLIST (PATH_AKLOG) },
+    { K(retain_after_close), true, BOOL    (false)      },
 };
 static const size_t optlen = sizeof(options) / sizeof(options[0]);
 

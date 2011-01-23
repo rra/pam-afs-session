@@ -34,6 +34,7 @@
 /tests/portable/snprintf-t
 /tests/portable/strlcat-t
 /tests/portable/strlcpy-t
+/tests/portable/strndup-t
 /tests/runtests
 .deps/
 .dirstamp
