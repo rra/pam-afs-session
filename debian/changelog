@@ -1,3 +1,13 @@
+libpam-afs-session (2.1-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    - The program option can now pass arguments to aklog by separating
+      them with spaces, tabs, or commas (commas are most useful in the PAM
+      configuration files).
+    - Paths to aklog containing spaces or commas are no longer supported.
+
+ -- Russ Allbery <rra@debian.org>  Sun, 23 Jan 2011 15:35:03 -0800
+
 libpam-afs-session (2.0-1) experimental; urgency=low
 
   * New upstream release.
