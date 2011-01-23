@@ -1,4 +1,4 @@
-libpam-afs-session (2.1-1) UNRELEASED; urgency=low
+libpam-afs-session (2.1-1) experimental; urgency=low
 
   * New upstream release.
     - The program option can now pass arguments to aklog by separating
@@ -6,7 +6,7 @@ libpam-afs-session (2.1-1) UNRELEASED; urgency=low
       configuration files).
     - Paths to aklog containing spaces or commas are no longer supported.
 
- -- Russ Allbery <rra@debian.org>  Sun, 23 Jan 2011 15:35:03 -0800
+ -- Russ Allbery <rra@debian.org>  Sun, 23 Jan 2011 15:37:59 -0800
 
 libpam-afs-session (2.0-1) experimental; urgency=low
 
