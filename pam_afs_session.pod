@@ -1,7 +1,7 @@
 =for stopwords
-AFS PAG auth Heimdal libkafs aklog KRB5CCNAME kaserver appdefaults API
-unlog kdestroy nopag notokens SIGSYS krb524 Kerberos username login sshd
-Kerberos-v5-derived
+AFS PAG PAGs auth Heimdal libkafs aklog KRB5CCNAME kaserver appdefaults
+API unlog kdestroy nopag notokens SIGSYS krb524 Kerberos username login
+sshd Kerberos-v5-derived
 
 =head1 NAME
 
@@ -99,7 +99,8 @@ after C<=>.  The rest are boolean options.  To set a boolean option in the
 PAM configuration, just give the name of the option in the arguments.  To
 set an option that takes an argument, follow the option name with an equal
 sign (C<=>) and the value, with no separating whitespace.  Whitespace in
-option arguments is not supported in the PAM configuration.
+option arguments is not supported in the PAM configuration files of most
+PAM implementations.
 
 To set an option for the PAM module in the system F<krb5.conf> file, put
 that option in the [appdefaults] section.  The AFS session PAM module will
@@ -207,6 +208,9 @@ managing the login.  If B<sshd>, for instance, is started in a PAG, every
 user who logs in via ssh will be put in the same PAG and will share tokens
 if this option is used.
 
+Add this option on Mac OS X, where PAGs are not supported (at least as of
+Mac OS X 10.6 and earlier).
+
 =item notokens
 
 If this option is set, the AFS session PAM module will only create a PAG
@@ -223,6 +227,15 @@ session ends.
 The path to the B<aklog> program to run.  Setting this option tells the
 AFS session PAM module to always run an external program to obtain tokens
 and never use the libkafs interface, even if the latter is available.
+
+You may pass options to this program by separating them with commas (or
+spaces or tabs in F<krb5.conf> or if the configuration syntax of your PAM
+configuration allows this).  For example, the setting:
+
+    program=/usr/bin/aklog,-noprdb,-524
+
+will run C</usr/bin/aklog -noprdb -524> as the program to obtain tokens.
+The arguments are passed directly, not parsed by the shell.
 
 If this option is not set, the default behavior is to call the libkafs
 function to obtain tokens, if available, and otherwise to use a default

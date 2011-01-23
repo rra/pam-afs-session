@@ -2,12 +2,14 @@ dnl Autoconf configuration for pam-afs-session.
 dnl
 dnl Written by Russ Allbery <rra@stanford.edu>
 dnl Copyright 2006, 2007, 2008, 2010
-dnl     Board of Trustees, Leland Stanford Jr. University
+dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
-dnl See LICENSE for licensing terms.
+dnl This file is free software; the authors give unlimited permission to copy
+dnl and/or distribute it, with or without modifications, as long as this
+dnl notice is preserved.
 
 AC_PREREQ([2.64])
-AC_INIT([pam-afs-session], [2.0], [rra@stanford.edu])
+AC_INIT([pam-afs-session], [2.1], [rra@stanford.edu])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([portable])
 AC_CONFIG_MACRO_DIR([m4])
@@ -35,6 +37,10 @@ AC_CHECK_HEADERS([security/pam_appl.h], ,
 AC_CHECK_HEADERS([security/pam_ext.h], ,
     [AC_CHECK_HEADERS([pam/pam_ext.h])])
 RRA_HEADER_PAM_CONST
+
+dnl Needed for the pam_vsyslog replacement function.
+AC_DEFINE([MODULE_NAME], ["pam_afs_session"],
+    [The name of the PAM module, used by the pam_vsyslog replacement.])
 
 dnl Determine the path to aklog.  If we can't figure it out, the user will
 dnl have to set program in the PAM options.
@@ -78,7 +84,7 @@ AC_CHECK_DECLS([snprintf, vsnprintf])
 AC_TYPE_LONG_LONG_INT
 AC_TYPE_UINT32_T
 RRA_FUNC_SNPRINTF
-AC_REPLACE_FUNCS([asprintf issetuidgid strlcat strlcpy])
+AC_REPLACE_FUNCS([asprintf issetuidgid strlcat strlcpy strndup])
 
 dnl Needed for correct handling of errno with threaded applications on
 dnl Solaris.

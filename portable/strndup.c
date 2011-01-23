@@ -1,10 +1,5 @@
 /*
- * Replacement for a missing issetuidgid.
- *
- * Simulates the functionality as the Solaris function issetuidgid, which
- * returns true if the running program was setuid or setgid.  The replacement
- * test is not quite as comprehensive as what the Solaris function does, but
- * it should be good enough.
+ * Replacement for a missing strndup.
  *
  * Written by Russ Allbery <rra@stanford.edu>
  *
@@ -20,12 +15,29 @@
 #include <config.h>
 #include <portable/system.h>
 
-int
-issetuidgid(void)
+/*
+ * If we're running the test suite, rename the functions to avoid conflicts
+ * with the system versions.
+ */
+#if TESTING
+# undef strndup
+# define strndup test_strndup
+char *test_strndup(const char *, size_t);
+#endif
+
+char *
+strndup(const char *s, size_t n)
 {
-    if (getuid() != geteuid())
-        return 1;
-    if (getgid() != getegid())
-        return 1;
-    return 0;
+    size_t length;
+    char *copy;
+
+    length = strlen(s);
+    if (length > n)
+        length = n;
+    copy = malloc(length + 1);
+    if (copy == NULL)
+        return NULL;
+    memcpy(copy, s, length);
+    copy[length] = '\0';
+    return copy;
 }

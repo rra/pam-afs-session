@@ -2,9 +2,26 @@
  * PAM option parsing test suite.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2010, 2011
+ *     The Board of Trustees of the Leland Stanford Junior University
  *
- * See LICENSE for licensing terms.
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
 #include <config.h>
@@ -131,7 +148,7 @@ main(void)
     if (args == NULL)
         sysbail("cannot create PAM argument struct");
 
-    plan(134);
+    plan(139);
 
     /* First, check just the defaults. */
     args->config = config_new();
@@ -214,6 +231,23 @@ main(void)
     options[4].defaults.string = NULL;
     vector_free(cells);
     free(program);
+
+    /* Test specifying the default for a vector parameter as a string. */
+    options[0].type = TYPE_STRLIST;
+    options[0].defaults.string = "foo.com,bar.com";
+    args->config = config_new();
+    status = putil_args_defaults(args, options, optlen);
+    ok(status, "Setting defaults with string default for vector");
+    ok(args->config->cells != NULL, "...cells is set");
+    is_int(2, args->config->cells->count, "...with two cells");
+    is_string("foo.com", args->config->cells->strings[0],
+              "...first is foo.com");
+    is_string("bar.com", args->config->cells->strings[1],
+              "...second is bar.com");
+    config_free(args->config);
+    args->config = NULL;
+    options[0].type = TYPE_LIST;
+    options[0].defaults.string = NULL;
 
     /* Should be no errors so far. */
     ok(pam_output() == NULL, "No errors so far");

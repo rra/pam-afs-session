@@ -6,10 +6,26 @@
  * from a Kerberos krb5.conf file and fill out the struct.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008, 2010
- *     Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2006, 2007, 2008, 2010, 2011
+ *     The Board of Trustees of the Leland Stanford Junior University
  *
- * See LICENSE for licensing terms.
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
 #include <config.h>
@@ -50,28 +66,40 @@ static bool
 copy_default_list(struct pam_args *args, struct vector **setting,
                   const struct vector *defval)
 {
-    struct vector *result;
-    size_t i;
+    struct vector *result = NULL;
 
     *setting = NULL;
     if (defval != NULL && defval->strings != NULL) {
-        result = vector_new();
+        result = vector_copy(defval);
         if (result == NULL) {
             putil_crit(args, "cannot allocate memory: %s", strerror(errno));
             return false;
         }
-        if (!vector_resize(result, defval->count)) {
+        *setting = result;
+    }
+    return true;
+}
+
+
+/*
+ * Set a vector argument to a default based on a string.  Takes the PAM
+ * argument struct,t he pointer into which to store the vector, and the
+ * default string.  Returns true if the default was set correctly and false on
+ * memory allocation failure, which is also reported with putil_crit().
+ */
+static bool
+default_list_string(struct pam_args *args, struct vector **setting,
+                    const char *defval)
+{
+    struct vector *result = NULL;
+
+    *setting = NULL;
+    if (defval != NULL) {
+        result = vector_split_multi(defval, " \t,", NULL);
+        if (result == NULL) {
             putil_crit(args, "cannot allocate memory: %s", strerror(errno));
-            vector_free(result);
             return false;
         }
-        for (i = 0; i < defval->count; i++)
-            if (!vector_add(result, defval->strings[i])) {
-                putil_crit(args, "cannot allocate memory: %s",
-                           strerror(errno));
-                vector_free(result);
-                return false;
-            }
         *setting = result;
     }
     return true;
@@ -125,6 +153,11 @@ putil_args_defaults(struct pam_args *args, const struct option options[],
         case TYPE_LIST:
             vp = CONF_LIST(args->config, options[opt].location);
             if (!copy_default_list(args, vp, options[opt].defaults.list))
+                return false;
+            break;
+        case TYPE_STRLIST:
+            vp = CONF_LIST(args->config, options[opt].location);
+            if (!default_list_string(args, vp, options[opt].defaults.string))
                 return false;
             break;
         }
@@ -330,6 +363,7 @@ putil_args_krb5(struct pam_args *args, const char *section,
                            CONF_STRING(args->config, opt->location));
             break;
         case TYPE_LIST:
+        case TYPE_STRLIST:
             if (!default_list(args, section, realm, opt->name,
                               CONF_LIST(args->config, opt->location)))
                 return false;
@@ -549,6 +583,7 @@ putil_args_parse(struct pam_args *args, int argc, const char *argv[],
                 return false;
             break;
         case TYPE_LIST:
+        case TYPE_STRLIST:
             if (!convert_list(args, argv[i],
                               CONF_LIST(args->config, option->location)))
                 return false;

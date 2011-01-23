@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "PAM_AFS_SESSION 5"
-.TH PAM_AFS_SESSION 5 "2010-12-29" "2.0" "pam-afs-session"
+.TH PAM_AFS_SESSION 5 "2011-01-23" "2.1" "pam-afs-session"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -216,7 +216,8 @@ after \f(CW\*(C`=\*(C'\fR.  The rest are boolean options.  To set a boolean opti
 \&\s-1PAM\s0 configuration, just give the name of the option in the arguments.  To
 set an option that takes an argument, follow the option name with an equal
 sign (\f(CW\*(C`=\*(C'\fR) and the value, with no separating whitespace.  Whitespace in
-option arguments is not supported in the \s-1PAM\s0 configuration.
+option arguments is not supported in the \s-1PAM\s0 configuration files of most
+\&\s-1PAM\s0 implementations.
 .PP
 To set an option for the \s-1PAM\s0 module in the system \fIkrb5.conf\fR file, put
 that option in the [appdefaults] section.  The \s-1AFS\s0 session \s-1PAM\s0 module will
@@ -315,6 +316,9 @@ option, since it means that the user will inherit a \s-1PAG\s0 from the process
 managing the login.  If \fBsshd\fR, for instance, is started in a \s-1PAG\s0, every
 user who logs in via ssh will be put in the same \s-1PAG\s0 and will share tokens
 if this option is used.
+.Sp
+Add this option on Mac \s-1OS\s0 X, where PAGs are not supported (at least as of
+Mac \s-1OS\s0 X 10.6 and earlier).
 .IP "notokens" 4
 .IX Item "notokens"
 If this option is set, the \s-1AFS\s0 session \s-1PAM\s0 module will only create a \s-1PAG\s0
@@ -330,6 +334,17 @@ session ends.
 The path to the \fBaklog\fR program to run.  Setting this option tells the
 \&\s-1AFS\s0 session \s-1PAM\s0 module to always run an external program to obtain tokens
 and never use the libkafs interface, even if the latter is available.
+.Sp
+You may pass options to this program by separating them with commas (or
+spaces or tabs in \fIkrb5.conf\fR or if the configuration syntax of your \s-1PAM\s0
+configuration allows this).  For example, the setting:
+.Sp
+.Vb 1
+\&    program=/usr/bin/aklog,\-noprdb,\-524
+.Ve
+.Sp
+will run \f(CW\*(C`/usr/bin/aklog \-noprdb \-524\*(C'\fR as the program to obtain tokens.
+The arguments are passed directly, not parsed by the shell.
 .Sp
 If this option is not set, the default behavior is to call the libkafs
 function to obtain tokens, if available, and otherwise to use a default

@@ -2,8 +2,9 @@
  * Internal prototypes and structures for pam-afs-session.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008, 2010
- *     Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2006, 2007, 2008, 2010, 2011
+ *     The Board of Trustees of the Leland Stanford Junior University
+ *
  * See LICENSE for licensing terms.
  */
 
@@ -40,7 +41,7 @@ struct pam_config {
     long minimum_uid;           /* Ignore users below this UID. */
     bool nopag;                 /* Don't create a new PAG. */
     bool notokens;              /* Only create a PAG, don't obtain tokens. */
-    char *program;              /* Program to run for tokens. */
+    struct vector *program;     /* Program to run for tokens. */
     bool retain_after_close;    /* Don't destroy the cache on session end. */
 };
 

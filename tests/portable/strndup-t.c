@@ -1,10 +1,5 @@
 /*
- * Replacement for a missing issetuidgid.
- *
- * Simulates the functionality as the Solaris function issetuidgid, which
- * returns true if the running program was setuid or setgid.  The replacement
- * test is not quite as comprehensive as what the Solaris function does, but
- * it should be good enough.
+ * strndup test suite.
  *
  * Written by Russ Allbery <rra@stanford.edu>
  *
@@ -20,12 +15,30 @@
 #include <config.h>
 #include <portable/system.h>
 
+#include <tests/tap/basic.h>
+
+char *test_strndup(const char *, size_t);
+
+
 int
-issetuidgid(void)
+main(void)
 {
-    if (getuid() != geteuid())
-        return 1;
-    if (getgid() != getegid())
-        return 1;
+    char *result = NULL;
+
+    plan(4);
+
+    result = strndup("foo", 8);
+    is_string("foo", result, "strndup longer than string");
+    free(result);
+    result = strndup("foo", 2);
+    is_string("fo", result, "strndup shorter than string");
+    free(result);
+    result = strndup("foo", 3);
+    is_string("foo", result, "strndup same size as string");
+    free(result);
+    result = strndup("foo", 0);
+    is_string("", result, "strndup of size 0");
+    free(result);
+
     return 0;
 }

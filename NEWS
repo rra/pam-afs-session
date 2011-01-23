@@ -1,5 +1,37 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 2.1 (2011-01-23)
+
+    The program setting can now include arguments to pass to the program
+    to run to obtain tokens, separated by commas (or spaces or tabs if
+    your PAM configuration syntax supports it).  If program is set in
+    krb5.conf, additional options can be specified separated by spaces.
+    As a side effect, program paths containing spaces or commas will no
+    longer work correctly since the text after the space or comma will be
+    interpreted as an argument.  Please let me know if this was a feature
+    that you were using.
+
+    Fix compilation of the pam_syslog and pam_vsyslog replacement
+    functions for platforms whose PAM libraries lack those functions.
+
+    Fix compilation of the embedded kafs layer for Mac OS X 10.6 and
+    hopefully fix detection of whether AFS is present.  Thanks, Andy
+    Cobaugh.
+
+    Fix broken GCC attribute markers that may have caused compilation
+    problems with any non-GCC compiler.
+
+    Add a replacement for strndup if the system C library doesn't provide
+    the function (such as on Mac OS X).
+
+    Document that "nopag" should be added to the configuration on Mac OS X
+    where PAGs are not supported.
+
+    Update to rra-c-util 3.1:
+
+    * Include supplemental libraries in manual Kerberos library probes.
+    * Avoid warnings when probing for ibm_svc/krb5_svc.h.
+
 pam-afs-session 2.0 (2010-12-29)
 
     If there is no PAG, create a new one and obtain tokens in pam_setcred
@@ -36,10 +68,10 @@ pam-afs-session 2.0 (2010-12-29)
     /lib32/security or /lib64/security if they exist) rather than
     /usr/lib/security to match the default PAM configuration.
 
-    The module is now installed under $libdir/security except for the
-    above exception, rather than a lib32 or lib64 directory, except for
-    the special case of /usr.  To install into another lib32 or lib64
-    directory, use the --libdir option to configure.
+    The module is now installed under $libdir/security, rather than a
+    lib32 or lib64 directory, except for the special case of /usr.  To
+    install into another lib32 or lib64 directory, use the --libdir option
+    to configure.
 
     Fix a configure error when built --without-krb5.
 

@@ -1,12 +1,12 @@
-                           pam-afs-session 2.0
+                           pam-afs-session 2.1
                    (PAM module for AFS PAGs and tokens)
 
                 Written by Russ Allbery <rra@stanford.edu>
 
-  Copyright 2005, 2006, 2007, 2008, 2010 Board of Trustees, Leland
-  Stanford Jr. University.  This software is distributed under a BSD-style
-  license.  See the LICENSE file, included in this distribution, for
-  copyright and redistribution information.
+  Copyright 2005, 2006, 2007, 2008, 2010, 2011 The Board of Trustees of
+  the Leland Stanford Junior University.  This software is distributed
+  under a BSD-style license.  See the LICENSE file, included in this
+  distribution, for copyright and redistribution information.
 
 BLURB
 
@@ -49,9 +49,9 @@ DESCRIPTION
   For the AFS system call layer, pam-afs-session supports linking with the
   Heimdal libkafs library or OpenAFS's libkopenafs library.  As a
   fallback, and to support a low-dependency build, it also comes with a
-  simple AFS system call implementation for either Linux or platforms that
-  use syscall to call AFS functions.  It can also link with the older
-  OpenAFS libraries when libkopenafs isn't available.
+  simple AFS system call implementation for Linux, Mac OS X, Solaris, or
+  platforms that use syscall to call AFS functions.  It can also link with
+  the older OpenAFS libraries when libkopenafs isn't available.
 
   The module can optionally be linked with Kerberos libraries to obtain
   configuration information from krb5.conf, to support the kdestroy
@@ -66,26 +66,38 @@ DESCRIPTION
 
 REQUIREMENTS
 
-  Right now, this module will probably only work on Linux, Solaris, HP-UX,
-  AIX, and Mac OS X, and will require gcc to even attempt to build on any
-  other platform.  Other PAM implementations will likely require some
-  porting work.
+  The PAM implementations on Linux, Solaris, Mac OS X, HP-UX, and AIX are
+  supported, although the module is primarily tested on Linux and only
+  lightly tested (and not at all by me personally) on the other platforms.
+  Use on platforms with other PAM implementations, such as IRIX or the
+  *BSDs, will require more porting and will not currently work.  Patches
+  are welcome.
+
+  The module is written in C and should hopefully build on any system with
+  an adequate PAM library that Libtool supports.
 
   Either Heimdal's libkafs or OpenAFS's libkopenafs are the preferred ways
   of making AFS system calls.  If neither are present during compile time,
   pam-afs-session will attempt to fall back on a built-in AFS system call
-  layer.  To use the built-in AFS system call interface on Linux, the
-  system must run a new enough version of OpenAFS or Arla to support AFS
-  system calls through ioctl on a file in proc.  On other systems with a
-  simple system call interface, configure must be able to find the AFS
-  header afs/param.h in order to get the system call numbers for that
-  platform.  On AIX and IRIX, configure will attempt to locate the
-  necessary OpenAFS libraries for lsetpag (either libafsauthent or
-  libsys).
+  layer.  To use the built-in AFS system call interface on Linux, Mac OS
+  X, and Solaris 11, the system must run a new enough version of OpenAFS
+  or Arla to support AFS system calls through ioctl on a file in /proc or
+  /dev.  On other systems with a simple system call interface, configure
+  must be able to find the AFS header afs/param.h in order to get the
+  system call numbers for that platform.  On AIX and IRIX, configure will
+  attempt to locate the necessary OpenAFS libraries for lsetpag (either
+  libafsauthent or libsys) but will not support deleting tokens at the end
+  of a session.
 
-  To obtain configuration information from krb5.conf, to support the
-  kdestroy option, and to use libkafs's functions for obtaining tokens,
-  the Kerberos libraries from either MIT Kerberos or Heimdal are required.
+  The module can optionally use Heimdal's libkafs library to obtain tokens
+  as well as create the PAG.  If you are using Heimdal and obtaining
+  tokens from Kerberos tickets, this is the recommended configuration,
+  since it means that the PAM module doesn't have to fork an external
+  process.  For other users, an external aklog program that obtains tokens
+  is necessary (and not provided by this module).
+
+  To obtain configuration information from krb5.conf and to support the
+  kdestroy option, either MIT Kerberos or Heimdal are required.
 
   Testing the module requires a system with AFS installed and working so
   that the PAG creation and manipulation can be tested.  Running the
@@ -326,6 +338,13 @@ CONFIGURING
   session group of the sshd PAM configuration, and it will then obtain
   tokens with forwarded tickets via GSS-API or tickets obtained via
   KerberosAuthentication.
+
+  Note that PAGs are not supported on Mac OS X, so you will need to add
+  the "nopag" parameter to the PAM configuration for this module.  Note
+  also that while the latest Mac OS X ssh daemon supports GSS-API
+  authentication, it apparently doesn't make the forwarded tickets
+  available to the PAM stack, so pam-afs-session cannot properly set up
+  tokens during GSS-API login.
 
 IMPLEMENTATION NOTES
 

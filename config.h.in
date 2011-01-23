@@ -173,6 +173,9 @@
 /* Define to 1 if you have the `strlcpy' function. */
 #undef HAVE_STRLCPY
 
+/* Define to 1 if you have the `strndup' function. */
+#undef HAVE_STRNDUP
+
 /* Define to 1 if you have the <sys/bittypes.h> header file. */
 #undef HAVE_SYS_BITTYPES_H
 
@@ -194,6 +197,9 @@
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR
+
+/* The name of the PAM module, used by the pam_vsyslog replacement. */
+#undef MODULE_NAME
 
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 #undef NO_MINUS_C_MINUS_O

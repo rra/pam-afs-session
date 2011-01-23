@@ -18,7 +18,8 @@
 # Automake makefile for pam-afs-session.
 #
 # Written by Russ Allbery <rra@stanford.edu>
-# Copyright 2006, 2007, 2010 Board of Trustees, Leland Stanford Jr. University
+# Copyright 2006, 2007, 2010
+#     The Board of Trustees of the Leland Stanford Junior University
 #
 # See LICENSE for licensing terms.
 
@@ -53,7 +54,8 @@ check_PROGRAMS = tests/runtests$(EXEEXT) tests/kafs/basic$(EXEEXT) \
 	tests/portable/asprintf-t$(EXEEXT) \
 	tests/portable/snprintf-t$(EXEEXT) \
 	tests/portable/strlcat-t$(EXEEXT) \
-	tests/portable/strlcpy-t$(EXEEXT)
+	tests/portable/strlcpy-t$(EXEEXT) \
+	tests/portable/strndup-t$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_man_MANS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
@@ -63,7 +65,8 @@ DIST_COMMON = README $(am__configure_deps) $(dist_man_MANS) \
 	portable/asprintf.c portable/issetuidgid.c portable/k_haspag.c \
 	portable/krb5-extra.c portable/krb5-profile.c \
 	portable/pam_syslog.c portable/pam_vsyslog.c \
-	portable/snprintf.c portable/strlcat.c portable/strlcpy.c
+	portable/snprintf.c portable/strlcat.c portable/strlcpy.c \
+	portable/strndup.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/kafs.m4 \
 	$(top_srcdir)/m4/krb5.m4 $(top_srcdir)/m4/ld-version.m4 \
@@ -294,6 +297,13 @@ tests_portable_strlcpy_t_OBJECTS =  \
 	$(am_tests_portable_strlcpy_t_OBJECTS)
 tests_portable_strlcpy_t_DEPENDENCIES = tests/tap/libtap.a \
 	portable/libportable.la
+am_tests_portable_strndup_t_OBJECTS =  \
+	tests/portable/strndup-t.$(OBJEXT) \
+	tests/portable/strndup.$(OBJEXT)
+tests_portable_strndup_t_OBJECTS =  \
+	$(am_tests_portable_strndup_t_OBJECTS)
+tests_portable_strndup_t_DEPENDENCIES = tests/tap/libtap.a \
+	portable/libportable.la
 tests_runtests_SOURCES = tests/runtests.c
 tests_runtests_OBJECTS = tests/tests_runtests-runtests.$(OBJEXT)
 tests_runtests_LDADD = $(LDADD)
@@ -335,7 +345,8 @@ SOURCES = $(tests_fakepam_libfakepam_a_SOURCES) \
 	$(tests_portable_asprintf_t_SOURCES) \
 	$(tests_portable_snprintf_t_SOURCES) \
 	$(tests_portable_strlcat_t_SOURCES) \
-	$(tests_portable_strlcpy_t_SOURCES) tests/runtests.c
+	$(tests_portable_strlcpy_t_SOURCES) \
+	$(tests_portable_strndup_t_SOURCES) tests/runtests.c
 DIST_SOURCES = $(tests_fakepam_libfakepam_a_SOURCES) \
 	$(tests_module_libfakekafs_a_SOURCES) \
 	$(tests_tap_libtap_a_SOURCES) \
@@ -352,7 +363,8 @@ DIST_SOURCES = $(tests_fakepam_libfakepam_a_SOURCES) \
 	$(tests_portable_asprintf_t_SOURCES) \
 	$(tests_portable_snprintf_t_SOURCES) \
 	$(tests_portable_strlcat_t_SOURCES) \
-	$(tests_portable_strlcpy_t_SOURCES) tests/runtests.c
+	$(tests_portable_strlcpy_t_SOURCES) \
+	$(tests_portable_strndup_t_SOURCES) tests/runtests.c
 man5dir = $(mandir)/man5
 NROFF = nroff
 MANS = $(dist_man_MANS)
@@ -492,12 +504,12 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I m4
-EXTRA_DIST = .gitignore LICENSE autogen examples/debian/common-account	\
-	examples/debian/common-auth examples/debian/common-session	\
-	examples/redhat/system-auth examples/solaris/pam.conf		\
-	pam_afs_session.map pam_afs_session.pod pam_afs_session.sym	\
-	tests/TESTS tests/data/fake-aklog tests/data/krb5.conf		\
-	tests/docs/pod-spelling-t tests/docs/pod-t tests/fakepam/README	\
+EXTRA_DIST = .gitignore LICENSE autogen examples/debian/common-account	    \
+	examples/debian/common-auth examples/debian/common-session	    \
+	examples/redhat/system-auth examples/solaris/pam.conf		    \
+	pam_afs_session.map pam_afs_session.pod pam_afs_session.sym	    \
+	tests/README tests/TESTS tests/data/fake-aklog tests/data/krb5.conf \
+	tests/docs/pod-spelling-t tests/docs/pod-t tests/fakepam/README	    \
 	tests/kafs/basic-t tests/module/full-t tests/tap/libtap.sh
 
 @KRB5_USES_COM_ERR_FALSE@DEPEND_LIBS = $(KAFS_LIBS) $(KRB5_LIBS)
@@ -659,6 +671,10 @@ tests_portable_strlcpy_t_SOURCES = tests/portable/strlcpy-t.c \
 	tests/portable/strlcpy.c
 
 tests_portable_strlcpy_t_LDADD = tests/tap/libtap.a portable/libportable.la
+tests_portable_strndup_t_SOURCES = tests/portable/strndup-t.c \
+	tests/portable/strndup.c
+
+tests_portable_strndup_t_LDADD = tests/tap/libtap.a portable/libportable.la
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -956,6 +972,13 @@ tests/portable/strlcpy.$(OBJEXT): tests/portable/$(am__dirstamp) \
 tests/portable/strlcpy-t$(EXEEXT): $(tests_portable_strlcpy_t_OBJECTS) $(tests_portable_strlcpy_t_DEPENDENCIES) tests/portable/$(am__dirstamp)
 	@rm -f tests/portable/strlcpy-t$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(tests_portable_strlcpy_t_OBJECTS) $(tests_portable_strlcpy_t_LDADD) $(LIBS)
+tests/portable/strndup-t.$(OBJEXT): tests/portable/$(am__dirstamp) \
+	tests/portable/$(DEPDIR)/$(am__dirstamp)
+tests/portable/strndup.$(OBJEXT): tests/portable/$(am__dirstamp) \
+	tests/portable/$(DEPDIR)/$(am__dirstamp)
+tests/portable/strndup-t$(EXEEXT): $(tests_portable_strndup_t_OBJECTS) $(tests_portable_strndup_t_DEPENDENCIES) tests/portable/$(am__dirstamp)
+	@rm -f tests/portable/strndup-t$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_portable_strndup_t_OBJECTS) $(tests_portable_strndup_t_LDADD) $(LIBS)
 tests/$(am__dirstamp):
 	@$(MKDIR_P) tests
 	@: > tests/$(am__dirstamp)
@@ -1016,6 +1039,8 @@ mostlyclean-compile:
 	-rm -f tests/portable/strlcat.$(OBJEXT)
 	-rm -f tests/portable/strlcpy-t.$(OBJEXT)
 	-rm -f tests/portable/strlcpy.$(OBJEXT)
+	-rm -f tests/portable/strndup-t.$(OBJEXT)
+	-rm -f tests/portable/strndup.$(OBJEXT)
 	-rm -f tests/tap/tests_tap_libtap_a-basic.$(OBJEXT)
 	-rm -f tests/tests_runtests-runtests.$(OBJEXT)
 
@@ -1046,6 +1071,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/snprintf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/strlcat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/strlcpy.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@portable/$(DEPDIR)/strndup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/tests_runtests-runtests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/fakepam/$(DEPDIR)/data.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/fakepam/$(DEPDIR)/logging.Po@am__quote@
@@ -1071,6 +1097,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@tests/portable/$(DEPDIR)/strlcat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/portable/$(DEPDIR)/strlcpy-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/portable/$(DEPDIR)/strlcpy.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/portable/$(DEPDIR)/strndup-t.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/portable/$(DEPDIR)/strndup.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/tap/$(DEPDIR)/tests_tap_libtap_a-basic.Po@am__quote@
 
 .c.o:
