@@ -29,6 +29,7 @@ pam-afs-session 2.1 (unreleased)
 
     Update to rra-c-util 3.1:
 
+    * Include supplemental libraries in manual Kerberos library probes.
     * Avoid warnings when probing for ibm_svc/krb5_svc.h.
 
 pam-afs-session 2.0 (2010-12-29)
