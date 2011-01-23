@@ -5,7 +5,8 @@
  * those tests here where the argument parsing code was already present.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010, 2011 Board of Trustees, Leland Stanford Jr. University
+ * Copyright 2010, 2011
+ *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
  */
