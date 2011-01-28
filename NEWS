@@ -1,5 +1,13 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 2.2 (unreleased)
+
+    Stop returning PAM_IGNORE from pam_setcred if AFS is not available or
+    if we're deleting credentials but the PAM module is configured not to
+    delete tokens.  Instead, return PAM_SUCCESS.  This fixes problems with
+    the Linux PAM library where returning PAM_IGNORE would cause
+    pam_setcred to fail even if other modules succeeded.
+
 pam-afs-session 2.1 (2011-01-23)
 
     The program setting can now include arguments to pass to the program

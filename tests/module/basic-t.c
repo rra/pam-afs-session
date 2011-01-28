@@ -75,7 +75,7 @@ run_tests(bool debug)
              "", PAM_SUCCESS,
              "do nothing");
     TEST_PAM(pam_sm_setcred, PAM_DELETE_CRED, argv_nothing,
-             (debug ? skipping : ""), PAM_IGNORE,
+             (debug ? skipping : ""), PAM_SUCCESS,
              "delete do nothing");
     TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv_nothing,
              "", PAM_SUCCESS,
