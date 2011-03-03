@@ -1,3 +1,14 @@
+libpam-afs-session (2.2-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    - Return PAM_SUCCESS instead of PAM_IGNORE from pam_setcred if AFS is
+      not available or if we're deleting credentials but the PAM module is
+      configured not to delete tokens.  Returning PAM_IGNORE from
+      pam_setcred confuses the Linux PAM library.
+    - Fix error return statuses for pam_setcred.
+
+ -- Russ Allbery <rra@debian.org>  Thu, 03 Mar 2011 14:22:41 -0800
+
 libpam-afs-session (2.1-1) experimental; urgency=low
 
   * New upstream release.
