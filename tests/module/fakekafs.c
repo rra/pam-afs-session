@@ -6,7 +6,7 @@
  * for testing that the module makes the correct AFS calls.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010
+ * Copyright 2010, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -22,6 +22,9 @@
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED __attribute__((__unused__))
 
+/* Whether to claim that we have AFS. */
+int fakekafs_hasafs = 1;
+
 /* The current PAG number or 0 if we're not in a PAG. */
 int fakekafs_pag = 0;
 
@@ -35,7 +38,7 @@ bool fakekafs_token = false;
 int
 k_hasafs(void)
 {
-    return 1;
+    return fakekafs_hasafs;
 }
 
 

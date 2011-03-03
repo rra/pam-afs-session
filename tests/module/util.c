@@ -25,6 +25,24 @@
 
 
 /*
+ * If we don't have AFS, the status will depend on which function we call.
+ * This function returns either PAM_SUCCESS or PAM_IGNORE based on the
+ * function, reflecting the expected error message from AFS being
+ * unavailable.
+ */
+static int
+no_afs_status(const char *function)
+{
+    if (strcmp("pam_sm_authenticate", function) == 0)
+        return PAM_SUCCESS;
+    else if (strcmp("pam_sm_setcred", function) == 0)
+        return PAM_SUCCESS;
+    else
+        return PAM_IGNORE;
+}
+
+
+/*
  * Checks a PAM call, taking its return status, the expected logging output
  * and exit status, the function name, the flags passed into the call, a
  * boolean to say whether debug will be enabled (which affects the logging
@@ -37,6 +55,7 @@ is_pam_call(const char *output, int expected, int seen, const char *function,
     char *logs, *desc;
     char *p = NULL;
     va_list args;
+    int status;
 
     va_start(args, format);
     if (vasprintf(&desc, format, args) < 0)
@@ -44,12 +63,20 @@ is_pam_call(const char *output, int expected, int seen, const char *function,
     va_end(args);
     logs = pam_output();
     if (!k_hasafs()) {
-        is_int(PAM_IGNORE, seen, "%s (status)", desc);
-        if (debug && strcmp(function, "pam_sm_authenticate") != 0) {
+        status = no_afs_status(function);
+        is_int(status, seen, "%s (status)", desc);
+        if (strcmp(function, "pam_sm_authenticate") == 0) {
+            /* Leave p as NULL, no output expected. */
+        } else if (debug) {
             if (asprintf(&p, "%d %s: entry (0x%x)"
                          "%d skipping, AFS apparently not available"
-                         "%d %s: exit (ignore)", LOG_DEBUG, function,
-                         flags, LOG_ERR, LOG_DEBUG, function) < 0)
+                         "%d %s: exit (%s)", LOG_DEBUG, function,
+                         flags, LOG_ERR, LOG_DEBUG, function,
+                         status == PAM_IGNORE ? "ignore" : "success") < 0)
+                sysbail("cannot allocate memory");
+        } else {
+            if (asprintf(&p, "%d skipping, AFS apparently not available",
+                         LOG_ERR) < 0)
                 sysbail("cannot allocate memory");
         }
         is_string(p, logs, "%s (output)", desc);

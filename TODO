@@ -12,7 +12,3 @@ Configuration:
 
  * Consider defaulting to nopag on Mac OS X and any other platform where
    we know PAGs cannot be supported.
-
-Tests:
-
- * Add a test case for k_hasafs failure, using a fake kafs library.
