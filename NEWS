@@ -16,10 +16,6 @@ pam-afs-session 2.2 (unreleased)
     supposed to be used for pam_open_session and pam_close_session.
     Instead, return PAM_USER_UNKNOWN or PAM_CRED_ERR as appropriate.
 
-    If obtaining tickets for multiple cells using libkafs, return failure
-    if obtaining tickets for any of those cells failed.  Previously, only
-    the return status for the last listed cell would be significant.
-
 pam-afs-session 2.1 (2011-01-23)
 
     The program setting can now include arguments to pass to the program
