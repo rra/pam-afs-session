@@ -213,15 +213,20 @@ pamafs_afslog(struct pam_args *args, const char *cachename,
             putil_err_krb5(args, ret, "cannot obtain tokens");
     } else {
         for (i = 0; i < args->config->afs_cells->count; i++) {
+            int status;
+
             putil_debug(args, "obtaining tokens for UID %lu in cell %s",
                         (unsigned long) pwd->pw_uid,
                         args->config->afs_cells->strings[i]);
-            ret = krb5_afslog_uid(args->ctx, cache,
-                                  args->config->afs_cells->strings[i], NULL,
-                                  pwd->pw_uid);
-            if (ret != 0)
+            status = krb5_afslog_uid(args->ctx, cache,
+                                     args->config->afs_cells->strings[i],
+                                     NULL, pwd->pw_uid);
+            if (status != 0) {
                 putil_err_krb5(args, ret, "cannot obtain tokens for cell %s",
                                args->config->afs_cells->strings[i]);
+                if (ret == 0)
+                    ret = status;
+            }
         }
     }
     krb5_cc_close(args->ctx, cache);

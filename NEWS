@@ -11,6 +11,10 @@ pam-afs-session 2.2 (unreleased)
     When using libkafs, close the ticket cache after obtaining tokens.
     Fixes a memory leak.
 
+    If obtaining tickets for multiple cells using libkafs, return failure
+    if obtaining tickets for any of those cells failed.  Previously, only
+    the return status for the last listed cell would be significant.
+
 pam-afs-session 2.1 (2011-01-23)
 
     The program setting can now include arguments to pass to the program
