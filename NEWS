@@ -16,6 +16,10 @@ pam-afs-session 2.2 (2011-03-03)
     supposed to be used for pam_open_session and pam_close_session.
     Instead, return PAM_USER_UNKNOWN or PAM_CRED_ERR as appropriate.
 
+    Update to rra-c-util 3.2:
+
+    * Check if the string being duplicated is NULL in strndup replacement.
+
 pam-afs-session 2.1 (2011-01-23)
 
     The program setting can now include arguments to pass to the program
