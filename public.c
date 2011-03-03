@@ -75,6 +75,10 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
     if (!args->config->notokens)
         pamret = pamafs_token_get(args);
 
+    /* Error codes are returned for pam_setcred.  Map to pam_open_sesssion. */
+    if (pamret != PAM_SUCCESS && pamret != PAM_IGNORE)
+        pamret = PAM_SESSION_ERR;
+
 done:
     EXIT(args, pamret);
     pamafs_free(args);
@@ -116,25 +120,39 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
 
     args = pamafs_init(pamh, flags, argc, argv);
     if (args == NULL) {
-        pamret = PAM_SESSION_ERR;
+        pamret = PAM_CRED_ERR;
         goto done;
     }
     ENTRY(args, flags);
 
-    /* Do nothing unless AFS is available. */
+    /*
+     * Do nothing unless AFS is available.  We need to return success here
+     * rather than PAM_IGNORE (which would be the more correct return status)
+     * since PAM_IGNORE can confuse the Linux PAM library, at least for
+     * applications that call pam_setcred without pam_authenticate (possibly
+     * because authentication was done some other way), when used with jumps
+     * with the [] syntax.  Since we do nothing in this case, and since the
+     * stack is already frozen from the auth group, success makes sense.
+     */
     if (!k_hasafs()) {
         putil_err(args, "skipping, AFS apparently not available");
-        pamret = PAM_IGNORE;
+        pamret = PAM_SUCCESS;
         goto done;
     }
 
-    /* If DELETE_CRED was specified, delete the tokens (if any). */
+    /*
+     * If DELETE_CRED was specified, delete the tokens (if any).  Similarly
+     * return PAM_SUCCESS here instead of PAM_IGNORE.  Map the error code for
+     * pam_setcred, since normally this call is made by pam_close_session.
+     */
     if (flags & PAM_DELETE_CRED) {
         if (args->config->retain_after_close || args->config->notokens) {
-            pamret = PAM_IGNORE;
+            pamret = PAM_SUCCESS;
             putil_debug(args, "skipping as configured");
         } else {
             pamret = pamafs_token_delete(args);
+            if (pamret == PAM_SESSION_ERR)
+                pamret = PAM_CRED_ERR;
         }
         goto done;
     }
@@ -157,7 +175,7 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
         }
         if (!args->config->nopag && k_setpag() != 0) {
             putil_err(args, "PAG creation failed: %s", strerror(errno));
-            pamret = PAM_SESSION_ERR;
+            pamret = PAM_CRED_ERR;
             goto done;
         }
     }

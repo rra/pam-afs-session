@@ -1,5 +1,25 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 2.2 (2011-03-03)
+
+    Stop returning PAM_IGNORE from pam_setcred if AFS is not available or
+    if we're deleting credentials but the PAM module is configured not to
+    delete tokens.  Instead, return PAM_SUCCESS.  This fixes problems with
+    the Linux PAM library where returning PAM_IGNORE would cause
+    pam_setcred to fail even if other modules succeeded.
+
+    When using libkafs, close the ticket cache after obtaining tokens.
+    Fixes a memory leak.
+
+    Fix the error return statuses for pam_setcred.  Previously, on error,
+    it was returning PAM_SESSION_ERR, which is a return status that's only
+    supposed to be used for pam_open_session and pam_close_session.
+    Instead, return PAM_USER_UNKNOWN or PAM_CRED_ERR as appropriate.
+
+    Update to rra-c-util 3.2:
+
+    * Check if the string being duplicated is NULL in strndup replacement.
+
 pam-afs-session 2.1 (2011-01-23)
 
     The program setting can now include arguments to pass to the program
