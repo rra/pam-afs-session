@@ -11,6 +11,11 @@ pam-afs-session 2.2 (unreleased)
     When using libkafs, close the ticket cache after obtaining tokens.
     Fixes a memory leak.
 
+    Fix the error return statuses for pam_setcred.  Previously, on error,
+    it was returning PAM_SESSION_ERR, which is a return status that's only
+    supposed to be used for pam_open_session and pam_close_session.
+    Instead, return PAM_USER_UNKNOWN or PAM_CRED_ERR as appropriate.
+
     If obtaining tickets for multiple cells using libkafs, return failure
     if obtaining tickets for any of those cells failed.  Previously, only
     the return status for the last listed cell would be significant.

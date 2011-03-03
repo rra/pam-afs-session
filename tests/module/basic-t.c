@@ -32,7 +32,7 @@ run_tests(bool debug)
     pam_handle_t *pamh;
     int status;
     char *skipping, *skiptokens, *skipsession, *program, *running, *already;
-    char *destroy;
+    char *destroy, *unknown;
     char *aklog = test_file_path ("data/fake-aklog");
     struct passwd *user;
     struct pam_conv conv = { NULL, NULL };
@@ -89,6 +89,41 @@ run_tests(bool debug)
     TEST_PAM(pam_sm_close_session, 0, argv_nothing,
              (debug ? skipping : ""), PAM_IGNORE,
              "do nothing");
+    pam_end(pamh, status);
+
+    /* Test behavior with an unknown user. */
+    status = pam_start("test", "pam-afs-session-unknown-user", &conv, &pamh);
+    if (status != PAM_SUCCESS)
+        sysbail("cannot create PAM handle");
+    pam_modutil_getpwnam(pamh, "pam-afs-session-unknown-user");
+    if (asprintf(&unknown, "%d cannot find UID for"
+                 " pam-afs-session-unknown-user: %s", LOG_ERR,
+                 strerror(errno)) < 0)
+        sysbail("cannot allocate memory");
+    if (pam_putenv(pamh, "KRB5CCNAME=krb5cc_test") != PAM_SUCCESS)
+        sysbail("cannot set PAM environment variable");
+    argv_normal[0] = program;
+    TEST_PAM(pam_sm_authenticate, 0, argv_normal,
+             "", PAM_SUCCESS,
+             "unknown user");
+    TEST_PAM(pam_sm_setcred, 0, argv_normal,
+             unknown, PAM_USER_UNKNOWN,
+             "unknown user");
+    TEST_PAM(pam_sm_setcred, PAM_DELETE_CRED, argv_normal,
+             (debug ? skipsession : ""), PAM_SUCCESS,
+             "delete unknown user");
+    TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv_normal,
+             unknown, PAM_USER_UNKNOWN,
+             "reinitialize unknown user");
+    TEST_PAM(pam_sm_setcred, PAM_REFRESH_CRED, argv_normal,
+             unknown, PAM_USER_UNKNOWN,
+             "refresh unknown user");
+    TEST_PAM(pam_sm_open_session, 0, argv_normal,
+             unknown, PAM_SESSION_ERR,
+             "unknown user");
+    TEST_PAM(pam_sm_close_session, 0, argv_normal,
+             (debug ? skipsession : ""), PAM_SUCCESS,
+             "close unknown user");
     pam_end(pamh, status);
 
     /*
@@ -163,6 +198,7 @@ run_tests(bool debug)
     free(running);
     free(already);
     free(destroy);
+    free(unknown);
 }
 
 
@@ -172,7 +208,7 @@ main(void)
     if (!k_hasafs())
         skip_all("AFS not available");
 
-    plan(41 * 2);
+    plan(55 * 2);
 
     run_tests(false);
     run_tests(true);
