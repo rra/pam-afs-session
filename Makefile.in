@@ -46,7 +46,8 @@ host_triplet = @host@
 check_PROGRAMS = tests/runtests$(EXEEXT) tests/kafs/basic$(EXEEXT) \
 	tests/kafs/haspag-t$(EXEEXT) tests/module/basic-t$(EXEEXT) \
 	tests/module/cells-t$(EXEEXT) tests/module/full$(EXEEXT) \
-	tests/module/pag-t$(EXEEXT) tests/pam-util/args-t$(EXEEXT) \
+	tests/module/hasafs-t$(EXEEXT) tests/module/pag-t$(EXEEXT) \
+	tests/pam-util/args-t$(EXEEXT) \
 	tests/pam-util/fakepam-t$(EXEEXT) \
 	tests/pam-util/logging-t$(EXEEXT) \
 	tests/pam-util/options-t$(EXEEXT) \
@@ -222,6 +223,17 @@ tests_module_full_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(tests_module_full_LDFLAGS) $(LDFLAGS) \
 	-o $@
+am_tests_module_hasafs_t_OBJECTS = tests/module/hasafs-t.$(OBJEXT) \
+	tests/module/util.$(OBJEXT)
+tests_module_hasafs_t_OBJECTS = $(am_tests_module_hasafs_t_OBJECTS)
+tests_module_hasafs_t_DEPENDENCIES = options.lo public.lo tokens.lo \
+	tests/module/libfakekafs.a pam-util/libpamutil.la \
+	tests/fakepam/libfakepam.a tests/tap/libtap.a \
+	portable/libportable.la
+tests_module_hasafs_t_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(tests_module_hasafs_t_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_tests_module_pag_t_OBJECTS = tests/module/pag-t.$(OBJEXT) \
 	tests/module/util.$(OBJEXT)
 tests_module_pag_t_OBJECTS = $(am_tests_module_pag_t_OBJECTS)
@@ -339,10 +351,10 @@ SOURCES = $(tests_fakepam_libfakepam_a_SOURCES) \
 	$(portable_libportable_la_SOURCES) tests/kafs/basic.c \
 	tests/kafs/haspag-t.c $(tests_module_basic_t_SOURCES) \
 	$(tests_module_cells_t_SOURCES) tests/module/full.c \
-	$(tests_module_pag_t_SOURCES) tests/pam-util/args-t.c \
-	tests/pam-util/fakepam-t.c tests/pam-util/logging-t.c \
-	tests/pam-util/options-t.c tests/pam-util/vector-t.c \
-	$(tests_portable_asprintf_t_SOURCES) \
+	$(tests_module_hasafs_t_SOURCES) $(tests_module_pag_t_SOURCES) \
+	tests/pam-util/args-t.c tests/pam-util/fakepam-t.c \
+	tests/pam-util/logging-t.c tests/pam-util/options-t.c \
+	tests/pam-util/vector-t.c $(tests_portable_asprintf_t_SOURCES) \
 	$(tests_portable_snprintf_t_SOURCES) \
 	$(tests_portable_strlcat_t_SOURCES) \
 	$(tests_portable_strlcpy_t_SOURCES) \
@@ -357,10 +369,10 @@ DIST_SOURCES = $(tests_fakepam_libfakepam_a_SOURCES) \
 	$(portable_libportable_la_SOURCES) tests/kafs/basic.c \
 	tests/kafs/haspag-t.c $(tests_module_basic_t_SOURCES) \
 	$(tests_module_cells_t_SOURCES) tests/module/full.c \
-	$(tests_module_pag_t_SOURCES) tests/pam-util/args-t.c \
-	tests/pam-util/fakepam-t.c tests/pam-util/logging-t.c \
-	tests/pam-util/options-t.c tests/pam-util/vector-t.c \
-	$(tests_portable_asprintf_t_SOURCES) \
+	$(tests_module_hasafs_t_SOURCES) $(tests_module_pag_t_SOURCES) \
+	tests/pam-util/args-t.c tests/pam-util/fakepam-t.c \
+	tests/pam-util/logging-t.c tests/pam-util/options-t.c \
+	tests/pam-util/vector-t.c $(tests_portable_asprintf_t_SOURCES) \
 	$(tests_portable_snprintf_t_SOURCES) \
 	$(tests_portable_strlcat_t_SOURCES) \
 	$(tests_portable_strlcpy_t_SOURCES) \
@@ -624,10 +636,19 @@ tests_module_full_LDADD = options.lo public.lo tokens.lo	\
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
 	portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
 
+tests_module_hasafs_t_SOURCES = tests/module/hasafs-t.c tests/module/util.c \
+	tests/module/util.h
+
+tests_module_hasafs_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
+tests_module_hasafs_t_LDADD = options.lo public.lo tokens.lo	\
+	tests/module/libfakekafs.a pam-util/libpamutil.la	\
+	tests/fakepam/libfakepam.a tests/tap/libtap.a		\
+	portable/libportable.la
+
 tests_module_pag_t_SOURCES = tests/module/pag-t.c tests/module/util.c \
 	tests/module/util.h
 
-tests_module_pag_t_LDFLAGS = $(KRB5_LDFLAGS)
+tests_module_pag_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_pag_t_LDADD = options.lo public.lo tokens.lo	\
 	tests/module/libfakekafs.a pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a		\
@@ -902,6 +923,11 @@ tests/module/full.$(OBJEXT): tests/module/$(am__dirstamp) \
 tests/module/full$(EXEEXT): $(tests_module_full_OBJECTS) $(tests_module_full_DEPENDENCIES) tests/module/$(am__dirstamp)
 	@rm -f tests/module/full$(EXEEXT)
 	$(AM_V_CCLD)$(tests_module_full_LINK) $(tests_module_full_OBJECTS) $(tests_module_full_LDADD) $(LIBS)
+tests/module/hasafs-t.$(OBJEXT): tests/module/$(am__dirstamp) \
+	tests/module/$(DEPDIR)/$(am__dirstamp)
+tests/module/hasafs-t$(EXEEXT): $(tests_module_hasafs_t_OBJECTS) $(tests_module_hasafs_t_DEPENDENCIES) tests/module/$(am__dirstamp)
+	@rm -f tests/module/hasafs-t$(EXEEXT)
+	$(AM_V_CCLD)$(tests_module_hasafs_t_LINK) $(tests_module_hasafs_t_OBJECTS) $(tests_module_hasafs_t_LDADD) $(LIBS)
 tests/module/pag-t.$(OBJEXT): tests/module/$(am__dirstamp) \
 	tests/module/$(DEPDIR)/$(am__dirstamp)
 tests/module/pag-t$(EXEEXT): $(tests_module_pag_t_OBJECTS) $(tests_module_pag_t_DEPENDENCIES) tests/module/$(am__dirstamp)
@@ -1024,6 +1050,7 @@ mostlyclean-compile:
 	-rm -f tests/module/cells-t.$(OBJEXT)
 	-rm -f tests/module/fakekafs.$(OBJEXT)
 	-rm -f tests/module/full.$(OBJEXT)
+	-rm -f tests/module/hasafs-t.$(OBJEXT)
 	-rm -f tests/module/pag-t.$(OBJEXT)
 	-rm -f tests/module/util.$(OBJEXT)
 	-rm -f tests/pam-util/args-t.$(OBJEXT)
@@ -1082,6 +1109,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/cells-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/fakekafs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/full.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/hasafs-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/pag-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/util.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/pam-util/$(DEPDIR)/args-t.Po@am__quote@
