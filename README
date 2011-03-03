@@ -1,4 +1,4 @@
-                           pam-afs-session 2.1
+                           pam-afs-session 2.2
                    (PAM module for AFS PAGs and tokens)
 
                 Written by Russ Allbery <rra@stanford.edu>
