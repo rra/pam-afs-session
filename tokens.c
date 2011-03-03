@@ -224,6 +224,7 @@ pamafs_afslog(struct pam_args *args, const char *cachename,
                                args->config->afs_cells->strings[i]);
         }
     }
+    krb5_cc_close(args->ctx, cache);
     if (ret == 0)
         return PAM_SUCCESS;
     else

@@ -8,6 +8,9 @@ pam-afs-session 2.2 (unreleased)
     the Linux PAM library where returning PAM_IGNORE would cause
     pam_setcred to fail even if other modules succeeded.
 
+    When using libkafs, close the ticket cache after obtaining tokens.
+    Fixes a memory leak.
+
 pam-afs-session 2.1 (2011-01-23)
 
     The program setting can now include arguments to pass to the program
