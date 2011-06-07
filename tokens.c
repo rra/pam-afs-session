@@ -101,13 +101,13 @@ pamafs_build_env(struct pam_args *args)
     size_t i;
 
     env = pam_getenvlist(args->pamh);
+    if (env == NULL)
+        return NULL;
 
     /*
      * Check whether KRB5CCNAME is set in the PAM environment.  If it isn't,
      * but it is set in the regular environment, we're going to have to add it
-     * into the environment passed to aklog.  The result of pam_getenvlist may
-     * be a NULL pointer if no environment variables are set, in which case we
-     * have to create an environment to resize.
+     * into the environment passed to aklog.
      */
     cache = pam_getenv(args->pamh, "KRB5CCNAME");
     if (cache == NULL)
@@ -115,12 +115,6 @@ pamafs_build_env(struct pam_args *args)
     else
         cache = NULL;
     if (cache != NULL) {
-        if (env == NULL) {
-            env = malloc(sizeof(char **));
-            if (env == NULL)
-                return NULL;
-            env[0] = NULL;
-        }
         for (i = 0; env[i] != NULL; i++)
             ;
         env = realloc(env, sizeof(char **) * (i + 1));
