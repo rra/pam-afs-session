@@ -1,6 +1,6 @@
                    User-Visible pam-afs-session Changes
 
-pam-afs-session 2.3 (unreleased)
+pam-afs-session 2.3 (2011-06-07)
 
     If there is no KRB5CCNAME environment variable set in the PAM
     environment but there is one set in the regular environment, still run
