@@ -8,6 +8,11 @@ pam-afs-session 2.3 (unreleased)
     provides correct behavior in cases such as password-less sudo with the
     KRB5CCNAME environment variable preserved.
 
+    Update to rra-c-util 3.6:
+
+    * Fix compilation error with --without-krb5.
+    * Update flags for make warnings to GCC 4.6.1.
+
 pam-afs-session 2.2 (2011-03-03)
 
     Stop returning PAM_IGNORE from pam_setcred if AFS is not available or
