@@ -1,5 +1,13 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 2.3 (unreleased)
+
+    If there is no KRB5CCNAME environment variable set in the PAM
+    environment but there is one set in the regular environment, still run
+    aklog and use the KRB5CCNAME from the general environment.  This
+    provides correct behavior in cases such as password-less sudo with the
+    KRB5CCNAME environment variable preserved.
+
 pam-afs-session 2.2 (2011-03-03)
 
     Stop returning PAM_IGNORE from pam_setcred if AFS is not available or

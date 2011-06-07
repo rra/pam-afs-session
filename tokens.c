@@ -85,6 +85,55 @@ pamafs_should_ignore(struct pam_args *args, const struct passwd *pwd)
 
 
 /*
+ * Build the environment for running aklog.  There is some complexity here to
+ * handle the case where KRB5CCNAME is set in the general environment but not
+ * in the PAM environment.  In that case, we lift it into the environment that
+ * we pass into aklog.
+ *
+ * Returns the environment on success and NULL on failure.  The caller is
+ * responsible for freeing the environment and all memory it points to.
+ */
+static char **
+pamafs_build_env(struct pam_args *args)
+{
+    char **env;
+    const char *cache;
+    size_t i;
+
+    env = pam_getenvlist(args->pamh);
+
+    /*
+     * Check whether KRB5CCNAME is set in the PAM environment.  If it isn't,
+     * but it is set in the regular environment, we're going to have to add it
+     * into the environment passed to aklog.  The result of pam_getenvlist may
+     * be a NULL pointer if no environment variables are set, in which case we
+     * have to create an environment to resize.
+     */
+    cache = pam_getenv(args->pamh, "KRB5CCNAME");
+    if (cache == NULL)
+        cache = getenv("KRB5CCNAME");
+    else
+        cache = NULL;
+    if (cache != NULL) {
+        if (env == NULL) {
+            env = malloc(sizeof(char **));
+            if (env == NULL)
+                return NULL;
+            env[0] = NULL;
+        }
+        for (i = 0; env[i] != NULL; i++)
+            ;
+        env = realloc(env, sizeof(char **) * (i + 1));
+        if (env == NULL)
+            return NULL;
+        if (asprintf(&env[i], "KRB5CCNAME=%s", cache) < 0)
+            return NULL;
+        env[i + 1] = NULL;
+    }
+    return env;
+}
+
+/*
  * Call aklog with the appropriate environment.  Takes the PAM handle (so that
  * we can get the environment), the arguments, and a struct passwd entry for
  * the user we're authenticating as.  Returns either PAM_SUCCESS or
@@ -129,10 +178,10 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
      * subprocess so that we won't run exit handlers or double-flush stdio
      * buffers in the child process.
      */
+    env = pamafs_build_env(args);
     putil_debug(args, "running %s as UID %lu",
                 args->config->program->strings[0],
                 (unsigned long) pwd->pw_uid);
-    env = pam_getenvlist(args->pamh);
     child = fork();
     if (child < 0) {
         putil_crit(args, "cannot fork: %s", strerror(errno));
@@ -290,6 +339,8 @@ pamafs_token_get(struct pam_args *args)
 
     /* Don't try to get a token unless we have a K5 ticket cache. */
     cache = pam_getenv(args->pamh, "KRB5CCNAME");
+    if (cache == NULL)
+        cache = getenv("KRB5CCNAME");
     if (cache == NULL && !args->config->always_aklog) {
         putil_debug(args, "skipping tokens, no Kerberos ticket cache");
         return PAM_SUCCESS;
