@@ -13,6 +13,10 @@ pam-afs-session 2.3 (unreleased)
     * Fix compilation error with --without-krb5.
     * Update flags for make warnings to GCC 4.6.1.
 
+    Update to C TAP Harness 1.7:
+
+    * Add a more complete usage message and a -h command-line flag.
+
 pam-afs-session 2.2 (2011-03-03)
 
     Stop returning PAM_IGNORE from pam_setcred if AFS is not available or
