@@ -1,7 +1,7 @@
 # Automake makefile for pam-afs-session.
 #
 # Written by Russ Allbery <rra@stanford.edu>
-# Copyright 2006, 2007, 2010
+# Copyright 2006, 2007, 2010, 2011
 #     The Board of Trustees of the Leland Stanford Junior University
 #
 # See LICENSE for licensing terms.
@@ -86,11 +86,12 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/config.guess	\
 #
 #     -Wconversion      http://bugs.debian.org/488884 (htons warnings)
 #
-# Last checked against gcc 4.4 (2010-08-15).
-WARNINGS = -g -O -Wall -Wextra -Wendif-labels -Wformat=2 -Winit-self \
-	-Wswitch-enum -Wdeclaration-after-statement -Wshadow -Wpointer-arith \
-	-Wbad-function-cast -Wwrite-strings -Wstrict-prototypes \
-	-Wmissing-prototypes -Wnested-externs -Werror
+# Last checked against gcc 4.6.1 (2011-05-04).
+WARNINGS = -g -O -Wall -Wextra -Wendif-labels -Wformat=2 -Winit-self	\
+	-Wswitch-enum -Wdeclaration-after-statement -Wshadow		\
+	-Wpointer-arith -Wbad-function-cast -Wwrite-strings		\
+	-Wjump-misses-init -Wlogical-op -Wstrict-prototypes		\
+	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Werror
 
 warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)'
