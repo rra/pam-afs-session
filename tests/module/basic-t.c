@@ -2,7 +2,7 @@
  * Basic tests for the pam-afs-session module.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010
+ * Copyright 2010, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * See LICENSE for licensing terms.
@@ -44,6 +44,13 @@ run_tests(bool debug)
     user = getpwuid(getuid());
     if (user == NULL)
         bail("cannot find username of current user");
+
+    /*
+     * Clear KRB5CCNAME out of the environment to avoid running aklog when we
+     * don't expect to.
+     */
+    if (putenv((char *) "KRB5CCNAME") < 0)
+        sysbail("cannot clear KRB5CCNAME from the environment");
 
     /* Build some messages that we'll use multiple times. */
     if (asprintf(&skipping, "%d skipping as configured", LOG_DEBUG) < 0)
@@ -190,6 +197,36 @@ run_tests(bool debug)
              "normal");
     pam_end(pamh, status);
 
+    /*
+     * Fake the presence of a Kerberos ticket in the environment rather than
+     * in the PAM environment.  We should still run aklog.
+     */
+    unlink("aklog-args");
+    status = pam_start("test", user->pw_name, &conv, &pamh);
+    if (status != PAM_SUCCESS)
+        sysbail("cannot create PAM handle");
+    if (putenv((char *) "KRB5CCNAME=krb5cc_test") < 0)
+        sysbail("cannot set KRB5CCNAME in the environment");
+    TEST_PAM(pam_sm_setcred, 0, argv_normal,
+             (debug ? running : ""), PAM_SUCCESS,
+             "normal");
+    ok(access("aklog-args", F_OK) == 0, "aklog was run");
+    unlink("aklog-args");
+    TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv_normal,
+             (debug ? running : ""), PAM_SUCCESS,
+             "normal reinitialize");
+    ok(access("aklog-args", F_OK) == 0, "aklog was run");
+    unlink("aklog-args");
+    TEST_PAM(pam_sm_setcred, PAM_REFRESH_CRED, argv_normal,
+             (debug ? running : ""), PAM_SUCCESS,
+             "normal refresh");
+    ok(access("aklog-args", F_OK) == 0, "aklog was run");
+    unlink("aklog-args");
+    TEST_PAM(pam_sm_close_session, 0, argv_normal,
+             (debug ? destroy : ""), PAM_SUCCESS,
+             "normal");
+    pam_end(pamh, status);
+
     test_file_path_free(aklog);
     free(program);
     free(skipping);
@@ -208,7 +245,7 @@ main(void)
     if (!k_hasafs())
         skip_all("AFS not available");
 
-    plan(55 * 2);
+    plan(66 * 2);
 
     run_tests(false);
     run_tests(true);

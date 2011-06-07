@@ -1,5 +1,22 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 2.3 (2011-06-07)
+
+    If there is no KRB5CCNAME environment variable set in the PAM
+    environment but there is one set in the regular environment, still run
+    aklog and use the KRB5CCNAME from the general environment.  This
+    provides correct behavior in cases such as password-less sudo with the
+    KRB5CCNAME environment variable preserved.
+
+    Update to rra-c-util 3.6:
+
+    * Fix compilation error with --without-krb5.
+    * Update flags for make warnings to GCC 4.6.1.
+
+    Update to C TAP Harness 1.7:
+
+    * Add a more complete usage message and a -h command-line flag.
+
 pam-afs-session 2.2 (2011-03-03)
 
     Stop returning PAM_IGNORE from pam_setcred if AFS is not available or
