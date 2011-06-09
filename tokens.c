@@ -117,12 +117,15 @@ pamafs_build_env(struct pam_args *args)
     if (cache != NULL) {
         for (i = 0; env[i] != NULL; i++)
             ;
-        env = realloc(env, sizeof(char **) * (i + 1));
+        env = realloc(env, sizeof(char **) * (i + 2));
+        env[i] = NULL;
+        env[i + 1] = NULL;
         if (env == NULL)
             return NULL;
-        if (asprintf(&env[i], "KRB5CCNAME=%s", cache) < 0)
+        if (asprintf(&env[i], "KRB5CCNAME=%s", cache) < 0) {
+            env[i] = NULL;
             return NULL;
-        env[i + 1] = NULL;
+        }
     }
     return env;
 }

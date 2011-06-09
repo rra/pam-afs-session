@@ -1,5 +1,10 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 2.4 (2011-06-08)
+
+    Fix a memory allocation and initialization bug in the previous release
+    that could result in a free of unallocated memory.
+
 pam-afs-session 2.3 (2011-06-07)
 
     If there is no KRB5CCNAME environment variable set in the PAM
