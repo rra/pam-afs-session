@@ -1,5 +1,16 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 2.5 (unreleased)
+
+    Reset the SIGCHLD handler while spawning an external aklog program so
+    that the application SIGCHLD handler isn't invoked when aklog exits.
+    This unfortunately still means that there's a race condition that can
+    cause children to be incorrectly handled if they exit while aklog is
+    running, if the application's SIGCHLD handler is required.  There is
+    unfortunately no good general solution to this other than building
+    against Heimdal and using the libkafs interface to obtain tokens
+    instead of an external program.
+
 pam-afs-session 2.4 (2011-06-08)
 
     Fix a memory allocation and initialization bug in the previous release

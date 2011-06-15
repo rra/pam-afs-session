@@ -275,6 +275,15 @@ function so that it can provide a pam_setcred function.  Never list this
 module as C<sufficient> or as the only C<required> module or you may allow
 users to log on without a password.
 
+While spawning an external B<aklog> program, the AFS session PAM module
+resets the SIGCHLD signal handler to the default handler while the program
+runs and then restores it afterwards.  This is done to avoid having aklog
+interfere with process handling in the calling application, but it means
+that there's a race condition that can cause children to be incorrectly
+handled if they exit while aklog is running.  There is unfortunately no
+good solution to this other than building against Heimdal and using the
+libkafs interface to obtain tokens instead of an external program.
+
 To detect whether AFS is running on the system, the AFS session PAM module
 temporarily sets a SIGSYS handler before attempting an AFS system call.
 That handler may also modify a static variable.  Neither of these should

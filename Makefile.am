@@ -100,12 +100,12 @@ warnings:
 # The bits below are for the test suite, not for the main package.
 check_PROGRAMS = tests/runtests tests/kafs/basic tests/kafs/haspag-t	\
 	tests/module/basic-t tests/module/cells-t tests/module/full	\
-	tests/module/hasafs-t tests/module/pag-t tests/pam-util/args-t	\
-	tests/pam-util/fakepam-t tests/pam-util/logging-t		\
-	tests/pam-util/options-t tests/pam-util/vector-t		\
-	tests/portable/asprintf-t tests/portable/snprintf-t		\
-	tests/portable/strlcat-t tests/portable/strlcpy-t		\
-	tests/portable/strndup-t
+	tests/module/hasafs-t tests/module/pag-t tests/module/sigchld-t	\
+	tests/pam-util/args-t tests/pam-util/fakepam-t			\
+	tests/pam-util/logging-t tests/pam-util/options-t		\
+	tests/pam-util/vector-t tests/portable/asprintf-t		\
+	tests/portable/snprintf-t tests/portable/strlcat-t		\
+	tests/portable/strlcpy-t tests/portable/strndup-t
 tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/fakepam/libfakepam.a tests/module/libfakekafs.a	\
@@ -153,6 +153,13 @@ tests_module_pag_t_LDADD = options.lo public.lo tokens.lo	\
 	tests/module/libfakekafs.a pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a		\
 	portable/libportable.la
+tests_module_sigchld_t_SOURCES = tests/module/sigchld-t.c	\
+	tests/module/util.c tests/module/util.h
+tests_module_sigchld_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
+tests_module_sigchld_t_LDADD = options.lo public.lo tokens.lo	\
+	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
+	tests/tap/libtap.a portable/libportable.la $(LIBKAFS)	\
+	$(DEPEND_LIBS)
 tests_pam_util_args_t_LDFLAGS = $(KRB5_LDFLAGS)
 tests_pam_util_args_t_LDADD = pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a	\

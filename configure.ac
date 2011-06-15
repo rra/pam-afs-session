@@ -83,6 +83,11 @@ AC_CHECK_HEADERS([sys/bittypes.h])
 AC_CHECK_DECLS([snprintf, vsnprintf])
 AC_TYPE_LONG_LONG_INT
 AC_TYPE_UINT32_T
+AC_CHECK_TYPE([sig_atomic_t], ,
+    [AC_DEFINE([sig_atomic_t], [int],
+        [Define to int if <signal.h> does not define.])],
+    [#include <sys/types.h>
+     #include <signal.h>])
 RRA_FUNC_SNPRINTF
 AC_REPLACE_FUNCS([asprintf issetuidgid strlcat strlcpy strndup])
 

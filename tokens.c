@@ -139,10 +139,11 @@ pamafs_build_env(struct pam_args *args)
 static int
 pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
 {
-    int res;
+    int res, status;
     size_t i;
     char **env;
     struct vector *argv = NULL;
+    struct sigaction sa, oldsa;
     pid_t child;
 
     /* Sanity check that we have some program to run. */
@@ -171,6 +172,20 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
         }
 
     /*
+     * The application that calls us may have set a SIGCHLD handler, but we
+     * need to ensure that's not called for aklog, so we temporarily override
+     * it.  This is a bit of a disaster if the application has other children
+     * that it wants to handle while we run aklog; there seems to be no good
+     * solution here.
+     */
+    memset(&sa, 0, sizeof(sa));
+    memset(&oldsa, 0, sizeof(oldsa));
+    sa.sa_handler = SIG_DFL;
+    oldsa.sa_handler = SIG_DFL;
+    if (sigaction(SIGCHLD, &sa, &oldsa) < 0)
+        putil_err(args, "cannot set SIGCHLD handler, continuing anyway");
+
+    /*
      * Run the program.  Be sure to use _exit instead of exit in the
      * subprocess so that we won't run exit handlers or double-flush stdio
      * buffers in the child process.
@@ -182,6 +197,8 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
     child = fork();
     if (child < 0) {
         putil_crit(args, "cannot fork: %s", strerror(errno));
+        if (sigaction(SIGCHLD, &oldsa, NULL) < 0)
+            putil_err(args, "cannot restore SIGCHLD handler");
         return PAM_CRED_ERR;
     } else if (child == 0) {
         if (setuid(pwd->pw_uid) < 0) {
@@ -205,12 +222,15 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
     argv = NULL;
     pamafs_free_envlist(env);
     if (waitpid(child, &res, 0) && WIFEXITED(res) && WEXITSTATUS(res) == 0)
-        return PAM_SUCCESS;
+        status = PAM_SUCCESS;
     else {
         putil_err(args, "aklog program %s returned %d",
                   args->config->program->strings[0], WEXITSTATUS(res));
-        return PAM_CRED_ERR;
+        status = PAM_CRED_ERR;
     }
+    if (sigaction(SIGCHLD, &oldsa, NULL) < 0)
+        putil_err(args, "cannot restore SIGCHLD handler");
+    return status;
 
 fail:
     putil_crit(args, "cannot allocate memory: %s", strerror(errno));
