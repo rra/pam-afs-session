@@ -11,6 +11,9 @@ pam-afs-session 2.5 (unreleased)
     against Heimdal and using the libkafs interface to obtain tokens
     instead of an external program.
 
+    Default to nopag on Mac OS X, since the operating system doesn't have
+    PAG support.
+
 pam-afs-session 2.4 (2011-06-08)
 
     Fix a memory allocation and initialization bug in the previous release

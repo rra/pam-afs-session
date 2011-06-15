@@ -102,14 +102,18 @@ dnl function.
 dnl
 dnl Also, if and only if we're on Linux, make sure that all the symbols in the
 dnl module are resolved, try to adjust for the 32-bit vs. 64-bit library
-dnl paths, install into /lib or /lib64 instead of /usr/lib or /usr/lib64 if
-dnl the prefix is /usr, and use a version script to be sure that we hide
-dnl internal functions.  The version script could also be used on Solaris and
-dnl probably other ELF platforms, but the option is only valid with the GNU ld
-dnl and I don't know how to probe for that.
+dnl paths, and install into /lib or /lib64 instead of /usr/lib or /usr/lib64
+dnl if the prefix is /usr.
+dnl
+dnl Mac OS X systems don't support PAGs, so set a preprocessor define on that
+dnl platform so that we can default "nopag" to true.
 dnl
 dnl More platforms could be handled here.  Contributions welcome.
 AS_CASE([$host],
+    [*-darwin*],
+    [AC_DEFINE([NO_PAG_SUPPORT], [1],
+        [Define to 1 if the operating system has no PAG support.])],
+
     [*-hpux*],
     [AS_IF([test x"$GCC" = x"yes"],
         [AM_LDFLAGS="-Wl,-Bsymbolic $AM_LDFLAGS"],
