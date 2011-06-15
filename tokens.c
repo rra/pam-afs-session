@@ -141,9 +141,10 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
 {
     int res, status;
     size_t i;
-    char **env;
+    char **env = NULL;
     struct vector *argv = NULL;
     struct sigaction sa, oldsa;
+    bool restore_handler = false;
     pid_t child;
 
     /* Sanity check that we have some program to run. */
@@ -155,18 +156,18 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
     /* Build the options for the program. */
     argv = vector_copy(args->config->program);
     if (argv == NULL)
-        goto fail;
+        goto memfail;
     if (args->config->aklog_homedir) {
         if (!vector_add(argv, "-p") || !vector_add(argv, pwd->pw_dir))
-            goto fail;
+            goto memfail;
         putil_debug(args, "passing -p %s to aklog", pwd->pw_dir);
     }
     if (args->config->afs_cells != NULL)
         for (i = 0; i < args->config->afs_cells->count; i++) {
             if (!vector_add(argv, "-c"))
-                goto fail;
+                goto memfail;
             if (!vector_add(argv, args->config->afs_cells->strings[i]))
-                goto fail;
+                goto memfail;
             putil_debug(args, "passing -c %s to aklog",
                         args->config->afs_cells->strings[i]);
         }
@@ -181,9 +182,10 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
     memset(&sa, 0, sizeof(sa));
     memset(&oldsa, 0, sizeof(oldsa));
     sa.sa_handler = SIG_DFL;
-    oldsa.sa_handler = SIG_DFL;
     if (sigaction(SIGCHLD, &sa, &oldsa) < 0)
         putil_err(args, "cannot set SIGCHLD handler, continuing anyway");
+    else
+        restore_handler = true;
 
     /*
      * Run the program.  Be sure to use _exit instead of exit in the
@@ -197,9 +199,7 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
     child = fork();
     if (child < 0) {
         putil_crit(args, "cannot fork: %s", strerror(errno));
-        if (sigaction(SIGCHLD, &oldsa, NULL) < 0)
-            putil_err(args, "cannot restore SIGCHLD handler");
-        return PAM_CRED_ERR;
+        goto fail;
     } else if (child == 0) {
         if (setuid(pwd->pw_uid) < 0) {
             putil_crit(args, "cannot setuid to UID %lu: %s",
@@ -228,14 +228,21 @@ pamafs_run_aklog(struct pam_args *args, struct passwd *pwd)
                   args->config->program->strings[0], WEXITSTATUS(res));
         status = PAM_CRED_ERR;
     }
-    if (sigaction(SIGCHLD, &oldsa, NULL) < 0)
-        putil_err(args, "cannot restore SIGCHLD handler");
+    if (restore_handler)
+        if (sigaction(SIGCHLD, &oldsa, NULL) < 0)
+            putil_err(args, "cannot restore SIGCHLD handler");
     return status;
 
-fail:
+memfail:
     putil_crit(args, "cannot allocate memory: %s", strerror(errno));
+fail:
     if (argv != NULL)
         vector_free(argv);
+    if (env != NULL)
+        pamafs_free_envlist(env);
+    if (restore_handler)
+        if (sigaction(SIGCHLD, &oldsa, NULL) < 0)
+            putil_err(args, "cannot restore SIGCHLD handler");
     return PAM_CRED_ERR;
 }
 
