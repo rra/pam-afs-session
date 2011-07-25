@@ -18,6 +18,12 @@ pam-afs-session 2.5 (unreleased)
     the result string.  Fixes a possible segfault during configuration
     parsing on Mac OS X 10.7.
 
+    Update to rra-c-util 3.7:
+
+    * Fail during configure if AFS headers are required and not found.
+    * Add notices to all files copied over from rra-c-util.
+    * Include strings.h for additional POSIX functions where found.
+
 pam-afs-session 2.4 (2011-06-08)
 
     Fix a memory allocation and initialization bug in the previous release

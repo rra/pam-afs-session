@@ -11,6 +11,9 @@
  * to know what that configuration struct looks like, and it must be freed
  * before calling putil_args_free().
  *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
  * Written by Russ Allbery <rra@stanford.edu>
  * Copyright 2010
  *     The Board of Trustees of the Leland Stanford Junior University
@@ -68,7 +71,7 @@ putil_args_new(pam_handle_t *pamh, int flags)
     args->pamh = pamh;
     args->config = NULL;
     args->user = NULL;
-    args->silent = (((unsigned int) flags & PAM_SILENT) == PAM_SILENT);
+    args->silent = ((flags & PAM_SILENT) == PAM_SILENT);
 
 #ifdef HAVE_KERBEROS
     args->realm = NULL;

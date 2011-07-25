@@ -79,7 +79,7 @@ AM_CONDITIONAL([NEED_KAFS], [test x"$rra_build_kafs" = xtrue])
 
 dnl Other portability checks.
 AC_HEADER_STDBOOL
-AC_CHECK_HEADERS([sys/bittypes.h])
+AC_CHECK_HEADERS([strings.h sys/bittypes.h])
 AC_CHECK_DECLS([snprintf, vsnprintf])
 AC_TYPE_LONG_LONG_INT
 AC_TYPE_UINT32_T
