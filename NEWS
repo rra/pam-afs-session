@@ -14,6 +14,10 @@ pam-afs-session 2.5 (unreleased)
     Default to nopag on Mac OS X, since the operating system doesn't have
     PAG support.
 
+    Fix error handling when krb5_appdefault_string returns without setting
+    the result string.  Fixes a possible segfault during configuration
+    parsing on Mac OS X 10.7.
+
 pam-afs-session 2.4 (2011-06-08)
 
     Fix a memory allocation and initialization bug in the previous release
