@@ -1,5 +1,30 @@
                    User-Visible pam-afs-session Changes
 
+pam-afs-session 2.5 (2011-07-25)
+
+    Reset the SIGCHLD handler while spawning an external aklog program so
+    that the application SIGCHLD handler isn't invoked when aklog exits.
+    This unfortunately still means that there's a race condition that can
+    cause children to be incorrectly handled if they exit while aklog is
+    running, if the application's SIGCHLD handler is required.  There is
+    unfortunately no good general solution to this other than building
+    against Heimdal and using the libkafs interface to obtain tokens
+    instead of an external program.
+
+    Default to nopag on Mac OS X, since the operating system doesn't have
+    PAG support.
+
+    Fix error handling when krb5_appdefault_string returns without setting
+    the result string.  Fixes a possible segfault during configuration
+    parsing on Mac OS X 10.7.
+
+    Update to rra-c-util 3.7:
+
+    * Fail during configure if AFS headers are required and not found.
+    * Add notices to all files copied over from rra-c-util.
+    * Include strings.h for additional POSIX functions where found.
+    * Fix detection of whether PAM uses const on FreeBSD.
+
 pam-afs-session 2.4 (2011-06-08)
 
     Fix a memory allocation and initialization bug in the previous release

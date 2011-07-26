@@ -39,7 +39,11 @@ static const struct option options[] = {
     { K(ignore_root),        true, BOOL    (false)      },
     { K(kdestroy),           true, BOOL    (false)      },
     { K(minimum_uid),        true, NUMBER  (0)          },
+#ifdef NO_PAG_SUPPORT
+    { K(nopag),              true, BOOL    (true)       },
+#else
     { K(nopag),              true, BOOL    (false)      },
+#endif
     { K(notokens),           true, BOOL    (false)      },
     { K(program),            true, STRLIST (PATH_AKLOG) },
     { K(retain_after_close), true, BOOL    (false)      },

@@ -10,6 +10,9 @@
  * and exits with status 1.  If aklog fails, it exits with status 3.  If the
  * commands all finish, it exits 0.
  *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
  * Written by Russ Allbery <rra@stanford.edu>
  * Copyright 2009, 2010
  *     The Board of Trustees of the Leland Stanford Junior University
@@ -55,6 +58,9 @@ main(void)
 {
     if (!k_hasafs())
         exit(2);
+#ifdef NO_PAG_SUPPORT
+    exit(2);
+#endif
     if (k_setpag() != 0) {
         fprintf(stderr, "k_setpag failed: %s\n", strerror(errno));
         exit(1);

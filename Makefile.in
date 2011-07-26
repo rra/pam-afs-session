@@ -47,7 +47,7 @@ check_PROGRAMS = tests/runtests$(EXEEXT) tests/kafs/basic$(EXEEXT) \
 	tests/kafs/haspag-t$(EXEEXT) tests/module/basic-t$(EXEEXT) \
 	tests/module/cells-t$(EXEEXT) tests/module/full$(EXEEXT) \
 	tests/module/hasafs-t$(EXEEXT) tests/module/pag-t$(EXEEXT) \
-	tests/pam-util/args-t$(EXEEXT) \
+	tests/module/sigchld-t$(EXEEXT) tests/pam-util/args-t$(EXEEXT) \
 	tests/pam-util/fakepam-t$(EXEEXT) \
 	tests/pam-util/logging-t$(EXEEXT) \
 	tests/pam-util/options-t$(EXEEXT) \
@@ -61,13 +61,13 @@ subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_man_MANS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in $(top_srcdir)/configure NEWS TODO \
-	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
-	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
-	portable/asprintf.c portable/issetuidgid.c portable/k_haspag.c \
-	portable/krb5-extra.c portable/krb5-profile.c \
-	portable/pam_syslog.c portable/pam_vsyslog.c \
-	portable/snprintf.c portable/strlcat.c portable/strlcpy.c \
-	portable/strndup.c
+	build-aux/compile build-aux/config.guess build-aux/config.sub \
+	build-aux/depcomp build-aux/install-sh build-aux/ltmain.sh \
+	build-aux/missing portable/asprintf.c portable/issetuidgid.c \
+	portable/k_haspag.c portable/krb5-extra.c \
+	portable/krb5-profile.c portable/pam_syslog.c \
+	portable/pam_vsyslog.c portable/snprintf.c portable/strlcat.c \
+	portable/strlcpy.c portable/strndup.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/kafs.m4 \
 	$(top_srcdir)/m4/krb5.m4 $(top_srcdir)/m4/ld-version.m4 \
@@ -245,6 +245,17 @@ tests_module_pag_t_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(tests_module_pag_t_LDFLAGS) \
 	$(LDFLAGS) -o $@
+am_tests_module_sigchld_t_OBJECTS = tests/module/sigchld-t.$(OBJEXT) \
+	tests/module/util.$(OBJEXT)
+tests_module_sigchld_t_OBJECTS = $(am_tests_module_sigchld_t_OBJECTS)
+tests_module_sigchld_t_DEPENDENCIES = options.lo public.lo tokens.lo \
+	pam-util/libpamutil.la tests/fakepam/libfakepam.a \
+	tests/tap/libtap.a portable/libportable.la $(LIBKAFS) \
+	$(am__DEPENDENCIES_2)
+tests_module_sigchld_t_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(tests_module_sigchld_t_LDFLAGS) \
+	$(LDFLAGS) -o $@
 tests_pam_util_args_t_SOURCES = tests/pam-util/args-t.c
 tests_pam_util_args_t_OBJECTS = tests/pam-util/args-t.$(OBJEXT)
 tests_pam_util_args_t_DEPENDENCIES = pam-util/libpamutil.la \
@@ -352,9 +363,10 @@ SOURCES = $(tests_fakepam_libfakepam_a_SOURCES) \
 	tests/kafs/haspag-t.c $(tests_module_basic_t_SOURCES) \
 	$(tests_module_cells_t_SOURCES) tests/module/full.c \
 	$(tests_module_hasafs_t_SOURCES) $(tests_module_pag_t_SOURCES) \
-	tests/pam-util/args-t.c tests/pam-util/fakepam-t.c \
-	tests/pam-util/logging-t.c tests/pam-util/options-t.c \
-	tests/pam-util/vector-t.c $(tests_portable_asprintf_t_SOURCES) \
+	$(tests_module_sigchld_t_SOURCES) tests/pam-util/args-t.c \
+	tests/pam-util/fakepam-t.c tests/pam-util/logging-t.c \
+	tests/pam-util/options-t.c tests/pam-util/vector-t.c \
+	$(tests_portable_asprintf_t_SOURCES) \
 	$(tests_portable_snprintf_t_SOURCES) \
 	$(tests_portable_strlcat_t_SOURCES) \
 	$(tests_portable_strlcpy_t_SOURCES) \
@@ -370,9 +382,10 @@ DIST_SOURCES = $(tests_fakepam_libfakepam_a_SOURCES) \
 	tests/kafs/haspag-t.c $(tests_module_basic_t_SOURCES) \
 	$(tests_module_cells_t_SOURCES) tests/module/full.c \
 	$(tests_module_hasafs_t_SOURCES) $(tests_module_pag_t_SOURCES) \
-	tests/pam-util/args-t.c tests/pam-util/fakepam-t.c \
-	tests/pam-util/logging-t.c tests/pam-util/options-t.c \
-	tests/pam-util/vector-t.c $(tests_portable_asprintf_t_SOURCES) \
+	$(tests_module_sigchld_t_SOURCES) tests/pam-util/args-t.c \
+	tests/pam-util/fakepam-t.c tests/pam-util/logging-t.c \
+	tests/pam-util/options-t.c tests/pam-util/vector-t.c \
+	$(tests_portable_asprintf_t_SOURCES) \
 	$(tests_portable_snprintf_t_SOURCES) \
 	$(tests_portable_strlcat_t_SOURCES) \
 	$(tests_portable_strlcpy_t_SOURCES) \
@@ -516,7 +529,6 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = .gitignore LICENSE autogen examples/debian/common-account	    \
 	examples/debian/common-auth examples/debian/common-session	    \
@@ -656,6 +668,15 @@ tests_module_pag_t_LDADD = options.lo public.lo tokens.lo	\
 	tests/module/libfakekafs.a pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a		\
 	portable/libportable.la
+
+tests_module_sigchld_t_SOURCES = tests/module/sigchld-t.c	\
+	tests/module/util.c tests/module/util.h
+
+tests_module_sigchld_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
+tests_module_sigchld_t_LDADD = options.lo public.lo tokens.lo	\
+	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
+	tests/tap/libtap.a portable/libportable.la $(LIBKAFS)	\
+	$(DEPEND_LIBS)
 
 tests_pam_util_args_t_LDFLAGS = $(KRB5_LDFLAGS)
 tests_pam_util_args_t_LDADD = pam-util/libpamutil.la	\
@@ -936,6 +957,11 @@ tests/module/pag-t.$(OBJEXT): tests/module/$(am__dirstamp) \
 tests/module/pag-t$(EXEEXT): $(tests_module_pag_t_OBJECTS) $(tests_module_pag_t_DEPENDENCIES) tests/module/$(am__dirstamp)
 	@rm -f tests/module/pag-t$(EXEEXT)
 	$(AM_V_CCLD)$(tests_module_pag_t_LINK) $(tests_module_pag_t_OBJECTS) $(tests_module_pag_t_LDADD) $(LIBS)
+tests/module/sigchld-t.$(OBJEXT): tests/module/$(am__dirstamp) \
+	tests/module/$(DEPDIR)/$(am__dirstamp)
+tests/module/sigchld-t$(EXEEXT): $(tests_module_sigchld_t_OBJECTS) $(tests_module_sigchld_t_DEPENDENCIES) tests/module/$(am__dirstamp)
+	@rm -f tests/module/sigchld-t$(EXEEXT)
+	$(AM_V_CCLD)$(tests_module_sigchld_t_LINK) $(tests_module_sigchld_t_OBJECTS) $(tests_module_sigchld_t_LDADD) $(LIBS)
 tests/pam-util/$(am__dirstamp):
 	@$(MKDIR_P) tests/pam-util
 	@: > tests/pam-util/$(am__dirstamp)
@@ -1055,6 +1081,7 @@ mostlyclean-compile:
 	-rm -f tests/module/full.$(OBJEXT)
 	-rm -f tests/module/hasafs-t.$(OBJEXT)
 	-rm -f tests/module/pag-t.$(OBJEXT)
+	-rm -f tests/module/sigchld-t.$(OBJEXT)
 	-rm -f tests/module/util.$(OBJEXT)
 	-rm -f tests/pam-util/args-t.$(OBJEXT)
 	-rm -f tests/pam-util/fakepam-t.$(OBJEXT)
@@ -1114,6 +1141,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/full.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/hasafs-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/pag-t.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/sigchld-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/module/$(DEPDIR)/util.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/pam-util/$(DEPDIR)/args-t.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/pam-util/$(DEPDIR)/fakepam-t.Po@am__quote@

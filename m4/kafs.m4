@@ -31,6 +31,9 @@ dnl since AFS support may be optional in the larger package.
 dnl
 dnl Depends on RRA_SET_LDFLAGS.
 dnl
+dnl The canonical version of this file is maintained in the rra-c-util
+dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+dnl
 dnl Written by Russ Allbery <rra@stanford.edu>
 dnl Copyright 2008, 2009, 2010
 dnl     The Board of Trustees of the Leland Stanford Junior University
@@ -229,7 +232,8 @@ AC_DEFUN([RRA_LIB_KAFS],
         [rra_build_kafs=true
          _RRA_LIB_KAFS_PATHS
          RRA_LIB_KAFS_SWITCH
-         AC_CHECK_HEADERS([afs/param.h sys/ioccom.h])
+         AC_CHECK_HEADERS([afs/param.h], [],
+            [AC_MSG_ERROR([need afs/param.h to build libkafs replacement])])
          RRA_LIB_KAFS_RESTORE
          AC_DEFINE([HAVE_KAFS_REPLACEMENT], [1],
             [Define to 1 if the libkafs replacement is built.])
