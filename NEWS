@@ -1,6 +1,6 @@
                    User-Visible pam-afs-session Changes
 
-pam-afs-session 2.5 (unreleased)
+pam-afs-session 2.5 (2011-07-25)
 
     Reset the SIGCHLD handler while spawning an external aklog program so
     that the application SIGCHLD handler isn't invoked when aklog exits.
