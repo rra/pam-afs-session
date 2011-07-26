@@ -26,7 +26,7 @@
 
 /*
  * Open a new session.  Create a new PAG with k_setpag and then fork the aklog
- * binary as the user.  A Kerberos v5 PAM module should have previously run to
+ * binary as the user.  A Kerberos PAM module should have previously run to
  * obtain Kerberos tickets (or ticket forwarding should have already
  * happened).
  */

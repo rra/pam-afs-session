@@ -76,12 +76,12 @@ the environment or always_aklog is set).
 
 =back
 
-This module is primarily intended for use with a Kerberos v5
-authentication module.  It does not itself do any user authentication; it
-cannot, for instance, be used to authenticate users to a B<kaserver>.
-While it is intended for use with an B<aklog> that uses Kerberos v5 ticket
-caches to obtain tokens, it can be used with any B<aklog> implementation
-(always_aklog may have to be set if no Kerberos v5 ticket cache will be
+This module is primarily intended for use with a Kerberos authentication
+module.  It does not itself do any user authentication; it cannot, for
+instance, be used to authenticate users to a B<kaserver>.  While it is
+intended for use with an B<aklog> that uses Kerberos ticket caches to
+obtain tokens, it can be used with any B<aklog> implementation
+(always_aklog may have to be set if no Kerberos ticket cache will be
 present).
 
 This module performs no authorization checks and does not hook into
