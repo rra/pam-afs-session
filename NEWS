@@ -23,6 +23,7 @@ pam-afs-session 2.5 (unreleased)
     * Fail during configure if AFS headers are required and not found.
     * Add notices to all files copied over from rra-c-util.
     * Include strings.h for additional POSIX functions where found.
+    * Fix detection of whether PAM uses const on FreeBSD.
 
 pam-afs-session 2.4 (2011-06-08)
 
