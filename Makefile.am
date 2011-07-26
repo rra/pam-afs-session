@@ -6,7 +6,6 @@
 #
 # See LICENSE for licensing terms.
 
-AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = .gitignore LICENSE autogen examples/debian/common-account	    \
 	examples/debian/common-auth examples/debian/common-session	    \
