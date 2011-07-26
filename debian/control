@@ -11,7 +11,7 @@ Vcs-Git: git://git.debian.org/git/pkg-k5-afs/libpam-afs-session.git
 Vcs-Browser: http://git.debian.org/?p=pkg-k5-afs/libpam-afs-session.git
 
 Package: libpam-afs-session
-Architecture: any
+Architecture: linux-any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, libpam-runtime (>= 1.0.1-6~),

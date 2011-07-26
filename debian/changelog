@@ -1,3 +1,10 @@
+libpam-afs-session (2.5-2) UNRELEASED; urgency=low
+
+  * Change the architecture of the package to linux-any, since there is no
+    OpenAFS support for the FreeBSD kernel yet.
+
+ -- Russ Allbery <rra@debian.org>  Mon, 25 Jul 2011 20:02:16 -0700
+
 libpam-afs-session (2.5-1) unstable; urgency=low
 
   * New upstream release.
