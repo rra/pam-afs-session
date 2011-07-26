@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Russ Allbery <rra@debian.org>
 Uploaders: Sam Hartman <hartmans@debian.org>
 Standards-Version: 3.9.2
-Build-Depends: debhelper (>= 8), comerr-dev, libkrb5-dev, libpam0g-dev,
+Build-Depends: debhelper (>= 8.1.3), comerr-dev, libkrb5-dev, libpam0g-dev,
  libtest-pod-perl
 Homepage: http://www.eyrie.org/~eagle/software/pam-afs-session/
 Vcs-Git: git://git.debian.org/git/pkg-k5-afs/libpam-afs-session.git
@@ -12,7 +12,9 @@ Vcs-Browser: http://git.debian.org/?p=pkg-k5-afs/libpam-afs-session.git
 
 Package: libpam-afs-session
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libpam-runtime (>= 1.0.1-6~)
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libpam-runtime (>= 1.1.3-2~)
 Recommends: openafs-client, openafs-krb5 | heimdal-clients,
  libpam-krb5 | libpam-heimdal
 Description: PAM module to set up a PAG and obtain AFS tokens

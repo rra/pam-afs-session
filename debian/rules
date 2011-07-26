@@ -1,16 +1,19 @@
 #!/usr/bin/make -f
 
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
 %:
 	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure -- --enable-reduced-depends --libdir=/lib \
-	    --with-krb5 --without-libkafs --with-aklog=/usr/bin/aklog
+	dh_auto_configure -- --enable-reduced-depends \
+	    --libdir=/lib/$(DEB_HOST_MULTIARCH) --with-krb5 \
+	    --without-libkafs --with-aklog=/usr/bin/aklog
 
 override_dh_auto_install:
 	dh_auto_install
-	rm debian/libpam-afs-session/lib/security/*.la
-	chmod 644 debian/libpam-afs-session/lib/security/*.so
+	rm debian/libpam-afs-session/lib/*/security/*.la
+	chmod 644 debian/libpam-afs-session/lib/*/security/*.so
 	install -d debian/libpam-afs-session/usr/share/pam-configs
 	install -m 644 debian/pam-auth-update \
 	    debian/libpam-afs-session/usr/share/pam-configs/afs-session

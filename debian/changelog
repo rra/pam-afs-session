@@ -4,6 +4,12 @@ libpam-afs-session (2.5-1) UNRELEASED; urgency=low
     - Reset the SIGCHLD handler while spawning an external aklog program
       so that the application SIGCHLD handler isn't invoked when aklog
       exits.  (Closes: #630609)
+  * Convert to multiarch.  Depend on the multiarch version of
+    libpam-runtime, install the module into the multiarch version of
+    /lib/security, and declare the package Multi-Arch: same.
+  * Update to debhelper compatibility level V9 (experimental).
+    - Build-Depend on debhelper 8.1.3 or later.
+    - Add Pre-Depends: ${misc:Pre-Depends}.
 
  -- Russ Allbery <rra@debian.org>  Mon, 25 Jul 2011 17:56:58 -0700
 
