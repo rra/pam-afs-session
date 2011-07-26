@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "PAM_AFS_SESSION 5"
-.TH PAM_AFS_SESSION 5 "2011-06-08" "2.4" "pam-afs-session"
+.TH PAM_AFS_SESSION 5 "2011-07-25" "2.5" "pam-afs-session"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -317,8 +317,7 @@ managing the login.  If \fBsshd\fR, for instance, is started in a \s-1PAG\s0, ev
 user who logs in via ssh will be put in the same \s-1PAG\s0 and will share tokens
 if this option is used.
 .Sp
-Add this option on Mac \s-1OS\s0 X, where PAGs are not supported (at least as of
-Mac \s-1OS\s0 X 10.6 and earlier).
+This is the default on Mac \s-1OS\s0 X, where PAGs are not supported.
 .IP "notokens" 4
 .IX Item "notokens"
 If this option is set, the \s-1AFS\s0 session \s-1PAM\s0 module will only create a \s-1PAG\s0
@@ -374,6 +373,15 @@ As mentioned above, this module implements a dummy pam_authenticate
 function so that it can provide a pam_setcred function.  Never list this
 module as \f(CW\*(C`sufficient\*(C'\fR or as the only \f(CW\*(C`required\*(C'\fR module or you may allow
 users to log on without a password.
+.PP
+While spawning an external \fBaklog\fR program, the \s-1AFS\s0 session \s-1PAM\s0 module
+resets the \s-1SIGCHLD\s0 signal handler to the default handler while the program
+runs and then restores it afterward.  This is done to avoid having aklog
+interfere with process handling in the calling application, but it means
+that there's a race condition that can cause children to be incorrectly
+handled if they exit while aklog is running.  There is unfortunately no
+good solution to this other than building against Heimdal and using the
+libkafs interface to obtain tokens instead of an external program.
 .PP
 To detect whether \s-1AFS\s0 is running on the system, the \s-1AFS\s0 session \s-1PAM\s0 module
 temporarily sets a \s-1SIGSYS\s0 handler before attempting an \s-1AFS\s0 system call.

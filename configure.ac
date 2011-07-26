@@ -9,16 +9,17 @@ dnl and/or distribute it, with or without modifications, as long as this
 dnl notice is preserved.
 
 AC_PREREQ([2.64])
-AC_INIT([pam-afs-session], [2.4], [rra@stanford.edu])
+AC_INIT([pam-afs-session], [2.5], [rra@stanford.edu])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([portable])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([1.11 check-news silent-rules -Wall -Werror])
+AM_INIT_AUTOMAKE([1.11 check-news foreign silent-rules subdir-objects
+    -Wall -Werror])
 AM_MAINTAINER_MODE
 
 AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
-AC_PROG_CC_C_O
+AM_PROG_CC_C_O
 AC_PROG_INSTALL
 LT_INIT([disable-static])
 AC_CANONICAL_HOST
@@ -79,10 +80,15 @@ AM_CONDITIONAL([NEED_KAFS], [test x"$rra_build_kafs" = xtrue])
 
 dnl Other portability checks.
 AC_HEADER_STDBOOL
-AC_CHECK_HEADERS([sys/bittypes.h])
+AC_CHECK_HEADERS([strings.h sys/bittypes.h])
 AC_CHECK_DECLS([snprintf, vsnprintf])
 AC_TYPE_LONG_LONG_INT
 AC_TYPE_UINT32_T
+AC_CHECK_TYPE([sig_atomic_t], ,
+    [AC_DEFINE([sig_atomic_t], [int],
+        [Define to int if <signal.h> does not define.])],
+    [#include <sys/types.h>
+     #include <signal.h>])
 RRA_FUNC_SNPRINTF
 AC_REPLACE_FUNCS([asprintf issetuidgid strlcat strlcpy strndup])
 
@@ -97,14 +103,18 @@ dnl function.
 dnl
 dnl Also, if and only if we're on Linux, make sure that all the symbols in the
 dnl module are resolved, try to adjust for the 32-bit vs. 64-bit library
-dnl paths, install into /lib or /lib64 instead of /usr/lib or /usr/lib64 if
-dnl the prefix is /usr, and use a version script to be sure that we hide
-dnl internal functions.  The version script could also be used on Solaris and
-dnl probably other ELF platforms, but the option is only valid with the GNU ld
-dnl and I don't know how to probe for that.
+dnl paths, and install into /lib or /lib64 instead of /usr/lib or /usr/lib64
+dnl if the prefix is /usr.
+dnl
+dnl Mac OS X systems don't support PAGs, so set a preprocessor define on that
+dnl platform so that we can default "nopag" to true.
 dnl
 dnl More platforms could be handled here.  Contributions welcome.
 AS_CASE([$host],
+    [*-darwin*],
+    [AC_DEFINE([NO_PAG_SUPPORT], [1],
+        [Define to 1 if the operating system has no PAG support.])],
+
     [*-hpux*],
     [AS_IF([test x"$GCC" = x"yes"],
         [AM_LDFLAGS="-Wl,-Bsymbolic $AM_LDFLAGS"],

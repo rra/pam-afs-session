@@ -1,11 +1,10 @@
                         pam-afs-session To-Do List
 
-PAM API:
+Portability:
 
- * Tighter verification that all of our flags are valid might be a good
-   idea.
-
-Configuration:
-
- * Consider defaulting to nopag on Mac OS X and any other platform where
-   we know PAGs cannot be supported.
+ * Mac OS X Lion ships with Heimdal Kerberos with an MIT Kerberos
+   compatibility shim on top of it, and the latter does not implement
+   krb5_appdefault_*.  This means that pam-afs-session cannot get
+   configuration from krb5.conf on Mac OS X Lion.  Find a way to link
+   directly to the underlying Heimdal libraries so that the module can
+   call the real krb5_appdefault_* functions.

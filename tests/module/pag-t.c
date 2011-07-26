@@ -203,6 +203,10 @@ run_tests(bool debug)
 int
 main(void)
 {
+#ifdef NO_PAG_SUPPORT
+    skip_all("no PAG support");
+#endif
+
     plan(32 * 2);
 
     run_tests(false);

@@ -5,8 +5,11 @@
  * PAG once one is in one.  The average user will be running this in a PAG, so
  * k_haspag will always return true.  But we can at least confirm that.
  *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010
+ * Copyright 2010, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -43,8 +46,12 @@ main(void)
 
     plan(2);
 
+#ifdef NO_PAG_SUPPORT
+    skip_block(2, "OS has no PAG support");
+#else
     is_int(0, k_setpag(), "k_setpag succeeds");
     is_int(1, k_haspag(), "k_haspag now returns true");
+#endif
 
     return 0;
 }
