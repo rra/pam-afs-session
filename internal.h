@@ -21,6 +21,7 @@
 #include <stdarg.h>
 
 /* Forward declarations to avoid unnecessary includes. */
+struct pam_args;
 struct passwd;
 struct vector;
 
