@@ -1,5 +1,8 @@
 libpam-afs-session (2.5-2) UNRELEASED; urgency=low
 
+  * Enable bindnow hardening flags.
+  * Bump debhelper dependency to 9 now that compatibility mode V9 is no
+    longer experimental.
   * Change the architecture of the package to linux-any, since there is no
     OpenAFS support for the FreeBSD kernel yet.
 
