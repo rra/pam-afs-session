@@ -1,4 +1,4 @@
-libpam-afs-session (2.5-2) UNRELEASED; urgency=low
+libpam-afs-session (2.5-2) unstable; urgency=low
 
   * Enable bindnow hardening flags.
   * Change the architecture of the package to linux-any, since there is no
@@ -10,7 +10,7 @@ libpam-afs-session (2.5-2) UNRELEASED; urgency=low
     local-patch-header so that they only apply to the packages I build and
     NMUs get regular version-numbered patches.
 
- -- Russ Allbery <rra@debian.org>  Mon, 25 Jul 2011 20:02:16 -0700
+ -- Russ Allbery <rra@debian.org>  Mon, 06 Feb 2012 18:23:17 -0800
 
 libpam-afs-session (2.5-1) unstable; urgency=low
 
