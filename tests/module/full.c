@@ -163,14 +163,16 @@ main(void)
      */
     printf("=== tokens (aklog) ===\n");
     fflush(stdout);
-    system("tokens");
+    if (system("tokens") != 0)
+        fprintf(stderr, "tokens failed\n");
     if (k_unlog() != 0) {
         fprintf(stderr, "k_unlog failed: %s\n", strerror(errno));
         exit(4);
     }
     printf("=== tokens (before) ===\n");
     fflush(stdout);
-    system("tokens");
+    if (system("tokens") != 0)
+        fprintf(stderr, "tokens failed\n");
     status = pam_start("test", user->pw_name, &conv, &pamh);
     if (status != PAM_SUCCESS) {
         fprintf(stderr, "cannot create PAM handle\n");
@@ -182,13 +184,15 @@ main(void)
         exit(1);
     printf("=== tokens (session) ===\n");
     fflush(stdout);
-    system("tokens");
+    if (system("tokens") != 0)
+        fprintf(stderr, "tokens failed\n");
     status = pam_sm_close_session(pamh, 0, 0, argv);
     if (status != PAM_SUCCESS)
         exit(1);
     printf("=== tokens (after) ===\n");
     fflush(stdout);
-    system("tokens");
+    if (system("tokens") != 0)
+        fprintf(stderr, "tokens failed\n");
     printf("=== output ===\n");
     output = pam_output();
     if (output != NULL) {
