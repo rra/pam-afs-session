@@ -16,7 +16,7 @@
 #include <pwd.h>
 #include <syslog.h>
 
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/pam.h>
 #include <tests/module/util.h>
 #include <tests/tap/basic.h>
 
@@ -44,6 +44,7 @@ run_tests(bool debug)
     user = getpwuid(getuid());
     if (user == NULL)
         bail("cannot find username of current user");
+    pam_set_pwd(user);
 
     /*
      * Clear KRB5CCNAME out of the environment to avoid running aklog when we

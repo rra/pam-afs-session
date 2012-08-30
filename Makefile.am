@@ -110,11 +110,12 @@ tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 check_LIBRARIES = tests/fakepam/libfakepam.a tests/module/libfakekafs.a	\
 	tests/tap/libtap.a
 tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/data.c	\
-	tests/fakepam/logging.c tests/fakepam/testing.c		\
-	tests/fakepam/testing.h
+	tests/fakepam/general.c tests/fakepam/internal.h	\
+	tests/fakepam/logging.c tests/fakepam/pam.h
 tests_module_libfakekafs_a_SOURCES = tests/module/fakekafs.c
 tests_tap_libtap_a_CPPFLAGS = -I$(abs_top_srcdir)/tests
-tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h
+tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h	\
+	tests/tap/macros.h tests/tap/string.c tests/tap/string.h
 
 # All of the test programs.
 tests_kafs_basic_LDFLAGS = $(KAFS_LDFLAGS)
@@ -137,7 +138,8 @@ tests_module_cells_t_LDADD = options.lo public.lo tokens.lo		     \
 tests_module_full_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_full_LDADD = options.lo public.lo tokens.lo	\
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
-	portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
+	tests/tap/libtap.a portable/libportable.la $(LIBKAFS)	\
+	$(DEPEND_LIBS)
 tests_module_hasafs_t_SOURCES = tests/module/hasafs-t.c tests/module/util.c \
 	tests/module/util.h
 tests_module_hasafs_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)

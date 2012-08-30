@@ -38,7 +38,7 @@
 #include <errno.h>
 #include <pwd.h>
 
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/pam.h>
 
 
 /*
@@ -129,7 +129,8 @@ main(void)
     pam_handle_t *pamh;
     int status;
     struct passwd *user;
-    char *output;
+    struct output *output;
+    size_t i;
     struct pam_conv conv = { NULL, NULL };
     const char *argv[] = { NULL };
 
@@ -153,6 +154,7 @@ main(void)
         fprintf(stderr, "cannot find username of current user\n");
         exit(4);
     }
+    pam_set_pwd(user);
 
     /*
      * We have tokens at the start of the test.  Set up PAM and then open a
@@ -189,8 +191,11 @@ main(void)
     system("tokens");
     printf("=== output ===\n");
     output = pam_output();
-    if (output != NULL)
-        printf("%s\n", output);
+    if (output != NULL) {
+        for (i = 0; i < output->count; i++)
+            printf("%d %s", output->lines[i].priority, output->lines[i].line);
+        printf("\n");
+    }
     pam_end(pamh, 0);
 
     return 0;

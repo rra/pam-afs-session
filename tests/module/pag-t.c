@@ -15,7 +15,7 @@
 #include <pwd.h>
 #include <syslog.h>
 
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/pam.h>
 #include <tests/module/util.h>
 #include <tests/tap/basic.h>
 
@@ -51,6 +51,7 @@ run_tests(bool debug)
     user = getpwuid(getuid());
     if (user == NULL)
         bail("cannot find username of current user");
+    pam_set_pwd(user);
 
     /*
      * If we don't have krb5_afslog, make sure we don't run the real aklog.

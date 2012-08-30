@@ -70,49 +70,19 @@
 /* Get the bool type. */
 #include <portable/stdbool.h>
 
-BEGIN_DECLS
-
-/* Default to a hidden visibility for all portability functions. */
-#pragma GCC visibility push(hidden)
-
-/*
- * Provide prototypes for functions not declared in system headers.  Use the
- * HAVE_DECL macros for those functions that may be prototyped but implemented
- * incorrectly or implemented without a prototype.
- */
-#if !HAVE_ASPRINTF
-extern int asprintf(char **, const char *, ...)
-    __attribute__((__format__(printf, 2, 3)));
-extern int vasprintf(char **, const char *, va_list);
-#endif
-#if !HAVE_DECL_SNPRINTF
-extern int snprintf(char *, size_t, const char *, ...)
-    __attribute__((__format__(printf, 3, 4)));
-#endif
-#if !HAVE_DECL_VSNPRINTF
-extern int vsnprintf(char *, size_t, const char *, va_list);
-#endif
-#if !HAVE_ISSETUIDGID
-extern int issetuidgid(void);
-#endif
-#if !HAVE_STRLCAT
-extern size_t strlcat(char *, const char *, size_t);
-#endif
-#if !HAVE_STRLCPY
-extern size_t strlcpy(char *, const char *, size_t);
-#endif
-#if !HAVE_STRNDUP
-extern char *strndup(const char *, size_t);
-#endif
-
-/* Undo default visibility change. */
-#pragma GCC visibility pop
-
-END_DECLS
-
 /* Windows provides snprintf under a different name. */
 #ifdef _WIN32
 # define snprintf _snprintf
+#endif
+
+/* Define sig_atomic_t if it's not available in signal.h. */
+#ifndef HAVE_SIG_ATOMIC_T
+typedef int sig_atomic_t;
+#endif
+
+/* Windows does not define ssize_t. */
+#ifndef HAVE_SSIZE_T
+typedef ptrdiff_t ssize_t;
 #endif
 
 /*
@@ -136,5 +106,45 @@ END_DECLS
 #  define va_copy(d, s) memcpy(&(d), &(s), sizeof(va_list))
 # endif
 #endif
+
+BEGIN_DECLS
+
+/* Default to a hidden visibility for all portability functions. */
+#pragma GCC visibility push(hidden)
+
+/*
+ * Provide prototypes for functions not declared in system headers.  Use the
+ * HAVE_DECL macros for those functions that may be prototyped but implemented
+ * incorrectly or implemented without a prototype.
+ */
+#if !HAVE_ASPRINTF
+extern int asprintf(char **, const char *, ...)
+    __attribute__((__format__(printf, 2, 3)));
+extern int vasprintf(char **, const char *, va_list);
+#endif
+#if !HAVE_DECL_SNPRINTF
+extern int snprintf(char *, size_t, const char *, ...)
+    __attribute__((__format__(printf, 3, 4)));
+#endif
+#if !HAVE_DECL_VSNPRINTF
+extern int vsnprintf(char *, size_t, const char *, va_list);
+#endif
+#if !HAVE_ISSETUGID
+extern int issetugid(void);
+#endif
+#if !HAVE_STRLCAT
+extern size_t strlcat(char *, const char *, size_t);
+#endif
+#if !HAVE_STRLCPY
+extern size_t strlcpy(char *, const char *, size_t);
+#endif
+#if !HAVE_STRNDUP
+extern char *strndup(const char *, size_t);
+#endif
+
+/* Undo default visibility change. */
+#pragma GCC visibility pop
+
+END_DECLS
 
 #endif /* !PORTABLE_SYSTEM_H */

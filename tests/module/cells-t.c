@@ -19,7 +19,7 @@
 #include <pwd.h>
 #include <syslog.h>
 
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/pam.h>
 #include <tests/module/util.h>
 #include <tests/tap/basic.h>
 
@@ -76,6 +76,7 @@ run_tests(bool debug)
     user = getpwuid(getuid());
     if (user == NULL)
         bail("cannot find username of current user");
+    pam_set_pwd(user);
 
     /* Build some messages that we'll use multiple times. */
     if (asprintf(&program, "program=%s", aklog) < 0)

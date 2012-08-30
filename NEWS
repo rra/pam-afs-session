@@ -5,6 +5,34 @@ pam-afs-session 2.6 (unreleased)
     Fix compilation failure on Solaris 11 and later with the built-in kafs
     implementation.
 
+    Use the PATH_KRB5_CONFIG environment variable or command-line setting
+    to configure instead of KRB5_CONFIG to get the path to krb5-config.
+    The latter is used to point to an alternative krb5.conf file.
+
+    Update to rra-c-util 4.6:
+
+    * Improve robustness of PAM entry and exit handling.
+    * Do not append a PAM error message if the status is PAM_SUCCESS.
+    * Fix a memory leak in PAM logging.
+    * Pass --deps to krb5-config except with --enable-reduced-depends.
+    * Avoid calling krb5_get_error_message with a NULL context.
+    * Use krb5/krb5.h if krb5.h is not present, for NetBSD portability.
+    * Fix stripping of -I/usr/include from krb5-config output.
+    * Use manual Kerberos library probing if lib or include paths given.
+    * Do not assume string is nul-terminated in replacement strdup.
+    * Avoid using local in the shell TAP library for Solaris portability.
+    * Silence __attribute__ warnings on more compilers.
+
+    Update to C TAP Harness 1.12:
+
+    * Suppress plan and summary if bail is called before any tests run.
+    * Only use feature-test macros when requested or built with gcc -ansi.
+    * Drop is_double from the C TAP library to avoid requiring -lm.
+    * Avoid using local in the shell libtap.sh library.
+    * Silence __attribute__ warnings on more compilers.
+    * runtests now frees all allocated resources on exit.
+    * Fix runtests to honor -s even if BUILD and -b aren't given.
+
 pam-afs-session 2.5 (2011-07-25)
 
     Reset the SIGCHLD handler while spawning an external aklog program so

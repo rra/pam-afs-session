@@ -50,6 +50,27 @@
 #endif
 #include <stdarg.h>
 
+/* Solaris doesn't have these. */
+#ifndef PAM_CONV_AGAIN
+# define PAM_CONV_AGAIN 0
+# define PAM_INCOMPLETE PAM_SERVICE_ERR
+#endif
+
+/* Solaris 8 has deficient PAM. */
+#ifndef PAM_AUTHTOK_RECOVER_ERR
+# define PAM_AUTHTOK_RECOVER_ERR PAM_AUTHTOK_ERR
+#endif
+
+/*
+ * Some PAM implementations support building the module static and exporting
+ * the call points via a struct instead.  (This is the default in OpenPAM, for
+ * example.)  To support this, the pam_sm_* functions are declared PAM_EXTERN.
+ * Ensure that's defined for implementations that don't have this.
+ */
+#ifndef PAM_EXTERN
+# define PAM_EXTERN
+#endif
+
 BEGIN_DECLS
 
 /* Default to a hidden visibility for all portability functions. */

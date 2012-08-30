@@ -77,8 +77,10 @@
 */
 
 /* Required for fdopen(), getopt(), and putenv(). */
-#ifndef _XOPEN_SOURCE
-# define _XOPEN_SOURCE 500
+#if defined(__STRICT_ANSI__) || defined(PEDANTIC)
+# ifndef _XOPEN_SOURCE
+#  define _XOPEN_SOURCE 500
+# endif
 #endif
 
 #include <ctype.h>
@@ -916,7 +918,9 @@ find_test(const char *name, struct testset *ts, const char *source,
     bases[2] = source;
     bases[3] = NULL;
 
-    for (i = 0; bases[i] != NULL; i++) {
+    for (i = 0; i < 3; i++) {
+        if (bases[i] == NULL)
+            continue;
         path = xmalloc(strlen(bases[i]) + strlen(name) + 4);
         sprintf(path, "%s/%s-t", bases[i], name);
         if (access(path, X_OK) != 0)
@@ -1045,6 +1049,7 @@ test_batch(const char *testlist, const char *source, const char *build)
         failed += ts.failed;
     }
     total -= skipped;
+    fclose(tests);
 
     /* Stop the timer and get our child resource statistics. */
     gettimeofday(&end, NULL);
@@ -1112,8 +1117,10 @@ int
 main(int argc, char *argv[])
 {
     int option;
+    int status = 0;
     int single = 0;
-    char *setting;
+    char *source_env = NULL;
+    char *build_env = NULL;
     const char *list;
     const char *source = SOURCE;
     const char *build = BUILD;
@@ -1145,28 +1152,38 @@ main(int argc, char *argv[])
     argv += optind;
 
     if (source != NULL) {
-        setting = xmalloc(strlen("SOURCE=") + strlen(source) + 1);
-        sprintf(setting, "SOURCE=%s", source);
-        if (putenv(setting) != 0)
+        source_env = xmalloc(strlen("SOURCE=") + strlen(source) + 1);
+        sprintf(source_env, "SOURCE=%s", source);
+        if (putenv(source_env) != 0)
             sysdie("cannot set SOURCE in the environment");
     }
     if (build != NULL) {
-        setting = xmalloc(strlen("BUILD=") + strlen(build) + 1);
-        sprintf(setting, "BUILD=%s", build);
-        if (putenv(setting) != 0)
+        build_env = xmalloc(strlen("BUILD=") + strlen(build) + 1);
+        sprintf(build_env, "BUILD=%s", build);
+        if (putenv(build_env) != 0)
             sysdie("cannot set BUILD in the environment");
     }
 
-    if (single) {
+    if (single)
         test_single(argv[0], source, build);
-        exit(0);
-    } else {
+    else {
         list = strrchr(argv[0], '/');
         if (list == NULL)
             list = argv[0];
         else
             list++;
         printf(banner, list);
-        exit(test_batch(argv[0], source, build) ? 0 : 1);
+        status = test_batch(argv[0], source, build) ? 0 : 1;
     }
+
+    /* For valgrind cleanliness. */
+    if (source_env != NULL) {
+        putenv((char *) "SOURCE=");
+        free(source_env);
+    }
+    if (build_env != NULL) {
+        putenv((char *) "BUILD=");
+        free(build_env);
+    }
+    exit(status);
 }

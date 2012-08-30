@@ -10,7 +10,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010
+ * Copyright 2010, 2011, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -36,13 +36,56 @@
 #include <portable/pam.h>
 #include <portable/system.h>
 
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/internal.h>
+#include <tests/fakepam/pam.h>
+#include <tests/tap/basic.h>
+#include <tests/tap/string.h>
 
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED __attribute__((__unused__))
 
-/* The buffer used to accumulate log messages. */
-static char *messages = NULL;
+/* The struct used to accumulate log messages. */
+static struct output *messages = NULL;
+
+
+/*
+ * Allocate a new, empty output struct and call bail if memory allocation
+ * fails.
+ */
+struct output *
+output_new(void)
+{
+    struct output *output;
+
+    output = bmalloc(sizeof(struct output));
+    output->count = 0;
+    output->allocated = 1;
+    output->lines = bmalloc(sizeof(output->lines[0]));
+    output->lines[0].line = NULL;
+    return output;
+}
+
+
+/*
+ * Add a new output line to the output struct, resizing the array as
+ * necessary.  Calls bail if memory allocation fails.
+ */
+void
+output_add(struct output *output, int priority, const char *string)
+{
+    size_t next = output->count;
+    size_t size, n;
+
+    if (output->count == output->allocated) {
+        n = output->allocated + 1;
+        size = sizeof(output->lines[0]);
+        output->lines = brealloc(output->lines, n * size);
+        output->allocated = n;
+    }
+    output->lines[next].priority = priority;
+    output->lines[next].line = bstrdup(string);
+    output->count++;
+}
 
 
 /*
@@ -91,46 +134,45 @@ void
 pam_vsyslog(const pam_handle_t *pamh UNUSED, int priority, const char *format,
             va_list args)
 {
-    char *prefix = NULL;
     char *message = NULL;
-    size_t size;
 
-    asprintf(&prefix, "%d ", priority);
-    if (prefix == NULL)
-        return;
-    vasprintf(&message, format, args);
-    if (message == NULL)
-        return;
-    if (messages == NULL) {
-        size = strlen(prefix) + strlen(message) + 1;
-        messages = malloc(size);
-        if (messages == NULL)
-            return;
-        strlcpy(messages, prefix, size);
-        strlcat(messages, message, size);
-    } else {
-        size = strlen(prefix) + strlen(messages) + strlen(message) + 1;
-        messages = realloc(messages, size);
-        if (messages == NULL)
-            return;
-        strlcat(messages, prefix, size);
-        strlcat(messages, message, size);
-    }
-    free(prefix);
+    bvasprintf(&message, format, args);
+    if (messages == NULL)
+        messages = output_new();
+    output_add(messages, priority, message);
     free(message);
 }
 
 
 /*
- * Used by test code.  Returns the accumulated messages and starts a new
- * message buffer.  Caller is responsible for freeing.
+ * Used by test code.  Returns the accumulated messages in an output struct
+ * and starts a new one.  Caller is responsible for freeing with
+ * pam_output_free.
  */
-char *
+struct output *
 pam_output(void)
 {
-    char *output;
+    struct output *output;
 
     output = messages;
     messages = NULL;
     return output;
+}
+
+
+/*
+ * Free an output struct.
+ */
+void
+pam_output_free(struct output *output)
+{
+    size_t i;
+
+    if (output == NULL)
+        return;
+    for (i = 0; i < output->count; i++)
+        if (output->lines[i].line != NULL)
+            free(output->lines[i].line);
+    free(output->lines);
+    free(output);
 }

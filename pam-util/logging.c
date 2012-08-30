@@ -9,7 +9,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2005, 2006, 2007, 2009, 2010
+ * Copyright 2005, 2006, 2007, 2009, 2010, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -46,6 +46,28 @@
 #ifndef LOG_AUTHPRIV
 # define LOG_AUTHPRIV LOG_AUTH
 #endif
+
+/* Used for iterating through arrays. */
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
+
+/*
+ * Mappings of PAM flags to symbolic names for logging when entering a PAM
+ * module function.
+ */
+static const struct {
+    int flag;
+    const char *name;
+} FLAGS[] = {
+    { PAM_CHANGE_EXPIRED_AUTHTOK, "expired"   },
+    { PAM_DELETE_CRED,            "delete"    },
+    { PAM_DISALLOW_NULL_AUTHTOK,  "nonull"    },
+    { PAM_ESTABLISH_CRED,         "establish" },
+    { PAM_PRELIM_CHECK,           "prelim"    },
+    { PAM_REFRESH_CRED,           "refresh"   },
+    { PAM_REINITIALIZE_CRED,      "reinit"    },
+    { PAM_SILENT,                 "silent"    },
+    { PAM_UPDATE_AUTHTOK,         "update"    },
+};
 
 
 /*
@@ -113,6 +135,8 @@ log_plain(struct pam_args *pargs, int priority, const char *fmt, ...)
  * Log wrapper function for reporting a PAM error.  Log a message with the
  * given priority, prefixed by (user <user>) with the account name being
  * authenticated if known, followed by a colon and the formatted PAM error.
+ * However, do not include the colon and the PAM error if the PAM status is
+ * PAM_SUCCESS.
  */
 static void
 log_pam(struct pam_args *pargs, int priority, int status, const char *fmt,
@@ -127,6 +151,8 @@ log_pam(struct pam_args *pargs, int priority, int status, const char *fmt,
         return;
     if (pargs == NULL)
         log_plain(NULL, priority, "%s", msg);
+    else if (status == PAM_SUCCESS)
+        log_plain(pargs, priority, "%s", msg);
     else
         log_plain(pargs, priority, "%s: %s", msg,
                   pam_strerror(pargs->pamh, status));
@@ -166,6 +192,55 @@ LOG_FUNCTION(debug,  LOG_DEBUG)
 
 
 /*
+ * Report entry into a function.  Takes the PAM arguments, the function name,
+ * and the flags and maps the flags to symbolic names.
+ */
+void
+putil_log_entry(struct pam_args *pargs, const char *func, int flags)
+{
+    size_t i, length, offset;
+    char *out = NULL, *nout;
+
+    if (!pargs->debug)
+        return;
+
+    /* FIXME: Temporary hack until pam-afs-session is updated. */
+    pam_syslog(pargs->pamh, LOG_DEBUG, "%s: entry (0x%x)", func, flags);
+    return;
+
+    if (flags != 0)
+        for (i = 0; i < ARRAY_SIZE(FLAGS); i++) {
+            if (!(flags & FLAGS[i].flag))
+                continue;
+            if (out == NULL) {
+                out = strdup(FLAGS[i].name);
+                if (out == NULL)
+                    break;
+            } else {
+                length = strlen(FLAGS[i].name);
+                nout = realloc(out, strlen(out) + length + 2);
+                if (nout == NULL) {
+                    free(out);
+                    out = NULL;
+                    break;
+                }
+                out = nout;
+                offset = strlen(out);
+                out[offset] = '|';
+                memcpy(out + offset + 1, FLAGS[i].name, length);
+                out[offset + 1 + length] = '\0';
+            }
+        }
+    if (out == NULL)
+        pam_syslog(pargs->pamh, LOG_DEBUG, "%s: entry", func);
+    else {
+        pam_syslog(pargs->pamh, LOG_DEBUG, "%s: entry (%s)", func, out);
+        free(out);
+    }
+}
+
+
+/*
  * Report an authentication failure.  This is a separate function since we
  * want to include various PAM metadata in the log message and put it in a
  * standard format.  The format here is modeled after the pam_unix
@@ -198,6 +273,7 @@ putil_log_failure(struct pam_args *pargs, const char *fmt, ...)
                (tty   != NULL) ? tty   : "",
                (ruser != NULL) ? ruser : "",
                (rhost != NULL) ? rhost : "");
+    free(msg);
 }
 
 
@@ -226,13 +302,14 @@ log_krb5(struct pam_args *pargs, int priority, int status, const char *fmt,
     msg = format(fmt, args);
     if (msg == NULL)
         return;
-    if (pargs != NULL && pargs->ctx != NULL)
+    if (pargs != NULL && pargs->ctx != NULL) {
         k5_msg = krb5_get_error_message(pargs->ctx, status);
-    else
-        k5_msg = krb5_get_error_message(NULL, status);
-    log_plain(pargs, priority, "%s: %s", msg, k5_msg);
+        log_plain(pargs, priority, "%s: %s", msg, k5_msg);
+    } else {
+        log_plain(pargs, priority, "%s", msg);
+    }
     free(msg);
-    if (pargs != NULL && pargs->ctx != NULL)
+    if (k5_msg != NULL)
         krb5_free_error_message(pargs->ctx, k5_msg);
 }
 

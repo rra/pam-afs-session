@@ -61,17 +61,17 @@ dnl We can optionally build with Kerberos libraries so that we can use
 dnl Kerberos calls to get configuration information.  Check this before
 dnl checking for libkafs.
 RRA_LIB_KRB5_OPTIONAL
-RRA_LIB_KRB5_SWITCH
 AS_IF([test x"$rra_use_kerberos" != xfalse],
-    [AC_CHECK_HEADERS([k5profile.h profile.h])
+    [RRA_LIB_KRB5_SWITCH
+     AC_CHECK_TYPES([krb5_realm], [], [], [RRA_INCLUDES_KRB5])
      AC_CHECK_FUNCS([krb5_free_default_realm \
          krb5_init_secure_context])
-     AC_CHECK_TYPES([krb5_realm], [], [], [#include <krb5.h>])
      AC_CHECK_FUNCS([krb5_appdefault_string], [],
         [AC_CHECK_FUNCS([krb5_get_profile])
+         AC_CHECK_HEADERS([k5profile.h profile.h])
          AC_LIBOBJ([krb5-profile])])
-     AC_LIBOBJ([krb5-extra])])
-RRA_LIB_KRB5_RESTORE
+     AC_LIBOBJ([krb5-extra])
+     RRA_LIB_KRB5_RESTORE])
 RRA_LIB_KAFS
 RRA_LIB_KAFS_SWITCH
 AC_CHECK_FUNCS([krb5_afslog])
@@ -84,13 +84,13 @@ AC_CHECK_HEADERS([strings.h sys/bittypes.h])
 AC_CHECK_DECLS([snprintf, vsnprintf])
 AC_TYPE_LONG_LONG_INT
 AC_TYPE_UINT32_T
-AC_CHECK_TYPE([sig_atomic_t], [],
-    [AC_DEFINE([sig_atomic_t], [int],
-        [Define to int if <signal.h> does not define.])],
+AC_CHECK_TYPES([sig_atomic_t], [], [],
     [#include <sys/types.h>
      #include <signal.h>])
+AC_CHECK_TYPES([ssize_t], [], [],
+    [#include <sys/types.h>])
 RRA_FUNC_SNPRINTF
-AC_REPLACE_FUNCS([asprintf issetuidgid strlcat strlcpy strndup])
+AC_REPLACE_FUNCS([asprintf issetugid strlcat strlcpy strndup])
 
 dnl Needed for correct handling of errno with threaded applications on
 dnl Solaris.

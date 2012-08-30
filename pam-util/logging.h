@@ -5,7 +5,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008, 2009, 2010
+ * Copyright 2006, 2007, 2008, 2009, 2010, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -47,9 +47,10 @@ BEGIN_DECLS
 #pragma GCC visibility push(hidden)
 
 /*
- * Error reporting and debugging functions.  For each log level, there are
- * two functions.  The _log function just prints out the message it's given.
- * The _log_pam function reports a PAM error using pam_strerror.
+ * Error reporting and debugging functions.  For each log level, there are two
+ * functions.  The _log function just prints out the message it's given.  The
+ * _log_pam function does the same but appends the pam_strerror results for
+ * the provided status code if it is not PAM_SUCCESS.
  */
 void putil_crit(struct pam_args *, const char *, ...)
     __attribute__((__format__(printf, 2, 3)));
@@ -84,9 +85,13 @@ void putil_debug_krb5(struct pam_args *, int, const char *, ...)
     __attribute__((__format__(printf, 3, 4)));
 #endif
 
+/* Log entry to a PAM function. */
+void putil_log_entry(struct pam_args *, const char *, int flags)
+    __attribute__((__nonnull__));
+
 /* Log an authentication failure. */
 void putil_log_failure(struct pam_args *, const char *, ...)
-    __attribute__((__format__(printf, 2, 3)));
+    __attribute__((__nonnull__, __format__(printf, 2, 3)));
 
 /* Undo default visibility change. */
 #pragma GCC visibility pop
@@ -95,7 +100,7 @@ END_DECLS
 
 /* __func__ is C99, but not provided by all implementations. */
 #if __STDC_VERSION__ < 199901L
-# if __GNUC__ >= 2
+# if (__GNUC__ >= 2) && !defined(__func__)
 #  define __func__ __FUNCTION__
 # else
 #  define __func__ "<unknown>"
@@ -105,10 +110,9 @@ END_DECLS
 /* Macros to record entry and exit from the main PAM functions. */
 #define ENTRY(args, flags)                                              \
     if (args->debug)                                                    \
-        pam_syslog((args)->pamh, LOG_DEBUG,                             \
-                   "%s: entry (0x%x)", __func__, (flags))
+        putil_log_entry((args), __func__, (flags));
 #define EXIT(args, pamret)                                              \
-    if (args->debug)                                                    \
+    if (args != NULL && args->debug)                                    \
         pam_syslog((args)->pamh, LOG_DEBUG, "%s: exit (%s)", __func__,  \
                    ((pamret) == PAM_SUCCESS) ? "success"                \
                    : (((pamret) == PAM_IGNORE) ? "ignore" : "failure"))

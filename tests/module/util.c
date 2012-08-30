@@ -19,9 +19,10 @@
 
 #include <syslog.h>
 
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/pam.h>
 #include <tests/module/util.h>
 #include <tests/tap/basic.h>
+#include <tests/tap/string.h>
 
 
 /*
@@ -52,7 +53,10 @@ void
 is_pam_call(const char *output, int expected, int seen, const char *function,
             int flags, bool debug, const char *format, ...)
 {
-    char *logs, *desc;
+    struct output *lines;
+    size_t i;
+    char *desc, *next;
+    char *logs = NULL;
     char *p = NULL;
     va_list args;
     int status;
@@ -61,7 +65,21 @@ is_pam_call(const char *output, int expected, int seen, const char *function,
     if (vasprintf(&desc, format, args) < 0)
         sysbail("cannot allocate memory");
     va_end(args);
-    logs = pam_output();
+    lines = pam_output();
+    if (lines != NULL) {
+        for (i = 0; i < lines->count; i++) {
+            if (logs == NULL)
+                basprintf(&logs, "%d %s", lines->lines[i].priority,
+                          lines->lines[i].line);
+            else {
+                basprintf(&next, "%s%d %s", logs, lines->lines[i].priority,
+                          lines->lines[i].line);
+                free(logs);
+                logs = next;
+            }
+        }
+        pam_output_free(lines);
+    }
     if (!k_hasafs()) {
         status = no_afs_status(function);
         is_int(status, seen, "%s (status)", desc);

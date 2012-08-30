@@ -14,7 +14,7 @@
 
 #include <syslog.h>
 
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/pam.h>
 #include <tests/module/util.h>
 #include <tests/tap/basic.h>
 
