@@ -1,4 +1,4 @@
-libpam-afs-session (2.5-3) UNRELEASED; urgency=low
+libpam-afs-session (2.5-3) unstable; urgency=low
 
   * Apply upstream patch to add AM_PROG_AR to configure.ac, now apparently
     required by Automake for the binutils in unstable.  (Closes: #713292)
@@ -9,7 +9,7 @@ libpam-afs-session (2.5-3) UNRELEASED; urgency=low
   * Canonicalize the Vcs-Git and Vcs-Browser URLs.
   * Update standards version to 3.9.4 (no changes required).
 
- -- Russ Allbery <rra@debian.org>  Sun, 23 Jun 2013 12:38:56 -0700
+ -- Russ Allbery <rra@debian.org>  Sun, 23 Jun 2013 12:47:36 -0700
 
 libpam-afs-session (2.5-2) unstable; urgency=low
 
