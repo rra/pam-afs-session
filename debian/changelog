@@ -4,12 +4,12 @@ libpam-afs-session (2.5-3) unstable; urgency=low
     required by Automake for the binutils in unstable.  (Closes: #713292)
   * Apply upstream patch to build with largefile support.  This is
     probably pointless for this module, but consistency is good.
-  * Switch to xz compression for the binary package.
+  * Switch to xz compression for the binary package and *.debian.tar file.
   * Enable parallel builds.
   * Canonicalize the Vcs-Git and Vcs-Browser URLs.
   * Update standards version to 3.9.4 (no changes required).
 
- -- Russ Allbery <rra@debian.org>  Sun, 23 Jun 2013 12:47:36 -0700
+ -- Russ Allbery <rra@debian.org>  Sun, 23 Jun 2013 12:52:19 -0700
 
 libpam-afs-session (2.5-2) unstable; urgency=low
 
