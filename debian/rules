@@ -6,10 +6,10 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+bindnow
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 %:
-	dh $@ --with autoreconf
+	dh $@ --parallel --with autoreconf
 
 override_dh_auto_configure:
-	dh_auto_configure -- --enable-reduced-depends \
+	dh_auto_configure --parallel -- --enable-reduced-depends \
 	    --libdir=/lib/$(DEB_HOST_MULTIARCH) --with-krb5 \
 	    --without-libkafs --with-aklog=/usr/bin/aklog
 

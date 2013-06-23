@@ -3,6 +3,7 @@ libpam-afs-session (2.5-3) UNRELEASED; urgency=low
   * Apply upstream patch to add AM_PROG_AR to configure.ac, now apparently
     required by Automake for the binutils in unstable.  (Closes: #713292)
   * Switch to xz compression for the binary package.
+  * Enable parallel builds.
   * Canonicalize the Vcs-Git and Vcs-Browser URLs.
   * Update standards version to 3.9.4 (no changes required).
 
