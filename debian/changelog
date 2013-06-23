@@ -1,3 +1,10 @@
+libpam-afs-session (2.5-3) UNRELEASED; urgency=low
+
+  * Apply upstream patch to add AM_PROG_AR to configure.ac, now apparently
+    required by Automake for the binutils in unstable.  (Closes: #713292)
+
+ -- Russ Allbery <rra@debian.org>  Sun, 23 Jun 2013 12:38:56 -0700
+
 libpam-afs-session (2.5-2) unstable; urgency=low
 
   * Enable bindnow hardening flags.
