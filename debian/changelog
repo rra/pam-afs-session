@@ -4,6 +4,7 @@ libpam-afs-session (2.5-3) UNRELEASED; urgency=low
     required by Automake for the binutils in unstable.  (Closes: #713292)
   * Switch to xz compression for the binary package.
   * Canonicalize the Vcs-Git and Vcs-Browser URLs.
+  * Update standards version to 3.9.4 (no changes required).
 
  -- Russ Allbery <rra@debian.org>  Sun, 23 Jun 2013 12:38:56 -0700
 
