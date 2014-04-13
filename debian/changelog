@@ -1,6 +1,7 @@
 libpam-afs-session (2.5-4) UNRELEASED; urgency=medium
 
   * Convert debian/copyright to copyright-format 1.0.
+  * Specify the Debian packaging branch in the Vcs-Git control field.
 
  -- Russ Allbery <rra@debian.org>  Sun, 13 Apr 2014 12:43:45 -0700
 
