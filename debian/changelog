@@ -1,5 +1,6 @@
 libpam-afs-session (2.5-4) UNRELEASED; urgency=medium
 
+  * Remove now-unnecessary dh_builddeb override to force xz compression.
   * Convert debian/copyright to copyright-format 1.0.
   * Specify the Debian packaging branch in the Vcs-Git control field.
 
