@@ -1,4 +1,4 @@
-libpam-afs-session (2.5-4) UNRELEASED; urgency=medium
+libpam-afs-session (2.5-4) unstable; urgency=medium
 
   * Remove now-unnecessary dh_builddeb override to force xz compression.
   * Convert debian/copyright to copyright-format 1.0.
@@ -6,7 +6,7 @@ libpam-afs-session (2.5-4) UNRELEASED; urgency=medium
   * Add the upstream release signing key and verify it in debian/watch.
   * Update standards version to 3.9.5 (no changes required).
 
- -- Russ Allbery <rra@debian.org>  Sun, 13 Apr 2014 12:43:45 -0700
+ -- Russ Allbery <rra@debian.org>  Sun, 13 Apr 2014 12:51:12 -0700
 
 libpam-afs-session (2.5-3) unstable; urgency=low
 
