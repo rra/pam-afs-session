@@ -4,7 +4,7 @@
  * Also tests aklog given multiple arguments, since it was convenient to put
  * those tests here where the argument parsing code was already present.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2010, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *

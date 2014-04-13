@@ -4,7 +4,7 @@
  * Parses the PAM command line for options to pam-afs-session and fills out an
  * allocated structure with those details.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2006, 2007, 2008, 2010, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *

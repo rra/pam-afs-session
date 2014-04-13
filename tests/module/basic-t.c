@@ -1,7 +1,7 @@
 /*
  * Basic tests for the pam-afs-session module.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2010, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *

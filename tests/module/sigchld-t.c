@@ -5,7 +5,7 @@
  * handler isn't triggered by the fork of aklog.  This is ugly in
  * multithreaded processes and may not be quite the right solution still.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *

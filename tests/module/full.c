@@ -20,7 +20,7 @@
  * If something goes wrong outside of the PAM calls that means a fatal error
  * for the test, it exits with status 4.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2010
  *     The Board of Trustees of the Leland Stanford Junior University
  *

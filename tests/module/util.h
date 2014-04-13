@@ -6,7 +6,7 @@
  * infrastructure to make it easy to call entry points of the module and check
  * the results and logged output.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2010
  *     The Board of Trustees of the Leland Stanford Junior University
  *
