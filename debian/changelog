@@ -1,3 +1,9 @@
+libpam-afs-session (2.5-5) UNRELEASED; urgency=medium
+
+  * Remove erroneous branch information from Vcs-Git.
+
+ -- Russ Allbery <rra@debian.org>  Sun, 03 Aug 2014 12:15:52 -0700
+
 libpam-afs-session (2.5-4) unstable; urgency=medium
 
   * Remove now-unnecessary dh_builddeb override to force xz compression.

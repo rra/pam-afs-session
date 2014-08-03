@@ -7,7 +7,7 @@ Standards-Version: 3.9.5
 Build-Depends: debhelper (>= 9), comerr-dev, dh-autoreconf, libkrb5-dev,
  libpam0g-dev, libtest-pod-perl
 Homepage: http://www.eyrie.org/~eagle/software/pam-afs-session/
-Vcs-Git: git://anonscm.debian.org/pkg-k5-afs/libpam-afs-session.git -b debian
+Vcs-Git: git://anonscm.debian.org/pkg-k5-afs/libpam-afs-session.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-k5-afs/libpam-afs-session.git
 
 Package: libpam-afs-session
