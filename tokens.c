@@ -345,16 +345,25 @@ maybe_destroy_cache(struct pam_args *args UNUSED, const char *cache UNUSED)
 
 /*
  * Obtain AFS tokens.  Does various sanity checks first, ensuring that we have
- * a K5 ticket cache, that we can resolve the username, and that we're not
- * supposed to ignore this user.  Sets our flag data item if tokens were
- * successfully obtained.
+ * a Kerberos ticket cache, that we can resolve the username, and that we're
+ * not supposed to ignore this user.
+ *
+ * Normally, set our flag data item if tokens were successfully obtained.
+ * This prevents a subsequent setcred or open_session from doing anything and
+ * flags close_session to remove the token.  However, don't do this if the
+ * reinitialize flag is set, since in that case we're refreshing a token we're
+ * not subsequently responsible for.  This fixes problems with sudo when it
+ * has pam_setcred enabled, since it calls pam_setcred with
+ * PAM_REINITIALIZE_CRED first before calling pam_open_session, and we don't
+ * want to skip the pam_open_session or PAG creation or remove the credentials
+ * created in pam_setcred outside of the new session.
  *
  * Returns error codes for pam_setcred, since those are the most granular.  A
  * caller implementing pam_open_session needs to map these (generally by
  * mapping all failures to PAM_SESSION_ERR).
  */
 int
-pamafs_token_get(struct pam_args *args)
+pamafs_token_get(struct pam_args *args, bool reinitialize)
 {
     int status;
     PAM_CONST char *user;
@@ -407,16 +416,16 @@ pamafs_token_get(struct pam_args *args)
 #else
     status = pamafs_run_aklog(args, pwd);
 #endif
-    if (status == PAM_SUCCESS) {
+    if (status == PAM_SUCCESS && !reinitialize) {
         status = pam_set_data(args->pamh, "pam_afs_session", (char *) "yes",
                               NULL);
         if (status != PAM_SUCCESS) {
             putil_err_pam(args, status, "cannot set success data");
             status = PAM_CRED_ERR;
         }
-        if (status == PAM_SUCCESS)
-            maybe_destroy_cache(args, cache);
     }
+    if (status == PAM_SUCCESS)
+        maybe_destroy_cache(args, cache);
     return PAM_SUCCESS;
 }
 

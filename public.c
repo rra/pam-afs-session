@@ -73,7 +73,7 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
 
     /* Get tokens. */
     if (!args->config->notokens)
-        pamret = pamafs_token_get(args);
+        pamret = pamafs_token_get(args, false);
 
     /* Error codes are returned for pam_setcred.  Map to pam_open_sesssion. */
     if (pamret != PAM_SUCCESS && pamret != PAM_IGNORE)
@@ -117,6 +117,7 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
     int status;
     int pamret = PAM_SUCCESS;
     const void *dummy;
+    bool reinitialize;
 
     args = pamafs_init(pamh, flags, argc, argv);
     if (args == NULL) {
@@ -163,7 +164,8 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
      * we're reinitializing, we may be running in a screen saver or the like
      * and should use the existing PAG, so don't create a new PAG.
      */
-    if (!(flags & (PAM_REINITIALIZE_CRED | PAM_REFRESH_CRED))) {
+    reinitialize = (flags & (PAM_REINITIALIZE_CRED | PAM_REFRESH_CRED));
+    if (!reinitialize) {
         status = pam_get_data(pamh, "pam_afs_session", &dummy);
         if (status == PAM_SUCCESS) {
             if (!k_haspag() && !args->config->nopag)
@@ -180,7 +182,7 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
         }
     }
     if (!args->config->notokens)
-        pamret = pamafs_token_get(args);
+        pamret = pamafs_token_get(args, reinitialize);
 
 done:
     EXIT(args, pamret);

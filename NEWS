@@ -2,6 +2,17 @@
 
 pam-afs-session 2.6 (unreleased)
 
+    When pam_setcred is called with PAM_REINITIALIZE_CRED or
+    PAM_REFRESH_CRED, don't set the PAM data item that says to skip a
+    subsequent pam_open_session and delete tokens on pam_close_session.
+    This fixes a problem with sudo when pam_setcred is enabled, since sudo
+    first calls pam_setcred with PAM_REINITIALIZE_CRED and then opens a
+    new session.  The previous code would not create a new PAG for the new
+    session and then would delete the caller's tokens after sudo
+    completed.  The new behavior is more conceptually correct, since
+    reinitializing creds doesn't take ownership of the session, and
+    therefore shouldn't mean deleting them on session close.
+
     Fix compilation failure on Solaris 11 and later with the built-in kafs
     implementation.
 
