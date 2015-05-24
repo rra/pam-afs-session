@@ -17,8 +17,12 @@ AM_INIT_AUTOMAKE([1.11 check-news foreign silent-rules subdir-objects
     -Wall -Werror])
 AM_MAINTAINER_MODE
 
+dnl Detect unexpanded macros.
+m4_pattern_forbid([^_?RRA_])
+
 AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
+RRA_PROG_CC_CLANG
 AC_SYS_LARGEFILE
 AM_PROG_CC_C_O
 AM_PROG_AR
@@ -40,6 +44,7 @@ AC_CHECK_HEADERS([security/pam_appl.h], [],
 AC_CHECK_HEADERS([security/pam_ext.h], [],
     [AC_CHECK_HEADERS([pam/pam_ext.h])])
 RRA_HEADER_PAM_CONST
+RRA_HEADER_PAM_STRERROR_CONST
 
 dnl Needed for the pam_vsyslog replacement function.
 AC_DEFINE([MODULE_NAME], ["pam_afs_session"],
@@ -83,7 +88,7 @@ AM_CONDITIONAL([NEED_KAFS], [test x"$rra_build_kafs" = xtrue])
 dnl Other portability checks.
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([strings.h sys/bittypes.h])
-AC_CHECK_DECLS([snprintf, vsnprintf])
+AC_CHECK_DECLS([snprintf, strlcat, strlcpy, vsnprintf])
 AC_TYPE_LONG_LONG_INT
 AC_TYPE_UINT32_T
 AC_CHECK_TYPES([sig_atomic_t], [], [],
@@ -92,7 +97,7 @@ AC_CHECK_TYPES([sig_atomic_t], [], [],
 AC_CHECK_TYPES([ssize_t], [], [],
     [#include <sys/types.h>])
 RRA_FUNC_SNPRINTF
-AC_REPLACE_FUNCS([asprintf issetugid strlcat strlcpy strndup])
+AC_REPLACE_FUNCS([asprintf issetugid reallocarray strlcat strlcpy strndup])
 
 dnl Needed for correct handling of errno with threaded applications on
 dnl Solaris.
@@ -132,6 +137,10 @@ AS_CASE([$host],
     [AS_IF([test x"$GCC" = x"yes"],
         [AM_LDFLAGS="-Wl,-Bsymbolic $AM_LDFLAGS"],
         [AM_LDFLAGS="-Wl,-xldscope=symbolic $AM_LDFLAGS"])])
+
+dnl Enable appropriate warnings.
+AM_CONDITIONAL([WARNINGS_GCC], [test x"$GCC" = xyes && test x"$CLANG" != xyes])
+AM_CONDITIONAL([WARNINGS_CLANG], [test x"$CLANG" = xyes])
 
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_FILES([Makefile])
