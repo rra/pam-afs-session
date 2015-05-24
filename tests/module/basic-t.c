@@ -92,6 +92,7 @@ main(void)
         unlink("aklog-args");
         basprintf(&script, "data/scripts/basic/%s", session_types[i]);
         run_script(script, &config);
+        free(script);
         ok(access("aklog-args", F_OK) == 0, "aklog was run");
     }
     unlink("aklog-args");
