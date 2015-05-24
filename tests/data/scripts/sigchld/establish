@@ -1,0 +1,11 @@
+# Run the aklog program to do SIGCHLD testing.  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    auth = program=%0 always_aklog nopag
+
+[run]
+    setcred(ESTABLISH_CRED) = PAM_SUCCESS

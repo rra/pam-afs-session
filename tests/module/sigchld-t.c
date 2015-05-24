@@ -6,6 +6,7 @@
  * multithreaded processes and may not be quite the right solution still.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2015 Russ Allbery <eagle@eyrie.org>
  * Copyright 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -13,16 +14,13 @@
  */
 
 #include <config.h>
-#include <portable/pam.h>
 #include <portable/system.h>
 
 #include <signal.h>
 #include <pwd.h>
-#include <syslog.h>
 
-#include <internal.h>
 #include <tests/fakepam/pam.h>
-#include <tests/module/util.h>
+#include <tests/fakepam/script.h>
 #include <tests/tap/basic.h>
 
 /* The signal flag set if the wrong SIGCHLD handler is called. */
@@ -43,18 +41,13 @@ child_handler(int sig UNUSED)
 int
 main(void)
 {
-    pam_handle_t *pamh;
     struct sigaction sa;
-    int status;
-    char *aklog = test_file_path ("data/fake-aklog");
-    char *program, *running;
+    struct script_config config;
     struct passwd *user;
-    struct pam_conv conv = { NULL, NULL };
-    const char *argv[] = { "program=", "always_aklog", "nopag", NULL };
-    bool debug = false;
-    const char *debug_desc = "";
+    char *aklog;
 
-    plan(4);
+    /* Set up the plan. */
+    plan_lazy();
 
     /* Set up the SIGCHLD handler. */
     memset(&sa, 0, sizeof(sa));
@@ -66,32 +59,26 @@ main(void)
     user = getpwuid(getuid());
     if (user == NULL)
         bail("cannot find username of current user");
+    pam_set_pwd(user);
 
-    /* Build some messages that we'll use multiple times. */
-    if (asprintf(&program, "program=%s", aklog) < 0)
-        sysbail("cannot allocate memory");
-    argv[0] = program;
-    if (asprintf(&running, "%d running %s as UID %lu", LOG_DEBUG, aklog,
-                 (unsigned long) getuid()) < 0)
-        sysbail("cannot allocate memory");
+    /* Configure the path to aklog. */
+    memset(&config, 0, sizeof(config));
+    aklog = test_file_path("data/fake-aklog");
+    config.user = user->pw_name;
+    config.extra[0] = aklog;
 
-    /* Run the session setup and ensure our child handler isn't called. */
+    /* Fool the module into thinking we have a Kerberos ticket cache. */
+    if (putenv((char *) "KRB5CCNAME=krb5cc_test") < 0)
+        sysbail("cannot set KRB5CCNAME in the environment");
+
+    /* Run the PAM module and ensure our child handler isn't called. */
     unlink("aklog-args");
-    status = pam_start("test", user->pw_name, &conv, &pamh);
-    if (status != PAM_SUCCESS)
-        sysbail("cannot create PAM handle");
-    if (pam_putenv(pamh, "KRB5CCNAME=krb5cc_test") != PAM_SUCCESS)
-        sysbail("cannot set PAM environment variable");
-    TEST_PAM(pam_sm_setcred, 0, argv, (debug ? running : ""),
-             PAM_SUCCESS, "normal");
+    run_script("data/scripts/sigchld/establish", &config);
     ok(access("aklog-args", F_OK) == 0, "aklog was run");
     is_int(0, child_signaled, "...and SIGCHLD handler not run");
     unlink("aklog-args");
-    pam_end(pamh, status);
 
+    /* Clean up. */
     test_file_path_free(aklog);
-    free(program);
-    free(running);
-
     return 0;
 }

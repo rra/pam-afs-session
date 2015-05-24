@@ -136,14 +136,10 @@ tests_kafs_basic_LDADD = portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
 tests_kafs_haspag_t_LDFLAGS = $(KAFS_LDFLAGS)
 tests_kafs_haspag_t_LDADD = tests/tap/libtap.a portable/libportable.la \
 	$(LIBKAFS) $(DEPEND_LIBS)
-tests_module_basic_t_SOURCES = tests/module/basic-t.c tests/module/util.c \
-	tests/module/util.h
 tests_module_basic_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_basic_t_LDADD = options.lo public.lo tokens.lo		     \
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
 	portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
-tests_module_cells_t_SOURCES = tests/module/cells-t.c tests/module/util.c \
-	tests/module/util.h
 tests_module_cells_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_cells_t_LDADD = options.lo public.lo tokens.lo		     \
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
@@ -153,22 +149,16 @@ tests_module_full_LDADD = options.lo public.lo tokens.lo	\
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
 	tests/tap/libtap.a portable/libportable.la $(LIBKAFS)	\
 	$(DEPEND_LIBS)
-tests_module_hasafs_t_SOURCES = tests/module/hasafs-t.c tests/module/util.c \
-	tests/module/util.h
 tests_module_hasafs_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_hasafs_t_LDADD = options.lo public.lo tokens.lo	\
 	tests/module/libfakekafs.a pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a		\
 	portable/libportable.la
-tests_module_pag_t_SOURCES = tests/module/pag-t.c tests/module/util.c \
-	tests/module/util.h
 tests_module_pag_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_pag_t_LDADD = options.lo public.lo tokens.lo	\
 	tests/module/libfakekafs.a pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a		\
 	portable/libportable.la
-tests_module_sigchld_t_SOURCES = tests/module/sigchld-t.c	\
-	tests/module/util.c tests/module/util.h
 tests_module_sigchld_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_sigchld_t_LDADD = options.lo public.lo tokens.lo	\
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
