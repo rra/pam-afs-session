@@ -5,8 +5,7 @@
 # See LICENSE for licensing terms.
 
 [options]
-    auth    = program=%0 debug
-    session = program=%0 debug
+    auth = program=%0 debug
 
 [run]
     setcred(ESTABLISH_CRED) = PAM_SUCCESS
