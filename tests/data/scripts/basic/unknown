@@ -1,0 +1,24 @@
+# Test behavior with unknown user.  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    auth    = program=%0
+    session = program=%0
+
+[run]
+    authenticate               = PAM_SUCCESS
+    setcred(DELETE_CRED)       = PAM_SUCCESS
+    setcred(ESTABLISH_CRED)    = PAM_USER_UNKNOWN
+    setcred(REFRESH_CRED)      = PAM_USER_UNKNOWN
+    setcred(REINITIALIZE_CRED) = PAM_USER_UNKNOWN
+    open_session               = PAM_SESSION_ERR
+    close_session              = PAM_SUCCESS
+
+[output]
+    ERR cannot find UID for pam-afs-session-unknown-user: %1
+    ERR cannot find UID for pam-afs-session-unknown-user: %1
+    ERR cannot find UID for pam-afs-session-unknown-user: %1
+    ERR cannot find UID for pam-afs-session-unknown-user: %1

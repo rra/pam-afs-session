@@ -1,0 +1,20 @@
+# Test pam_open_session (debug).  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    session = program=%0 debug
+
+[run]
+    open_session  = PAM_SUCCESS
+    close_session = PAM_SUCCESS
+
+[output]
+    DEBUG pam_sm_open_session: entry (0x0)
+    DEBUG running %0 as UID %1
+    DEBUG pam_sm_open_session: exit (success)
+    DEBUG pam_sm_close_session: entry (0x0)
+    DEBUG destroying tokens
+    DEBUG pam_sm_close_session: exit (success)

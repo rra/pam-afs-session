@@ -1,0 +1,13 @@
+# Test pam_setcred credential establishment.  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    auth    = program=%0
+    session = program=%0
+
+[run]
+    setcred(ESTABLISH_CRED) = PAM_SUCCESS
+    setcred(ESTABLISH_CRED) = PAM_SUCCESS

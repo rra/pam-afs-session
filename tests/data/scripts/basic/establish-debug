@@ -1,0 +1,21 @@
+# Test pam_setcred credential establishment (debug).  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    auth    = program=%0 debug
+    session = program=%0 debug
+
+[run]
+    setcred(ESTABLISH_CRED) = PAM_SUCCESS
+    setcred(ESTABLISH_CRED) = PAM_SUCCESS
+
+[output]
+    DEBUG pam_sm_setcred: entry (0x2)
+    DEBUG running %0 as UID %1
+    DEBUG pam_sm_setcred: exit (success)
+    DEBUG pam_sm_setcred: entry (0x2)
+    DEBUG skipping, apparently already ran
+    DEBUG pam_sm_setcred: exit (success)

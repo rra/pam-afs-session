@@ -1,0 +1,18 @@
+# Test authenticate and session no-op behavior.  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    auth    = nopag notokens
+    session = nopag notokens
+
+[run]
+    authenticate               = PAM_SUCCESS
+    setcred(DELETE_CRED)       = PAM_SUCCESS
+    setcred(ESTABLISH_CRED)    = PAM_SUCCESS
+    setcred(REFRESH_CRED)      = PAM_SUCCESS
+    setcred(REINITIALIZE_CRED) = PAM_SUCCESS
+    open_session               = PAM_SUCCESS
+    close_session              = PAM_IGNORE

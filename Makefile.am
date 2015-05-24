@@ -12,8 +12,9 @@ EXTRA_DIST = .gitignore LICENSE autogen examples/debian/common-account	    \
 	examples/redhat/system-auth examples/solaris/pam.conf		    \
 	pam_afs_session.map pam_afs_session.pod pam_afs_session.sym	    \
 	tests/README tests/TESTS tests/data/fake-aklog tests/data/krb5.conf \
-	tests/docs/pod-spelling-t tests/docs/pod-t tests/fakepam/README	    \
-	tests/kafs/basic-t tests/module/full-t tests/tap/libtap.sh
+	tests/data/scripts tests/docs/pod-spelling-t tests/docs/pod-t	    \
+	tests/fakepam/README tests/kafs/basic-t tests/module/full-t	    \
+	tests/tap/libtap.sh
 
 # The following library order matters for annoying reasons.  libafsauthent
 # contains its own com_err implementation, which we do not want to pick up.
@@ -118,9 +119,11 @@ tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/fakepam/libfakepam.a tests/module/libfakekafs.a	\
 	tests/tap/libtap.a
-tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/data.c	\
-	tests/fakepam/general.c tests/fakepam/internal.h	\
-	tests/fakepam/logging.c tests/fakepam/pam.h
+tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/config.c		  \
+	tests/fakepam/data.c tests/fakepam/general.c			  \
+	tests/fakepam/internal.h tests/fakepam/logging.c		  \
+	tests/fakepam/pam.h tests/fakepam/script.c tests/fakepam/script.h \
+	tests/fakepam/stubs.c
 tests_module_libfakekafs_a_SOURCES = tests/module/fakekafs.c
 tests_tap_libtap_a_CPPFLAGS = -I$(abs_top_srcdir)/tests
 tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h	\
