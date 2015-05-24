@@ -12,11 +12,11 @@
     close_session = PAM_SUCCESS
 
 [output]
-    DEBUG pam_sm_open_session: entry (0x0)
+    DEBUG pam_sm_open_session: entry
     DEBUG passing -c example.com to aklog
     DEBUG passing -c example.edu to aklog
     DEBUG running %2 as UID %3
     DEBUG pam_sm_open_session: exit (success)
-    DEBUG pam_sm_close_session: entry (0x0)
+    DEBUG pam_sm_close_session: entry
     DEBUG destroying tokens
     DEBUG pam_sm_close_session: exit (success)

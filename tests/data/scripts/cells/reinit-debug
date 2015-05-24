@@ -11,7 +11,7 @@
     setcred(REINITIALIZE_CRED) = PAM_SUCCESS
 
 [output]
-    DEBUG pam_sm_setcred: entry (0x8)
+    DEBUG pam_sm_setcred: entry (reinit)
     DEBUG passing -c example.com to aklog
     DEBUG passing -c example.edu to aklog
     DEBUG running %2 as UID %3

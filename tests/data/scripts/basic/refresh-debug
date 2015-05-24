@@ -11,6 +11,6 @@
     setcred(REFRESH_CRED) = PAM_SUCCESS
 
 [output]
-    DEBUG pam_sm_setcred: entry (0x10)
+    DEBUG pam_sm_setcred: entry (refresh)
     DEBUG running %0 as UID %1
     DEBUG pam_sm_setcred: exit (success)

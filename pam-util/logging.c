@@ -204,10 +204,6 @@ putil_log_entry(struct pam_args *pargs, const char *func, int flags)
     if (!pargs->debug)
         return;
 
-    /* FIXME: Temporary hack until pam-afs-session is updated. */
-    pam_syslog(pargs->pamh, LOG_DEBUG, "%s: entry (0x%x)", func, flags);
-    return;
-
     if (flags != 0)
         for (i = 0; i < ARRAY_SIZE(FLAGS); i++) {
             if (!(flags & FLAGS[i].flag))

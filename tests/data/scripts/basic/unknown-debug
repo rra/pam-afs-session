@@ -17,21 +17,21 @@
     close_session              = PAM_SUCCESS
 
 [output]
-    DEBUG pam_sm_setcred: entry (0x4)
+    DEBUG pam_sm_setcred: entry (delete)
     DEBUG skipping, no open session
     DEBUG pam_sm_setcred: exit (success)
-    DEBUG pam_sm_setcred: entry (0x2)
+    DEBUG pam_sm_setcred: entry (establish)
     ERR cannot find UID for pam-afs-session-unknown-user: %1
     DEBUG pam_sm_setcred: exit (failure)
-    DEBUG pam_sm_setcred: entry (0x10)
+    DEBUG pam_sm_setcred: entry (refresh)
     ERR cannot find UID for pam-afs-session-unknown-user: %1
     DEBUG pam_sm_setcred: exit (failure)
-    DEBUG pam_sm_setcred: entry (0x8)
+    DEBUG pam_sm_setcred: entry (reinit)
     ERR cannot find UID for pam-afs-session-unknown-user: %1
     DEBUG pam_sm_setcred: exit (failure)
-    DEBUG pam_sm_open_session: entry (0x0)
+    DEBUG pam_sm_open_session: entry
     ERR cannot find UID for pam-afs-session-unknown-user: %1
     DEBUG pam_sm_open_session: exit (failure)
-    DEBUG pam_sm_close_session: entry (0x0)
+    DEBUG pam_sm_close_session: entry
     DEBUG skipping, no open session
     DEBUG pam_sm_close_session: exit (success)
