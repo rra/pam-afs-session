@@ -1,0 +1,38 @@
+# Test authenticate and session without AFS (debug).  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    auth    = debug
+    session = debug
+
+[run]
+    authenticate               = PAM_SUCCESS
+    setcred(DELETE_CRED)       = PAM_SUCCESS
+    setcred(ESTABLISH_CRED)    = PAM_SUCCESS
+    setcred(REFRESH_CRED)      = PAM_SUCCESS
+    setcred(REINITIALIZE_CRED) = PAM_SUCCESS
+    open_session               = PAM_IGNORE
+    close_session              = PAM_IGNORE
+
+[output]
+    DEBUG pam_sm_setcred: entry (0x4)
+    ERR skipping, AFS apparently not available
+    DEBUG pam_sm_setcred: exit (success)
+    DEBUG pam_sm_setcred: entry (0x2)
+    ERR skipping, AFS apparently not available
+    DEBUG pam_sm_setcred: exit (success)
+    DEBUG pam_sm_setcred: entry (0x10)
+    ERR skipping, AFS apparently not available
+    DEBUG pam_sm_setcred: exit (success)
+    DEBUG pam_sm_setcred: entry (0x8)
+    ERR skipping, AFS apparently not available
+    DEBUG pam_sm_setcred: exit (success)
+    DEBUG pam_sm_open_session: entry (0x0)
+    ERR skipping, AFS apparently not available
+    DEBUG pam_sm_open_session: exit (ignore)
+    DEBUG pam_sm_close_session: entry (0x0)
+    ERR skipping, AFS apparently not available
+    DEBUG pam_sm_close_session: exit (ignore)
