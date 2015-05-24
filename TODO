@@ -14,3 +14,7 @@ Testing:
  * Add support for setting an environment variable to the fakepam testing
    library and use that to test behavior when KRB5CCNAME is only set in
    the PAM environment, not the general environment.
+
+ * Add sufficient hook support to allow testing all of the output in the
+   module/pag test while still checking the PAG status and changing
+   internal state at each point.
