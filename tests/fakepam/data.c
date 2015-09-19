@@ -8,8 +8,8 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010
+ * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2010, 2011, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -35,7 +35,7 @@
 #include <portable/pam.h>
 #include <portable/system.h>
 
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/pam.h>
 
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED __attribute__((__unused__))
@@ -74,7 +74,7 @@ pam_set_data(pam_handle_t *pamh, const char *item, void *data,
     for (p = pamh->data; p != NULL; p = p->next)
         if (strcmp(p->name, item) == 0) {
             if (p->cleanup != NULL)
-                p->cleanup (pamh, p->data, PAM_DATA_REPLACE);
+                p->cleanup(pamh, p->data, PAM_DATA_REPLACE);
             p->data = data;
             p->cleanup = cleanup;
             return PAM_SUCCESS;
@@ -92,6 +92,97 @@ pam_set_data(pam_handle_t *pamh, const char *item, void *data,
     p->next = pamh->data;
     pamh->data = p;
     return PAM_SUCCESS;
+}
+
+
+/*
+ * Retrieve a PAM item.  Currently, this only supports a limited subset of the
+ * possible items.
+ */
+int
+pam_get_item(const pam_handle_t *pamh, int item, PAM_CONST void **data)
+{
+    switch (item) {
+    case PAM_AUTHTOK:
+        *data = pamh->authtok;
+        return PAM_SUCCESS;
+    case PAM_CONV:
+        if (pamh->conversation) {
+            *data = pamh->conversation;
+            return PAM_SUCCESS;
+        } else {
+            return PAM_BAD_ITEM;
+        }
+    case PAM_OLDAUTHTOK:
+        *data = pamh->oldauthtok;
+        return PAM_SUCCESS;
+    case PAM_RHOST:
+        *data = (PAM_CONST char *) pamh->rhost;
+        return PAM_SUCCESS;
+    case PAM_RUSER:
+        *data = (PAM_CONST char *) pamh->ruser;
+        return PAM_SUCCESS;
+    case PAM_SERVICE:
+        *data = (PAM_CONST char *) pamh->service;
+        return PAM_SUCCESS;
+    case PAM_TTY:
+        *data = (PAM_CONST char *) pamh->tty;
+        return PAM_SUCCESS;
+    case PAM_USER:
+        *data = (PAM_CONST char *) pamh->user;
+        return PAM_SUCCESS;
+    case PAM_USER_PROMPT:
+        *data = "login: ";
+        return PAM_SUCCESS;
+    default:
+        return PAM_BAD_ITEM;
+    }
+}
+
+
+/*
+ * Set a PAM item.  Currently only PAM_USER is supported.
+ */
+int
+pam_set_item(pam_handle_t *pamh, int item, PAM_CONST void *data)
+{
+    switch (item) {
+    case PAM_AUTHTOK:
+        free(pamh->authtok);
+        pamh->authtok = strdup(data);
+        if (pamh->authtok == NULL)
+            return PAM_BUF_ERR;
+        return PAM_SUCCESS;
+    case PAM_OLDAUTHTOK:
+        free(pamh->oldauthtok);
+        pamh->oldauthtok = strdup(data);
+        if (pamh->oldauthtok == NULL)
+            return PAM_BUF_ERR;
+        return PAM_SUCCESS;
+    case PAM_RHOST:
+        free(pamh->rhost);
+        pamh->rhost = strdup(data);
+        if (pamh->rhost == NULL)
+            return PAM_BUF_ERR;
+        return PAM_SUCCESS;
+    case PAM_RUSER:
+        free(pamh->ruser);
+        pamh->ruser = strdup(data);
+        if (pamh->ruser == NULL)
+            return PAM_BUF_ERR;
+        return PAM_SUCCESS;
+    case PAM_TTY:
+        free(pamh->tty);
+        pamh->tty = strdup(data);
+        if (pamh->tty == NULL)
+            return PAM_BUF_ERR;
+        return PAM_SUCCESS;
+    case PAM_USER:
+        pamh->user = (const char *) data;
+        return PAM_SUCCESS;
+    default:
+        return PAM_BAD_ITEM;
+    }
 }
 
 
@@ -147,7 +238,7 @@ pam_getenvlist(pam_handle_t *pamh)
     }
     for (i = 0; pamh->environ[i] != NULL; i++)
         ;
-    env = malloc((i + 1) * sizeof(char *));
+    env = calloc(i + 1, sizeof(char *));
     if (env == NULL)
         return NULL;
     for (i = 0; pamh->environ[i] != NULL; i++) {
@@ -181,12 +272,13 @@ fail:
 int
 pam_putenv(pam_handle_t *pamh, const char *setting)
 {
+    char *copy;
     const char *equals;
     size_t namelen;
     bool delete = false;
     bool found = false;
     size_t i, j;
-    const char **env;
+    char **env;
 
     if (setting == NULL)
         return PAM_PERM_DENIED;
@@ -197,15 +289,22 @@ pam_putenv(pam_handle_t *pamh, const char *setting)
         delete = true;
         namelen = strlen(setting);
     }
+    if (!delete) {
+        copy = strdup(setting);
+        if (copy == NULL)
+            return PAM_BUF_ERR;
+    }
 
     /* Handle the first call to pam_putenv. */
     if (pamh->environ == NULL) {
         if (delete)
             return PAM_BAD_ITEM;
-        pamh->environ = malloc(2 * sizeof(char *));
-        if (pamh->environ == NULL)
+        pamh->environ = calloc(2, sizeof(char *));
+        if (pamh->environ == NULL) {
+            free(copy);
             return PAM_BUF_ERR;
-        pamh->environ[0] = setting;
+        }
+        pamh->environ[0] = copy;
         pamh->environ[1] = NULL;
         return PAM_SUCCESS;
     }
@@ -219,11 +318,13 @@ pam_putenv(pam_handle_t *pamh, const char *setting)
         if (strncmp(setting, pamh->environ[i], namelen) == 0
             && pamh->environ[i][namelen] == '=') {
             if (delete) {
+                free(pamh->environ[i]);
                 for (j = i + 1; pamh->environ[j] != NULL; i++, j++)
                     pamh->environ[i] = pamh->environ[j];
                 pamh->environ[i] = NULL;
             } else {
-                pamh->environ[i] = setting;
+                free(pamh->environ[i]);
+                pamh->environ[i] = copy;
             }
             found = true;
             break;
@@ -231,11 +332,11 @@ pam_putenv(pam_handle_t *pamh, const char *setting)
     if (!found) {
         if (delete)
             return PAM_BAD_ITEM;
-        env = realloc(pamh->environ, (i + 2) * sizeof(char *));
+        env = reallocarray(pamh->environ, (i + 2), sizeof(char *));
         if (env == NULL)
             return PAM_BUF_ERR;
         pamh->environ = env;
-        pamh->environ[i] = setting;
+        pamh->environ[i] = copy;
         pamh->environ[i + 1] = NULL;
     }
     return PAM_SUCCESS;
@@ -246,7 +347,7 @@ pam_putenv(pam_handle_t *pamh, const char *setting)
 int
 pam_putenv(pam_handle_t *pamh UNUSED, const char *setting)
 {
-    return putenv(setting);
+    return putenv((char *) setting);
 }
 
 #endif /* !HAVE_PAM_GETENV */

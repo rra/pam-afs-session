@@ -20,7 +20,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  *
  * The authors hereby relinquish any claim to any copyright that they may have
  * in this work, whether granted under contract or by operation of law or
@@ -43,15 +43,7 @@
 struct vector *
 vector_new(void)
 {
-    struct vector *vector;
-
-    vector = malloc(sizeof(struct vector));
-    if (vector == NULL)
-        return NULL;
-    vector->count = 0;
-    vector->allocated = 0;
-    vector->strings = NULL;
-    return vector;
+    return calloc(1, sizeof(struct vector));
 }
 
 
@@ -83,7 +75,7 @@ vector_copy(const struct vector *old)
 
 
 /*
- * Resize a vector (using realloc to resize the table).  Return false if
+ * Resize a vector (using reallocarray to resize the table).  Return false if
  * memory allocation fails.
  */
 bool
@@ -101,7 +93,7 @@ vector_resize(struct vector *vector, size_t size)
         free(vector->strings);
         vector->strings = NULL;
     } else {
-        strings = realloc(vector->strings, size * sizeof(char *));
+        strings = reallocarray(vector->strings, size, sizeof(char *));
         if (strings == NULL)
             return false;
         vector->strings = strings;
@@ -154,6 +146,8 @@ vector_clear(struct vector *vector)
 void
 vector_free(struct vector *vector)
 {
+    if (vector == NULL)
+        return;
     vector_clear(vector);
     free(vector->strings);
     free(vector);
@@ -231,7 +225,7 @@ vector_split_multi(const char *string, const char *seps,
         goto fail;
 
     vector->count = 0;
-    for (start = string, p = string, i = 0; *p; p++)
+    for (start = string, p = string, i = 0; *p != '\0'; p++)
         if (strchr(seps, *p) != NULL) {
             if (start != p) {
                 vector->strings[i] = strndup(start, (size_t) (p - start));

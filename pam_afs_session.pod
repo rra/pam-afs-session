@@ -76,12 +76,12 @@ the environment or always_aklog is set).
 
 =back
 
-This module is primarily intended for use with a Kerberos v5
-authentication module.  It does not itself do any user authentication; it
-cannot, for instance, be used to authenticate users to a B<kaserver>.
-While it is intended for use with an B<aklog> that uses Kerberos v5 ticket
-caches to obtain tokens, it can be used with any B<aklog> implementation
-(always_aklog may have to be set if no Kerberos v5 ticket cache will be
+This module is primarily intended for use with a Kerberos authentication
+module.  It does not itself do any user authentication; it cannot, for
+instance, be used to authenticate users to a B<kaserver>.  While it is
+intended for use with an B<aklog> that uses Kerberos ticket caches to
+obtain tokens, it can be used with any B<aklog> implementation
+(always_aklog may have to be set if no Kerberos ticket cache will be
 present).
 
 This module performs no authorization checks and does not hook into
@@ -316,6 +316,18 @@ should add configuration like:
 to the [appdefaults] section of their F<krb5.conf> files to disable use of
 the krb524 service.  See the Heimdal kafs(3) man page for more
 information.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2015 Russ Allbery <eagle@eyrie.org>
+
+Copyright 2005, 2006, 2007, 2008, 2009, 2010, 2011 The Board of Trustees
+of the Leland Stanford Junior University
+
+Copying and distribution of this file, with or without modification, are
+permitted in any medium without royalty provided the copyright notice and
+this notice are preserved.  This file is offered as-is, without any
+warranty.
 
 =head1 SEE ALSO
 

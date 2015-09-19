@@ -1,0 +1,11 @@
+# Test pam_setcred credential refresh.  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    auth = program=%0
+
+[run]
+    setcred(REFRESH_CRED) = PAM_SUCCESS

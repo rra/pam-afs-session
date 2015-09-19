@@ -8,7 +8,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  *
  * The authors hereby relinquish any claim to any copyright that they may have
  * in this work, whether granted under contract or by operation of law or
@@ -50,6 +50,47 @@
 #endif
 #include <stdarg.h>
 
+/* Solaris doesn't have these. */
+#ifndef PAM_CONV_AGAIN
+# define PAM_CONV_AGAIN 0
+# define PAM_INCOMPLETE PAM_SERVICE_ERR
+#endif
+
+/* Solaris 8 has deficient PAM. */
+#ifndef PAM_AUTHTOK_RECOVER_ERR
+# define PAM_AUTHTOK_RECOVER_ERR PAM_AUTHTOK_ERR
+#endif
+
+/*
+ * Mac OS X 10 doesn't define these.  They're meant to be logically or'd with
+ * an exit status in pam_set_data, so define them to 0 if not defined to
+ * deactivate them.
+ */
+#ifndef PAM_DATA_REPLACE
+# define PAM_DATA_REPLACE 0
+#endif
+#ifndef PAM_DATA_SILENT
+# define PAM_DATA_SILENT 0
+#endif
+
+/*
+ * Mac OS X 10 apparently doesn't use PAM_BAD_ITEM and returns PAM_SYMBOL_ERR
+ * instead.
+ */
+#ifndef PAM_BAD_ITEM
+# define PAM_BAD_ITEM PAM_SYMBOL_ERR
+#endif
+
+/*
+ * Some PAM implementations support building the module static and exporting
+ * the call points via a struct instead.  (This is the default in OpenPAM, for
+ * example.)  To support this, the pam_sm_* functions are declared PAM_EXTERN.
+ * Ensure that's defined for implementations that don't have this.
+ */
+#ifndef PAM_EXTERN
+# define PAM_EXTERN
+#endif
+
 BEGIN_DECLS
 
 /* Default to a hidden visibility for all portability functions. */
@@ -75,5 +116,7 @@ void pam_vsyslog(const pam_handle_t *, int, const char *, va_list);
 
 /* Undo default visibility change. */
 #pragma GCC visibility pop
+
+END_DECLS
 
 #endif /* !PORTABLE_PAM_H */

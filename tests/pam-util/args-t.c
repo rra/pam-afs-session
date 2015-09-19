@@ -4,8 +4,8 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010
+ * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2010, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -32,7 +32,7 @@
 #include <portable/system.h>
 
 #include <pam-util/args.h>
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/pam.h>
 #include <tests/tap/basic.h>
 
 
@@ -43,30 +43,42 @@ main(void)
     struct pam_conv conv = { NULL, NULL };
     struct pam_args *args;
 
-    plan(11);
+    plan(12);
 
     if (pam_start("test", NULL, &conv, &pamh) != PAM_SUCCESS)
         sysbail("Fake PAM initialization failed");
     args = putil_args_new(pamh, 0);
     ok(args != NULL, "New args struct is not NULL");
-    ok(args->pamh == pamh, "...and pamh is correct");
-    ok(args->config == NULL, "...and config is NULL");
-    ok(args->user == NULL, "...and user is NULL");
-    is_int(args->debug, false, "...and debug is false");
-    is_int(args->silent, false, "...and silent is false");
-#ifdef HAVE_KERBEROS
-    ok(args->ctx != NULL, "...and the Kerberos context is initialized");
-    ok(args->realm == NULL, "...and realm is NULL");
+    if (args == NULL)
+        ok_block(7, 0, "...args struct is NULL");
+    else {
+        ok(args->pamh == pamh, "...and pamh is correct");
+        ok(args->config == NULL, "...and config is NULL");
+        ok(args->user == NULL, "...and user is NULL");
+        is_int(args->debug, false, "...and debug is false");
+        is_int(args->silent, false, "...and silent is false");
+#ifdef HAVE_KRB5
+        ok(args->ctx != NULL, "...and the Kerberos context is initialized");
+        ok(args->realm == NULL, "...and realm is NULL");
 #else
-    skip_block(2, "Kerberos support not configured");
+        skip_block(2, "Kerberos support not configured");
 #endif
+    }
     putil_args_free(args);
     ok(1, "Freeing the args struct works");
 
     args = putil_args_new(pamh, PAM_SILENT);
     ok(args != NULL, "New args struct with PAM_SILENT is not NULL");
-    is_int(args->silent, true, "...and silent is true");
+    if (args == NULL)
+        ok(0, "...args is NULL");
+    else
+        is_int(args->silent, true, "...and silent is true");
     putil_args_free(args);
+
+    putil_args_free(NULL);
+    ok(1, "Freeing a NULL args struct works");
+
+    pam_end(pamh, 0);
 
     return 0;
 }

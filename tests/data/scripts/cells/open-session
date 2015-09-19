@@ -1,0 +1,12 @@
+# Test pam_open_session.  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    session = program=%0 afs_cells=%1
+
+[run]
+    open_session  = PAM_SUCCESS
+    close_session = PAM_SUCCESS

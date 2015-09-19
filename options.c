@@ -4,7 +4,7 @@
  * Parses the PAM command line for options to pam-afs-session and fills out an
  * allocated structure with those details.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2006, 2007, 2008, 2010, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -66,16 +66,24 @@ pamafs_init(pam_handle_t *pamh, int flags, int argc, const char **argv)
     args->config = calloc(1, sizeof(struct pam_config));
     if (args->config == NULL) {
         putil_crit(args, "cannot allocate memory: %s", strerror(errno));
+        putil_args_free(args);
         return NULL;
     }
-    if (!putil_args_defaults(args, options, optlen))
-        goto fail;
+    if (!putil_args_defaults(args, options, optlen)) {
+        free(args->config);
+        putil_args_free(args);
+        return NULL;
+    }
     if (!putil_args_krb5(args, "pam-afs-session", options, optlen))
         goto fail;
     if (!putil_args_parse(args, argc, argv, options, optlen))
         goto fail;
     if (args->config->debug)
         args->debug = true;
+
+    /* UIDs are unsigned on some systems. */
+    if (args->config->minimum_uid < 0)
+        args->config->minimum_uid = 0;
 
     /* Warn if kdestroy was set and we can't honor it. */
 #ifndef HAVE_KERBEROS
@@ -87,7 +95,7 @@ pamafs_init(pam_handle_t *pamh, int flags, int argc, const char **argv)
     return args;
 
 fail:
-    putil_args_free(args);
+    pamafs_free(args);
     return NULL;
 }
 

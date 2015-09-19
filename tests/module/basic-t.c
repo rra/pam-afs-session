@@ -1,7 +1,8 @@
 /*
  * Basic tests for the pam-afs-session module.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2015 Russ Allbery <eagle@eyrie.org>
  * Copyright 2010, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -10,40 +11,33 @@
 
 #include <config.h>
 #include <portable/kafs.h>
-#include <portable/pam.h>
 #include <portable/system.h>
 
+#include <errno.h>
 #include <pwd.h>
-#include <syslog.h>
 
-#include <tests/fakepam/testing.h>
-#include <tests/module/util.h>
+#include <tests/fakepam/pam.h>
+#include <tests/fakepam/script.h>
 #include <tests/tap/basic.h>
+#include <tests/tap/string.h>
 
 
-/*
- * We run the entire test suite twice, once with debug disabled and once with
- * debug enabled.  This is the wrapper around all the test cases to enable
- * that without code duplication.
- */
-static void
-run_tests(bool debug)
+int
+main(void)
 {
-    pam_handle_t *pamh;
-    int status;
-    char *skipping, *skiptokens, *skipsession, *program, *running, *already;
-    char *destroy, *unknown;
-    char *aklog = test_file_path ("data/fake-aklog");
+    struct script_config config;
     struct passwd *user;
-    struct pam_conv conv = { NULL, NULL };
-    const char *debug_desc = debug ? " w/debug" : "";
-    const char *argv_nothing[] = { "nopag", "notokens", "debug", NULL };
-    const char *argv_normal[] = { "program=", "debug", NULL };
+    char *aklog, *uid, *script;
+    size_t i;
+    const char *const session_types[] = {
+        "establish", "establish-debug", "refresh", "refresh-debug",
+        "reinit", "reinit-debug", "open-session", "open-session-debug"
+    };
 
-    /* Determine the user so that setuid will work. */
-    user = getpwuid(getuid());
-    if (user == NULL)
-        bail("cannot find username of current user");
+    /* Skip the entire test if AFS isn't available. */
+    if (!k_hasafs())
+        skip_all("AFS not available");
+    plan_lazy();
 
     /*
      * Clear KRB5CCNAME out of the environment to avoid running aklog when we
@@ -52,203 +46,61 @@ run_tests(bool debug)
     if (putenv((char *) "KRB5CCNAME") < 0)
         sysbail("cannot clear KRB5CCNAME from the environment");
 
-    /* Build some messages that we'll use multiple times. */
-    if (asprintf(&skipping, "%d skipping as configured", LOG_DEBUG) < 0)
-        sysbail("cannot allocate memory");
-    if (asprintf(&skiptokens, "%d skipping tokens, no Kerberos ticket cache",
-                 LOG_DEBUG) < 0)
-        sysbail("cannot allocate memory");
-    if (asprintf(&skipsession, "%d skipping, no open session", LOG_DEBUG) < 0)
-        sysbail("cannot allocate memory");
-    if (asprintf(&program, "program=%s", aklog) < 0)
-        sysbail("cannot allocate memory");
-    if (asprintf(&running, "%d running %s as UID %lu", LOG_DEBUG, aklog,
-                 (unsigned long) getuid()) < 0)
-        sysbail("cannot allocate memory");
-    if (asprintf(&already, "%d skipping, apparently already ran",
-                 LOG_DEBUG) < 0)
-        sysbail("cannot allocate memory");
-    if (asprintf(&destroy, "%d destroying tokens", LOG_DEBUG) < 0)
-        sysbail("cannot allocate memory");
+    /* Determine the user so that setuid will work. */
+    user = getpwuid(getuid());
+    if (user == NULL)
+        bail("cannot find username of current user");
+    pam_set_pwd(user);
 
-    /* Do nothing and check for correct output status. */
-    status = pam_start("test", "testuser", &conv, &pamh);
-    if (status != PAM_SUCCESS)
-        sysbail("cannot create PAM handle");
-    TEST_PAM(pam_sm_authenticate, 0, argv_nothing,
-             "", PAM_SUCCESS,
-             "do nothing");
-    TEST_PAM(pam_sm_setcred, 0, argv_nothing,
-             "", PAM_SUCCESS,
-             "do nothing");
-    TEST_PAM(pam_sm_setcred, PAM_DELETE_CRED, argv_nothing,
-             (debug ? skipping : ""), PAM_SUCCESS,
-             "delete do nothing");
-    TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv_nothing,
-             "", PAM_SUCCESS,
-             "reinitialize do nothing");
-    TEST_PAM(pam_sm_setcred, PAM_REFRESH_CRED, argv_nothing,
-             "", PAM_SUCCESS,
-             "refresh do nothing");
-    TEST_PAM(pam_sm_open_session, 0, argv_nothing,
-             "", PAM_SUCCESS,
-             "do nothing");
-    TEST_PAM(pam_sm_close_session, 0, argv_nothing,
-             (debug ? skipping : ""), PAM_IGNORE,
-             "do nothing");
-    pam_end(pamh, status);
+    /* Configure the path to aklog. */
+    memset(&config, 0, sizeof(config));
+    aklog = test_file_path("data/fake-aklog");
+    config.extra[0] = aklog;
 
-    /* Test behavior with an unknown user. */
-    status = pam_start("test", "pam-afs-session-unknown-user", &conv, &pamh);
-    if (status != PAM_SUCCESS)
-        sysbail("cannot create PAM handle");
-    pam_modutil_getpwnam(pamh, "pam-afs-session-unknown-user");
-    if (asprintf(&unknown, "%d cannot find UID for"
-                 " pam-afs-session-unknown-user: %s", LOG_ERR,
-                 strerror(errno)) < 0)
-        sysbail("cannot allocate memory");
-    if (pam_putenv(pamh, "KRB5CCNAME=krb5cc_test") != PAM_SUCCESS)
-        sysbail("cannot set PAM environment variable");
-    argv_normal[0] = program;
-    TEST_PAM(pam_sm_authenticate, 0, argv_normal,
-             "", PAM_SUCCESS,
-             "unknown user");
-    TEST_PAM(pam_sm_setcred, 0, argv_normal,
-             unknown, PAM_USER_UNKNOWN,
-             "unknown user");
-    TEST_PAM(pam_sm_setcred, PAM_DELETE_CRED, argv_normal,
-             (debug ? skipsession : ""), PAM_SUCCESS,
-             "delete unknown user");
-    TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv_normal,
-             unknown, PAM_USER_UNKNOWN,
-             "reinitialize unknown user");
-    TEST_PAM(pam_sm_setcred, PAM_REFRESH_CRED, argv_normal,
-             unknown, PAM_USER_UNKNOWN,
-             "refresh unknown user");
-    TEST_PAM(pam_sm_open_session, 0, argv_normal,
-             unknown, PAM_SESSION_ERR,
-             "unknown user");
-    TEST_PAM(pam_sm_close_session, 0, argv_normal,
-             (debug ? skipsession : ""), PAM_SUCCESS,
-             "close unknown user");
-    pam_end(pamh, status);
+    /* Initial no-op tests. */
+    config.user = "testuser";
+    run_script("data/scripts/basic/noop", &config);
+    run_script("data/scripts/basic/noop-debug", &config);
 
     /*
      * Test behavior without a Kerberos ticket.  This doesn't test actual
      * creation of a PAG.
      */
     unlink("aklog-args");
-    status = pam_start("test", "testuser", &conv, &pamh);
-    if (status != PAM_SUCCESS)
-        sysbail("cannot create PAM handle");
-    argv_normal[0] = program;
-    TEST_PAM(pam_sm_authenticate, 0, argv_normal,
-             "", PAM_SUCCESS,
-             "no ticket");
-    TEST_PAM(pam_sm_setcred, 0, argv_normal,
-             (debug ? skiptokens : ""), PAM_SUCCESS,
-             "no ticket");
-    TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv_normal,
-             (debug ? skiptokens : ""), PAM_SUCCESS,
-             "reinitialize no ticket");
-    TEST_PAM(pam_sm_setcred, PAM_REFRESH_CRED, argv_normal,
-             (debug ? skiptokens : ""), PAM_SUCCESS,
-             "refresh no ticket");
-    TEST_PAM(pam_sm_open_session, 0, argv_normal,
-             (debug ? skiptokens : ""), PAM_SUCCESS,
-             "no ticket");
-    TEST_PAM(pam_sm_close_session, 0, argv_normal,
-             (debug ? skipsession : ""), PAM_SUCCESS,
-             "no ticket");
-    pam_end(pamh, status);
+    run_script("data/scripts/basic/no-ticket", &config);
+    run_script("data/scripts/basic/no-ticket-debug", &config);
     ok(access("aklog-args", F_OK) < 0, "aklog was not run");
 
     /*
-     * Fake the presence of a Kerberos ticket and see that aklog runs, and
-     * test suppression of multiple calls to pam_sm_setcred.
+     * Remaining tests run with the module fooled into thinking we have a
+     * Kerberos ticket cache.
      */
-    unlink("aklog-args");
-    status = pam_start("test", user->pw_name, &conv, &pamh);
-    if (status != PAM_SUCCESS)
-        sysbail("cannot create PAM handle");
-    if (pam_putenv(pamh, "KRB5CCNAME=krb5cc_test") != PAM_SUCCESS)
-        sysbail("cannot set PAM environment variable");
-    TEST_PAM(pam_sm_setcred, 0, argv_normal,
-             (debug ? running : ""), PAM_SUCCESS,
-             "normal");
-    ok(access("aklog-args", F_OK) == 0, "aklog was run");
-    unlink("aklog-args");
-    TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv_normal,
-             (debug ? running : ""), PAM_SUCCESS,
-             "normal reinitialize");
-    ok(access("aklog-args", F_OK) == 0, "aklog was run");
-    unlink("aklog-args");
-    TEST_PAM(pam_sm_setcred, PAM_REFRESH_CRED, argv_normal,
-             (debug ? running : ""), PAM_SUCCESS,
-             "normal refresh");
-    ok(access("aklog-args", F_OK) == 0, "aklog was run");
-    unlink("aklog-args");
-    TEST_PAM(pam_sm_setcred, 0, argv_normal,
-             (debug ? already : ""), PAM_SUCCESS,
-             "normal");
-    ok(access("aklog-args", F_OK) < 0, "aklog was not run");
-    TEST_PAM(pam_sm_close_session, 0, argv_normal,
-             (debug ? destroy : ""), PAM_SUCCESS,
-             "normal");
-    pam_end(pamh, status);
-
-    /*
-     * Fake the presence of a Kerberos ticket in the environment rather than
-     * in the PAM environment.  We should still run aklog.
-     */
-    unlink("aklog-args");
-    status = pam_start("test", user->pw_name, &conv, &pamh);
-    if (status != PAM_SUCCESS)
-        sysbail("cannot create PAM handle");
     if (putenv((char *) "KRB5CCNAME=krb5cc_test") < 0)
         sysbail("cannot set KRB5CCNAME in the environment");
-    TEST_PAM(pam_sm_setcred, 0, argv_normal,
-             (debug ? running : ""), PAM_SUCCESS,
-             "normal");
-    ok(access("aklog-args", F_OK) == 0, "aklog was run");
-    unlink("aklog-args");
-    TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv_normal,
-             (debug ? running : ""), PAM_SUCCESS,
-             "normal reinitialize");
-    ok(access("aklog-args", F_OK) == 0, "aklog was run");
-    unlink("aklog-args");
-    TEST_PAM(pam_sm_setcred, PAM_REFRESH_CRED, argv_normal,
-             (debug ? running : ""), PAM_SUCCESS,
-             "normal refresh");
-    ok(access("aklog-args", F_OK) == 0, "aklog was run");
-    unlink("aklog-args");
-    TEST_PAM(pam_sm_close_session, 0, argv_normal,
-             (debug ? destroy : ""), PAM_SUCCESS,
-             "normal");
-    pam_end(pamh, status);
 
+    /* Unknown user.  Be sure to get the strerror message. */
+    config.user = "pam-afs-session-unknown-user";
+    config.extra[1] = strerror(0);
+    run_script("data/scripts/basic/unknown", &config);
+    run_script("data/scripts/basic/unknown-debug", &config);
+    config.extra[1] = NULL;
+
+    /* Check that aklog runs in various ways of opening a session. */
+    config.user = user->pw_name;
+    basprintf(&uid, "%lu", (unsigned long) getuid());
+    config.extra[1] = uid;
+    for (i = 0; i < ARRAY_SIZE(session_types); i++) {
+        unlink("aklog-args");
+        basprintf(&script, "data/scripts/basic/%s", session_types[i]);
+        run_script(script, &config);
+        free(script);
+        ok(access("aklog-args", F_OK) == 0, "aklog was run");
+    }
+    unlink("aklog-args");
+    config.extra[1] = NULL;
+    free(uid);
+
+    /* Clean up. */
     test_file_path_free(aklog);
-    free(program);
-    free(skipping);
-    free(skiptokens);
-    free(skipsession);
-    free(running);
-    free(already);
-    free(destroy);
-    free(unknown);
-}
-
-
-int
-main(void)
-{
-    if (!k_hasafs())
-        skip_all("AFS not available");
-
-    plan(66 * 2);
-
-    run_tests(false);
-    run_tests(true);
-
     return 0;
 }

@@ -1,19 +1,24 @@
 # Automake makefile for pam-afs-session.
 #
-# Written by Russ Allbery <rra@stanford.edu>
+# Written by Russ Allbery <eagle@eyrie.org>
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
 # Copyright 2006, 2007, 2010, 2011
 #     The Board of Trustees of the Leland Stanford Junior University
 #
 # See LICENSE for licensing terms.
 
 ACLOCAL_AMFLAGS = -I m4
-EXTRA_DIST = .gitignore LICENSE autogen examples/debian/common-account	    \
-	examples/debian/common-auth examples/debian/common-session	    \
-	examples/redhat/system-auth examples/solaris/pam.conf		    \
-	pam_afs_session.map pam_afs_session.pod pam_afs_session.sym	    \
-	tests/README tests/TESTS tests/data/fake-aklog tests/data/krb5.conf \
-	tests/docs/pod-spelling-t tests/docs/pod-t tests/fakepam/README	    \
-	tests/kafs/basic-t tests/module/full-t tests/tap/libtap.sh
+EXTRA_DIST = .gitignore LICENSE autogen examples/debian/common-account	\
+	examples/debian/common-auth examples/debian/common-session	\
+	examples/redhat/system-auth examples/solaris/pam.conf		\
+	pam_afs_session.map pam_afs_session.pod pam_afs_session.sym	\
+	tests/README tests/TESTS tests/data/krb5-pam.conf		\
+	tests/data/fake-aklog tests/data/krb5.conf tests/data/perl.conf	\
+	tests/data/scripts tests/docs/pod-spelling-t tests/docs/pod-t	\
+	tests/fakepam/README tests/kafs/basic-t tests/module/full-t	\
+	tests/tap/libtap.sh tests/tap/perl/Test/RRA.pm			\
+	tests/tap/perl/Test/RRA/Automake.pm				\
+	tests/tap/perl/Test/RRA/Config.pm
 
 # The following library order matters for annoying reasons.  libafsauthent
 # contains its own com_err implementation, which we do not want to pick up.
@@ -85,12 +90,21 @@ MAINTAINERCLEANFILES = Makefile.in aclocal.m4 build-aux/config.guess	\
 #
 #     -Wconversion      http://bugs.debian.org/488884 (htons warnings)
 #
-# Last checked against gcc 4.6.1 (2011-05-04).
-WARNINGS = -g -O -Wall -Wextra -Wendif-labels -Wformat=2 -Winit-self	\
-	-Wswitch-enum -Wdeclaration-after-statement -Wshadow		\
-	-Wpointer-arith -Wbad-function-cast -Wwrite-strings		\
-	-Wjump-misses-init -Wlogical-op -Wstrict-prototypes		\
-	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Werror
+# Last checked against gcc 4.8.2 (2014-04-12).  -D_FORTIFY_SOURCE=2 enables
+# warn_unused_result attribute markings on glibc functions on Linux, which
+# catches a few more issues.
+if WARNINGS_GCC
+    WARNINGS = -g -O -fstrict-overflow -fstrict-aliasing -D_FORTIFY_SOURCE=2 \
+        -Wall -Wextra -Wendif-labels -Wformat=2 -Winit-self -Wswitch-enum    \
+        -Wstrict-overflow=5 -Wfloat-equal -Wdeclaration-after-statement      \
+        -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align            \
+        -Wwrite-strings -Wjump-misses-init -Wlogical-op -Wstrict-prototypes  \
+        -Wold-style-definition -Wmissing-prototypes -Wnormalized=nfc         \
+        -Wpacked -Wredundant-decls -Wnested-externs -Winline -Wvla -Werror
+endif
+if WARNINGS_CLANG
+    WARINGS = -Weverything -Wno-padded
+endif
 
 warnings:
 	$(MAKE) V=0 CFLAGS='$(WARNINGS)'
@@ -109,12 +123,15 @@ tests_runtests_CPPFLAGS = -DSOURCE='"$(abs_top_srcdir)/tests"' \
 	-DBUILD='"$(abs_top_builddir)/tests"'
 check_LIBRARIES = tests/fakepam/libfakepam.a tests/module/libfakekafs.a	\
 	tests/tap/libtap.a
-tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/data.c	\
-	tests/fakepam/logging.c tests/fakepam/testing.c		\
-	tests/fakepam/testing.h
+tests_fakepam_libfakepam_a_SOURCES = tests/fakepam/config.c		  \
+	tests/fakepam/data.c tests/fakepam/general.c			  \
+	tests/fakepam/internal.h tests/fakepam/logging.c		  \
+	tests/fakepam/pam.h tests/fakepam/script.c tests/fakepam/script.h \
+	tests/fakepam/stubs.c
 tests_module_libfakekafs_a_SOURCES = tests/module/fakekafs.c
 tests_tap_libtap_a_CPPFLAGS = -I$(abs_top_srcdir)/tests
-tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h
+tests_tap_libtap_a_SOURCES = tests/tap/basic.c tests/tap/basic.h	\
+	tests/tap/macros.h tests/tap/string.c tests/tap/string.h
 
 # All of the test programs.
 tests_kafs_basic_LDFLAGS = $(KAFS_LDFLAGS)
@@ -122,14 +139,10 @@ tests_kafs_basic_LDADD = portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
 tests_kafs_haspag_t_LDFLAGS = $(KAFS_LDFLAGS)
 tests_kafs_haspag_t_LDADD = tests/tap/libtap.a portable/libportable.la \
 	$(LIBKAFS) $(DEPEND_LIBS)
-tests_module_basic_t_SOURCES = tests/module/basic-t.c tests/module/util.c \
-	tests/module/util.h
 tests_module_basic_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_basic_t_LDADD = options.lo public.lo tokens.lo		     \
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
 	portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
-tests_module_cells_t_SOURCES = tests/module/cells-t.c tests/module/util.c \
-	tests/module/util.h
 tests_module_cells_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_cells_t_LDADD = options.lo public.lo tokens.lo		     \
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a tests/tap/libtap.a \
@@ -137,23 +150,18 @@ tests_module_cells_t_LDADD = options.lo public.lo tokens.lo		     \
 tests_module_full_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_full_LDADD = options.lo public.lo tokens.lo	\
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
-	portable/libportable.la $(LIBKAFS) $(DEPEND_LIBS)
-tests_module_hasafs_t_SOURCES = tests/module/hasafs-t.c tests/module/util.c \
-	tests/module/util.h
+	tests/tap/libtap.a portable/libportable.la $(LIBKAFS)	\
+	$(DEPEND_LIBS)
 tests_module_hasafs_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_hasafs_t_LDADD = options.lo public.lo tokens.lo	\
 	tests/module/libfakekafs.a pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a		\
 	portable/libportable.la
-tests_module_pag_t_SOURCES = tests/module/pag-t.c tests/module/util.c \
-	tests/module/util.h
 tests_module_pag_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_pag_t_LDADD = options.lo public.lo tokens.lo	\
 	tests/module/libfakekafs.a pam-util/libpamutil.la	\
 	tests/fakepam/libfakepam.a tests/tap/libtap.a		\
 	portable/libportable.la
-tests_module_sigchld_t_SOURCES = tests/module/sigchld-t.c	\
-	tests/module/util.c tests/module/util.h
 tests_module_sigchld_t_LDFLAGS = $(KAFS_LDFLAGS) $(KRB5_LDFLAGS)
 tests_module_sigchld_t_LDADD = options.lo public.lo tokens.lo	\
 	pam-util/libpamutil.la tests/fakepam/libfakepam.a	\
@@ -193,4 +201,4 @@ tests_portable_strndup_t_SOURCES = tests/portable/strndup-t.c \
 tests_portable_strndup_t_LDADD = tests/tap/libtap.a portable/libportable.la
 
 check-local: $(check_PROGRAMS)
-	cd tests && ./runtests $(abs_top_srcdir)/tests/TESTS
+	cd tests && ./runtests -l $(abs_top_srcdir)/tests/TESTS

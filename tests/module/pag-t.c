@@ -1,7 +1,13 @@
 /*
  * Test correct construction of PAGs.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * This test doesn't check output because it's too difficult to do so at the
+ * moment without using the scripted testing.  When that library has enough
+ * hooks to examine internal state at every point, output testing can be
+ * re-added.
+ *
+ * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2015 Russ Allbery <eagle@eyrie.org>
  * Copyright 2010
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -13,77 +19,65 @@
 #include <portable/system.h>
 
 #include <pwd.h>
-#include <syslog.h>
 
-#include <tests/fakepam/testing.h>
-#include <tests/module/util.h>
+#include <tests/fakepam/pam.h>
 #include <tests/tap/basic.h>
 
 /* Provided by the fakekafs layer. */
 extern int fakekafs_pag;
 extern bool fakekafs_token;
 
+/* Can only check tokens if we have krb5_afslog. */
+#ifdef HAVE_KRB5_AFSLOG
+# define TEST_TOKENS() ok(fakekafs_token, "obtained tokens")
+#else
+# define TEST_TOKENS() skip("krb5_afslog not available")
+#endif
 
-/*
- * We run the entire test suite twice, once with debug disabled and once with
- * debug enabled.  This is the wrapper around all the test cases to enable
- * that without code duplication.
- */
-static void
-run_tests(bool debug)
+
+int
+main(void)
 {
     struct passwd *user;
     pam_handle_t *pamh;
     int status;
-    char *running, *already, *destroy, *redo, *redo_debug;
     struct pam_conv conv = { NULL, NULL };
-    const char *debug_desc = debug ? " w/debug" : "";
 
+    /* Arguments depend on whether we were built with Heimdal. */
 #ifdef HAVE_KRB5_AFSLOG
-    const char *argv[] = { "debug", NULL };
+    int argc = 0;
+    const char *argv[] = { NULL };
 #else
     char *program;
     char *aklog = test_file_path ("data/fake-aklog");
-    const char *argv[] = { "program=", "debug", NULL };
+    int argc = 1;
+    const char *argv[] = { "program=", NULL };
 #endif
+
+    /* Skip this test if built without PAG support. */
+#ifdef NO_PAG_SUPPORT
+    skip_all("no PAG support");
+#endif
+
+    /* Set up the plan. */
+    plan(24);
 
     /* Determine the user so that setuid will work. */
     user = getpwuid(getuid());
     if (user == NULL)
         bail("cannot find username of current user");
+    pam_set_pwd(user);
 
     /*
      * If we don't have krb5_afslog, make sure we don't run the real aklog.
      * It might fail or overwrite the user's current tokens, both of which
      * would mess up the test.
-     *
-     * Build the messages appropriate to whichever version we're going to be
-     * running.
      */
-#ifdef HAVE_KRB5_AFSLOG
-    if (asprintf(&running, "%d obtaining tokens for UID %lu", LOG_DEBUG,
-                 (unsigned long) getuid()) < 0)
-        sysbail("cannot allocate memory");
-#else
+#ifndef HAVE_KRB5_AFSLOG
     if (asprintf(&program, "program=%s", aklog) < 0)
         sysbail("cannot allocate memory");
     argv[0] = program;
-    if (asprintf(&running, "%d running %s as UID %lu", LOG_DEBUG, aklog,
-                 (unsigned long) getuid()) < 0)
-        sysbail("cannot allocate memory");
 #endif
-
-    /* Other common messages. */
-    if (asprintf(&already, "%d skipping, apparently already ran",
-                 LOG_DEBUG) < 0)
-        sysbail("cannot allocate memory");
-    if (asprintf(&destroy, "%d destroying tokens", LOG_DEBUG) < 0)
-        sysbail("cannot allocate memory");
-    if (asprintf(&redo, "%d PAG apparently lost, recreating", LOG_NOTICE) < 0)
-        sysbail("cannot allocate memory");
-    if (asprintf(&redo_debug, "%d PAG apparently lost, recreating%s",
-                 LOG_NOTICE, running) < 0)
-        sysbail("cannot allocate memory");
 
     /*
      * Test opening a session and make sure we get a PAG and a token, test
@@ -97,29 +91,18 @@ run_tests(bool debug)
         sysbail("cannot create PAM handle");
     if (pam_putenv(pamh, "KRB5CCNAME=krb5cc_test") != PAM_SUCCESS)
         sysbail("cannot set PAM environment variable");
-    TEST_PAM(pam_sm_open_session, 0, argv,
-             (debug ? running : ""), PAM_SUCCESS,
-             "normal");
+    status = pam_sm_open_session(pamh, 0, argc, argv);
+    is_int(PAM_SUCCESS, status, "open session");
     is_int(1, fakekafs_pag, "created a new PAG");
-#ifdef HAVE_KRB5_AFSLOG
-    ok(fakekafs_token, "obtained tokens");
-#else
-    skip("krb5_afslog not available");
-#endif
+    TEST_TOKENS();
     fakekafs_token = false;
-    TEST_PAM(pam_sm_setcred, PAM_REINITIALIZE_CRED, argv,
-             (debug ? running : ""), PAM_SUCCESS,
-             "normal reinitialize");
+    status = pam_sm_setcred(pamh, PAM_REINITIALIZE_CRED, argc, argv);
+    is_int(PAM_SUCCESS, status, "setcred reinitialize");
     is_int(1, fakekafs_pag, "stayed in the same PAG");
-#ifdef HAVE_KRB5_AFSLOG
-    ok(fakekafs_token, "obtained new tokens");
-#else
-    skip("krb5_afslog not available");
-#endif
+    TEST_TOKENS();
     fakekafs_token = true;
-    TEST_PAM(pam_sm_close_session, 0, argv,
-             (debug ? destroy : ""), PAM_SUCCESS,
-             "normal");
+    status = pam_sm_close_session(pamh, 0, argc, argv);
+    is_int(PAM_SUCCESS, status, "close session");
     is_int(1, fakekafs_pag, "still in the PAG");
     ok(!fakekafs_token, "removed the token");
     fakekafs_token = false;
@@ -129,21 +112,15 @@ run_tests(bool debug)
      * whether we clean up our module-specific data properly on close
      * sesssion.
      */
-    TEST_PAM(pam_sm_setcred, 0, argv,
-             (debug ? running : ""), PAM_SUCCESS,
-             "re-enter");
+    status = pam_sm_setcred(pamh, 0, argc, argv);
+    is_int(PAM_SUCCESS, status, "setcred");
     is_int(2, fakekafs_pag, "moved to a new PAG");
-#ifdef HAVE_KRB5_AFSLOG
-    ok(fakekafs_token, "obtained tokens");
-#else
-    skip("krb5_afslog not available");
-#endif
+    TEST_TOKENS();
     fakekafs_token = true;
 
     /* Running setcred again will do nothing. */
-    TEST_PAM(pam_sm_setcred, 0, argv,
-             (debug ? already : ""), PAM_SUCCESS,
-             "already run");
+    status = pam_sm_setcred(pamh, 0, argc, argv);
+    is_int(PAM_SUCCESS, status, "setcred already ran");
     is_int(2, fakekafs_pag, "stayed in the same PAG");
     ok(fakekafs_token, "token status didn't change");
 
@@ -153,64 +130,33 @@ run_tests(bool debug)
      */
     fakekafs_pag = 0;
     fakekafs_token = false;
-    TEST_PAM(pam_sm_setcred, 0, argv,
-             (debug ? redo_debug : redo), PAM_SUCCESS,
-             "lost PAG");
+    status = pam_sm_setcred(pamh, 0, argc, argv);
+    is_int(PAM_SUCCESS, status, "setcred without PAG");
     is_int(1, fakekafs_pag, "re-established the PAG");
-#ifdef HAVE_KRB5_AFSLOG
-    ok(fakekafs_token, "obtained tokens");
-#else
-    skip("krb5_afslog not available");
-#endif
+    TEST_TOKENS();
     fakekafs_token = true;
 
     /*
      * Running open_session now will do nothing, but if we remove the PAG, it
      * will also recreate the PAG and get tokens.
      */
-    TEST_PAM(pam_sm_open_session, 0, argv,
-             (debug ? already : ""), PAM_SUCCESS,
-             "already run");
+    status = pam_sm_open_session(pamh, 0, argc, argv);
+    is_int(PAM_SUCCESS, status, "open session already ran");
     is_int(1, fakekafs_pag, "stayed in the same PAG");
     ok(fakekafs_token, "token status didn't change");
     fakekafs_pag = 0;
     fakekafs_token = false;
-    TEST_PAM(pam_sm_open_session, 0, argv,
-             (debug ? redo_debug : redo), PAM_SUCCESS,
-             "lost PAG");
+    status = pam_sm_open_session(pamh, 0, argc, argv);
+    is_int(PAM_SUCCESS, status, "open session without PAG");
     is_int(1, fakekafs_pag, "re-established the PAG");
-#ifdef HAVE_KRB5_AFSLOG
-    ok(fakekafs_token, "obtained tokens");
-#else
-    skip("krb5_afslog not available");
-#endif
+    TEST_TOKENS();
 
     /* Clean up. */
     pam_end(pamh, 0);
     unlink("aklog-args");
-    free(running);
-    free(already);
-    free(destroy);
-    free(redo);
-    free(redo_debug);
 #ifndef HAVE_KRB5_AFSLOG
     test_file_path_free(aklog);
     free(program);
 #endif
-}
-
-
-int
-main(void)
-{
-#ifdef NO_PAG_SUPPORT
-    skip_all("no PAG support");
-#endif
-
-    plan(32 * 2);
-
-    run_tests(false);
-    run_tests(true);
-
     return 0;
 }

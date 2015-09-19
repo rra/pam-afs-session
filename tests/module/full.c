@@ -20,7 +20,7 @@
  * If something goes wrong outside of the PAM calls that means a fatal error
  * for the test, it exits with status 4.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2010
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -38,7 +38,7 @@
 #include <errno.h>
 #include <pwd.h>
 
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/pam.h>
 
 
 /*
@@ -129,7 +129,8 @@ main(void)
     pam_handle_t *pamh;
     int status;
     struct passwd *user;
-    char *output;
+    struct output *output;
+    size_t i;
     struct pam_conv conv = { NULL, NULL };
     const char *argv[] = { NULL };
 
@@ -153,6 +154,7 @@ main(void)
         fprintf(stderr, "cannot find username of current user\n");
         exit(4);
     }
+    pam_set_pwd(user);
 
     /*
      * We have tokens at the start of the test.  Set up PAM and then open a
@@ -161,14 +163,16 @@ main(void)
      */
     printf("=== tokens (aklog) ===\n");
     fflush(stdout);
-    system("tokens");
+    if (system("tokens") != 0)
+        fprintf(stderr, "tokens failed\n");
     if (k_unlog() != 0) {
         fprintf(stderr, "k_unlog failed: %s\n", strerror(errno));
         exit(4);
     }
     printf("=== tokens (before) ===\n");
     fflush(stdout);
-    system("tokens");
+    if (system("tokens") != 0)
+        fprintf(stderr, "tokens failed\n");
     status = pam_start("test", user->pw_name, &conv, &pamh);
     if (status != PAM_SUCCESS) {
         fprintf(stderr, "cannot create PAM handle\n");
@@ -180,17 +184,22 @@ main(void)
         exit(1);
     printf("=== tokens (session) ===\n");
     fflush(stdout);
-    system("tokens");
+    if (system("tokens") != 0)
+        fprintf(stderr, "tokens failed\n");
     status = pam_sm_close_session(pamh, 0, 0, argv);
     if (status != PAM_SUCCESS)
         exit(1);
     printf("=== tokens (after) ===\n");
     fflush(stdout);
-    system("tokens");
+    if (system("tokens") != 0)
+        fprintf(stderr, "tokens failed\n");
     printf("=== output ===\n");
     output = pam_output();
-    if (output != NULL)
-        printf("%s\n", output);
+    if (output != NULL) {
+        for (i = 0; i < output->count; i++)
+            printf("%d %s", output->lines[i].priority, output->lines[i].line);
+        printf("\n");
+    }
     pam_end(pamh, 0);
 
     return 0;

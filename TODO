@@ -8,3 +8,13 @@ Portability:
    configuration from krb5.conf on Mac OS X Lion.  Find a way to link
    directly to the underlying Heimdal libraries so that the module can
    call the real krb5_appdefault_* functions.
+
+Testing:
+
+ * Add support for setting an environment variable to the fakepam testing
+   library and use that to test behavior when KRB5CCNAME is only set in
+   the PAM environment, not the general environment.
+
+ * Add sufficient hook support to allow testing all of the output in the
+   module/pag test while still checking the PAG status and changing
+   internal state at each point.
