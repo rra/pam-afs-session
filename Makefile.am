@@ -8,14 +8,17 @@
 # See LICENSE for licensing terms.
 
 ACLOCAL_AMFLAGS = -I m4
-EXTRA_DIST = .gitignore LICENSE autogen examples/debian/common-account	    \
-	examples/debian/common-auth examples/debian/common-session	    \
-	examples/redhat/system-auth examples/solaris/pam.conf		    \
-	pam_afs_session.map pam_afs_session.pod pam_afs_session.sym	    \
-	tests/README tests/TESTS tests/data/fake-aklog tests/data/krb5.conf \
-	tests/data/scripts tests/docs/pod-spelling-t tests/docs/pod-t	    \
-	tests/fakepam/README tests/kafs/basic-t tests/module/full-t	    \
-	tests/tap/libtap.sh
+EXTRA_DIST = .gitignore LICENSE autogen examples/debian/common-account	\
+	examples/debian/common-auth examples/debian/common-session	\
+	examples/redhat/system-auth examples/solaris/pam.conf		\
+	pam_afs_session.map pam_afs_session.pod pam_afs_session.sym	\
+	tests/README tests/TESTS tests/data/krb5-pam.conf		\
+	tests/data/fake-aklog tests/data/krb5.conf tests/data/perl.conf	\
+	tests/data/scripts tests/docs/pod-spelling-t tests/docs/pod-t	\
+	tests/fakepam/README tests/kafs/basic-t tests/module/full-t	\
+	tests/tap/libtap.sh tests/tap/perl/Test/RRA.pm			\
+	tests/tap/perl/Test/RRA/Automake.pm				\
+	tests/tap/perl/Test/RRA/Config.pm
 
 # The following library order matters for annoying reasons.  libafsauthent
 # contains its own com_err implementation, which we do not want to pick up.
