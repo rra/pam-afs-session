@@ -20,7 +20,7 @@ pam-afs-session 2.6 (unreleased)
     to configure instead of KRB5_CONFIG to get the path to krb5-config.
     The latter is used to point to an alternative krb5.conf file.
 
-    Update to rra-c-util 4.6:
+    Update to rra-c-util 5.8:
 
     * Improve robustness of PAM entry and exit handling.
     * Do not append a PAM error message if the status is PAM_SUCCESS.
@@ -33,8 +33,10 @@ pam-afs-session 2.6 (unreleased)
     * Do not assume string is nul-terminated in replacement strdup.
     * Avoid using local in the shell TAP library for Solaris portability.
     * Silence __attribute__ warnings on more compilers.
+    * Add more __format__ annotations on various utility functions.
+    * Adjust POD tests to handle multiple .. paths in build directory.
 
-    Update to C TAP Harness 1.12:
+    Update to C TAP Harness 3.4:
 
     * Suppress plan and summary if bail is called before any tests run.
     * Only use feature-test macros when requested or built with gcc -ansi.
@@ -43,6 +45,7 @@ pam-afs-session 2.6 (unreleased)
     * Silence __attribute__ warnings on more compilers.
     * runtests now frees all allocated resources on exit.
     * Fix runtests to honor -s even if BUILD and -b aren't given.
+    * Fix segfault with an empty test list.
 
 pam-afs-session 2.5 (2011-07-25)
 

@@ -74,7 +74,7 @@ static const struct {
  * Utility function to format a message into newly allocated memory, reporting
  * an error via syslog if vasprintf fails.
  */
-static char *
+static char * __attribute__((__format__(printf, 1, 0)))
 format(const char *fmt, va_list args)
 {
     char *msg;
@@ -92,7 +92,7 @@ format(const char *fmt, va_list args)
  * priority, prefixed by (user <user>) with the account name being
  * authenticated if known.
  */
-static void
+static void __attribute__((__format__(printf, 3, 0)))
 log_vplain(struct pam_args *pargs, int priority, const char *fmt, va_list args)
 {
     char *msg;
@@ -120,7 +120,7 @@ log_vplain(struct pam_args *pargs, int priority, const char *fmt, va_list args)
 /*
  * Wrapper around log_vplain with variadic arguments.
  */
-static void
+static void __attribute__((__format__(printf, 3, 4)))
 log_plain(struct pam_args *pargs, int priority, const char *fmt, ...)
 {
     va_list args;
@@ -138,7 +138,7 @@ log_plain(struct pam_args *pargs, int priority, const char *fmt, ...)
  * However, do not include the colon and the PAM error if the PAM status is
  * PAM_SUCCESS.
  */
-static void
+static void __attribute__((__format__(printf, 4, 0)))
 log_pam(struct pam_args *pargs, int priority, int status, const char *fmt,
         va_list args)
 {
@@ -166,7 +166,7 @@ log_pam(struct pam_args *pargs, int priority, int status, const char *fmt,
  * preprocessor to save duplicate code.
  */
 #define LOG_FUNCTION(level, priority)                                   \
-    void                                                                \
+    void __attribute__((__format__(printf, 2, 3)))                      \
     putil_ ## level(struct pam_args *pargs, const char *fmt, ...)       \
     {                                                                   \
         va_list args;                                                   \
@@ -175,7 +175,7 @@ log_pam(struct pam_args *pargs, int priority, int status, const char *fmt,
         log_vplain(pargs, priority, fmt, args);                         \
         va_end(args);                                                   \
     }                                                                   \
-    void                                                                \
+    void __attribute__((__format__(printf, 3, 4)))                      \
     putil_ ## level ## _pam(struct pam_args *pargs, int status,         \
                             const char *fmt, ...)                       \
     {                                                                   \
@@ -203,7 +203,6 @@ putil_log_entry(struct pam_args *pargs, const char *func, int flags)
 
     if (!pargs->debug)
         return;
-
     if (flags != 0)
         for (i = 0; i < ARRAY_SIZE(FLAGS); i++) {
             if (!(flags & FLAGS[i].flag))
@@ -242,7 +241,7 @@ putil_log_entry(struct pam_args *pargs, const char *func, int flags)
  * standard format.  The format here is modeled after the pam_unix
  * authentication failure message from Linux PAM.
  */
-void
+void __attribute__((__format__(printf, 2, 3)))
 putil_log_failure(struct pam_args *pargs, const char *fmt, ...)
 {
     char *msg;
@@ -286,7 +285,7 @@ putil_log_failure(struct pam_args *pargs, const char *fmt, ...)
  * authenticated if known, followed by a colon and the formatted Kerberos
  * error.
  */
-static void
+static void __attribute__((__format__(printf, 4, 0)))
 log_krb5(struct pam_args *pargs, int priority, int status, const char *fmt,
          va_list args)
 {
@@ -315,7 +314,7 @@ log_krb5(struct pam_args *pargs, int priority, int status, const char *fmt,
  * code.
  */
 #define LOG_FUNCTION_KRB5(level, priority)                              \
-    void                                                                \
+    void __attribute__((__format__(printf, 3, 4)))                      \
     putil_ ## level ## _krb5(struct pam_args *pargs, int status,        \
                              const char *fmt, ...)                      \
     {                                                                   \
