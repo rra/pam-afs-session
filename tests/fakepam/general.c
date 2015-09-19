@@ -1,16 +1,14 @@
 /*
  * Interface for fake PAM library, used for testing.
  *
- * This contains most interfaces for the fake PAM library, used for testing.
- * It declares only the functions required to allow PAM module code to be
- * linked with this library instead of the system libpam library for testing
- * purposes.
+ * This contains the basic public interfaces for the fake PAM library, used
+ * for testing, and some general utility functions.
  *
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010
+ * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2010, 2011, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -36,9 +34,13 @@
 #include <portable/pam.h>
 #include <portable/system.h>
 
+#include <errno.h>
 #include <pwd.h>
 
-#include <tests/fakepam/testing.h>
+#include <tests/fakepam/pam.h>
+
+/* Stores the static struct passwd returned by getpwnam if the name matches. */
+static struct passwd *pwd_info = NULL;
 
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED __attribute__((__unused__))
@@ -56,14 +58,12 @@ pam_start(const char *service_name, const char *user,
 {
     struct pam_handle *handle;
 
-    handle = malloc(sizeof(struct pam_handle));
+    handle = calloc(1, sizeof(struct pam_handle));
     if (handle == NULL)
         return PAM_BUF_ERR;
     handle->service = service_name;
     handle->user = user;
     handle->conversation = pam_conversation;
-    handle->environ = NULL;
-    handle->data = NULL;
     *pamh = handle;
     return PAM_SUCCESS;
 }
@@ -79,12 +79,21 @@ int
 pam_end(pam_handle_t *pamh, int status)
 {
     struct fakepam_data *item, *next;
+    size_t i;
 
-    if (pamh->environ != NULL)
+    if (pamh->environ != NULL) {
+        for (i = 0; pamh->environ[i] != NULL; i++)
+            free(pamh->environ[i]);
         free(pamh->environ);
+    }
+    free(pamh->authtok);
+    free(pamh->oldauthtok);
+    free(pamh->rhost);
+    free(pamh->ruser);
+    free(pamh->tty);
     for (item = pamh->data; item != NULL; ) {
         if (item->cleanup != NULL)
-            item->cleanup (pamh, item->data, status);
+            item->cleanup(pamh, item->data, status);
         free(item->name);
         next = item->next;
         free(item);
@@ -96,24 +105,46 @@ pam_end(pam_handle_t *pamh, int status)
 
 
 /*
- * For testing purposes, pam_modutil_getpwnam can just call getpwnam.
- * (Normally, it's a thread-safe wrapper that does some data caching.
+ * Interface specific to this fake PAM library to set the struct passwd that's
+ * returned by getpwnam queries if the name matches.
+ */
+void
+pam_set_pwd(struct passwd *pwd)
+{
+    pwd_info = pwd;
+}
+
+
+/*
+ * For testing purposes, we want to be able to intercept getpwnam.  This is
+ * fairly easy on platforms that have pam_modutil_getpwnam, since then our
+ * code will always call that function and we can provide an implementation
+ * that does whatever we want.  For platforms that don't have that function,
+ * we'll try to intercept the C library getpwnam function.
+ *
+ * We store only one struct passwd data structure statically.  If the user
+ * we're looking up matches that, we return it; otherwise, we return NULL.
  */
 #ifdef HAVE_PAM_MODUTIL_GETPWNAM
 struct passwd *
 pam_modutil_getpwnam(pam_handle_t *pamh UNUSED, const char *name)
 {
-    return getpwnam(name);
+    if (pwd_info != NULL && strcmp(pwd_info->pw_name, name) == 0)
+        return pwd_info;
+    else {
+        errno = 0;
+        return NULL;
+    }
+}
+#else
+struct passwd *
+getpwnam(const char *name)
+{
+    if (pwd_info != NULL && strcmp(pwd_info->pw_name, name) == 0)
+        return pwd_info;
+    else {
+        errno = 0;
+        return NULL;
+    }
 }
 #endif
-
-
-/*
- * The following functions are just stubs for right now and always fail.
- */
-int
-pam_get_item(const pam_handle_t *pamh UNUSED, int item UNUSED,
-             PAM_CONST void **data UNUSED)
-{
-    return PAM_SYSTEM_ERR;
-}

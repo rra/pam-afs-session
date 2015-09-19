@@ -1,0 +1,16 @@
+# Test behavior without a ticket.  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    auth    = program=%0
+    session = program=%0
+
+[run]
+    setcred(ESTABLISH_CRED)    = PAM_SUCCESS
+    setcred(REFRESH_CRED)      = PAM_SUCCESS
+    setcred(REINITIALIZE_CRED) = PAM_SUCCESS
+    open_session               = PAM_SUCCESS
+    close_session              = PAM_SUCCESS

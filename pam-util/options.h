@@ -9,8 +9,8 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2010, 2011
+ * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2010, 2011, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -36,13 +36,13 @@
 #define PAM_UTIL_OPTIONS_H 1
 
 #include <config.h>
-#ifdef HAVE_KERBEROS
+#ifdef HAVE_KRB5
 # include <portable/krb5.h>
 #endif
 #include <portable/macros.h>
 #include <portable/stdbool.h>
 
-#include <sys/types.h>
+#include <stddef.h>
 
 /* Forward declarations to avoid additional includes. */
 struct vector;
@@ -57,6 +57,7 @@ struct vector;
 enum type {
     TYPE_BOOLEAN,
     TYPE_NUMBER,
+    TYPE_TIME,
     TYPE_STRING,
     TYPE_LIST,
     TYPE_STRLIST
@@ -78,6 +79,10 @@ enum type {
  * Note that numbers set in the configuration struct created by this interface
  * must be longs, not ints.  There is currently no provision for unsigned
  * numbers.
+ *
+ * Times take their default from defaults.number.  The difference between time
+ * and number is in the parsing of a user-supplied value and the type of the
+ * stored attribute.
  */
 struct option {
     const char *name;
@@ -99,6 +104,7 @@ struct option {
  */
 #define BOOL(def)    TYPE_BOOLEAN, { (def),     0,  NULL,  NULL }
 #define NUMBER(def)  TYPE_NUMBER,  {     0, (def),  NULL,  NULL }
+#define TIME(def)    TYPE_TIME,    {     0, (def),  NULL,  NULL }
 #define STRING(def)  TYPE_STRING,  {     0,     0, (def),  NULL }
 #define LIST(def)    TYPE_LIST,    {     0,     0,  NULL, (def) }
 #define STRLIST(def) TYPE_STRLIST, {     0,     0, (def),  NULL }

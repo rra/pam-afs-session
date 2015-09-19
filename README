@@ -1,16 +1,16 @@
-                           pam-afs-session 2.5
+                           pam-afs-session 2.6
                    (PAM module for AFS PAGs and tokens)
 
-                Written by Russ Allbery <rra@stanford.edu>
+                Written by Russ Allbery <eagle@eyrie.org>
 
-  Copyright 2005, 2006, 2007, 2008, 2010, 2011 The Board of Trustees of
-  the Leland Stanford Junior University.  This software is distributed
-  under a BSD-style license.  See the LICENSE file, included in this
-  distribution, for copyright and redistribution information.
+  Copyright 2015 Russ Allbery <eagle@eyrie.org>.  Copyright 2005, 2006,
+  2007, 2008, 2010, 2011 The Board of Trustees of the Leland Stanford
+  Junior University.  This software is distributed under a BSD-style
+  license.  Plese see the section LICENSE below for more information.
 
 BLURB
 
-  pam-afs-session is a PAM module intended for use with a Kerberos v5 PAM
+  pam-afs-session is a PAM module intended for use with a Kerberos PAM
   module to obtain an AFS PAG and AFS tokens on login.  It puts every new
   session in a PAG regardless of whether it was authenticated with
   Kerberos and either uses Heimdal's libkafs or runs a configurable
@@ -23,11 +23,11 @@ DESCRIPTION
   pam-afs-session is a PAM module that isolates each login in a separate
   AFS PAG (so that they will not trample on each other's AFS tokens) and
   supports either running an external program to obtain AFS tokens from a
-  Kerberos v5 ticket cache or using Heimdal's libkafs library.  It does
-  not obtain tickets itself and must be used in conjunction with a
-  Kerberos v5 PAM module to obtain tokens (setting up PAGs can be done
-  without any Kerberos implementations).  It provides only the setcred and
-  session PAM functions.
+  Kerberos ticket cache or using Heimdal's libkafs library.  It does not
+  obtain tickets itself and must be used in conjunction with a Kerberos
+  PAM module to obtain tokens (setting up PAGs can be done without any
+  Kerberos implementations).  It provides only the setcred and session PAM
+  functions.
 
   There are two ways this module can obtain tokens:
 
@@ -257,10 +257,10 @@ CONFIGURING
   /usr/bin/aklog was in your path when the module was compiled or was
   specified via the --with-aklog option to configure.
 
-  You may want to stack your Kerberos v5 PAM module and the Unix module
+  You may want to stack your Kerberos PAM module and the Unix module
   differently, but note that this module should always run after the
-  Kerberos v5 PAM module.  If there is no ticket cache available in the
-  PAM environment, it will succeed silently.
+  Kerberos PAM module.  If there is no ticket cache available in the PAM
+  environment, it will succeed silently.
 
   On Red Hat systems, modify /etc/pam.d/system-auth instead; it contains
   all of the configuration for the different stacks.
@@ -283,8 +283,8 @@ CONFIGURING
  Solaris
 
   Solaris doesn't support the [] keywords that Linux PAM does, so if you
-  want to mark the Kerberos v5 PAM module as sufficient and fall back on
-  the Unix module only if it fails, you won't be able to easily run
+  want to mark the Kerberos PAM module as sufficient and fall back on the
+  Unix module only if it fails, you won't be able to easily run
   pam_afs_session in the auth group.  For most applications, this isn't a
   problem; running pam_afs_session only from the session group with
   something like:
@@ -293,16 +293,16 @@ CONFIGURING
           minimum_uid=100 retain_after_close
 
   (all on one line) in /etc/pam.conf will be sufficient.  Make sure this
-  line is after the Kerberos v5 PAM module's session call.
+  line is after the Kerberos PAM module's session call.
 
   However, note that login and dtlogin, at least under Solaris 10,
   apparently call pam_open_session before pam_setcred, and the
-  open_session function of the native Kerberos v5 PAM module doesn't set
-  up the ticket cache.  This means that calling pam_afs_session only in
-  the session group won't work, since it will be called before the setcred
-  function of the Kerberos v5 PAM module and hence won't have a ticket
-  cache available yet.  There are two possible solutions: replace the
-  native Kerberos v5 PAM module with another module, such as:
+  open_session function of the native Kerberos PAM module doesn't set up
+  the ticket cache.  This means that calling pam_afs_session only in the
+  session group won't work, since it will be called before the setcred
+  function of the Kerberos PAM module and hence won't have a ticket cache
+  available yet.  There are two possible solutions: replace the native
+  Kerberos PAM module with another module, such as:
 
       http://www.eyrie.org/~eagle/software/pam-krb5/
 
@@ -312,8 +312,8 @@ CONFIGURING
       login auth required /usr/local/lib/security/pam_afs_session.so
           minimum_uid=100
 
-  after the Kerberos v5 PAM module (and likewise for dtlogin).  This means
-  that you cannot use sufficient in the auth group for the Kerberos v5 PAM
+  after the Kerberos PAM module (and likewise for dtlogin).  This means
+  that you cannot use sufficient in the auth group for the Kerberos PAM
   module, since that will then abort the group before pam_afs_session
   runs.
 
@@ -412,7 +412,7 @@ HOMEPAGE AND SOURCE REPOSITORY
 
       http://git.eyrie.org/?p=afs/pam-afs-session.git
 
-THANKS
+HISTORY AND ACKNOWLEDGEMENTS
 
   Some of the ideas behind this PAM module (although not the code) are
   taken from the libpam-openafs-session Debian package written by Sam
@@ -437,3 +437,45 @@ THANKS
   Thanks to Markus Moeller for multiple patches and suggestions for
   improved portability for pam-krb5, from which this module has also
   benefitted.
+
+LICENSE
+
+  The pam-afs-session package as a whole is covered by the following
+  copyright statement and license:
+
+    Copyright 2015 Russ Allbery <eagle@eyrie.org>
+    Copyright 2005, 2006, 2007, 2008, 2009, 2010, 2011
+        The Board of Trustees of the Leland Stanford Junior University
+
+    Permission is hereby granted, free of charge, to any person obtaining
+    a copy of this software and associated documentation files (the
+    "Software"), to deal in the Software without restriction, including
+    without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Software, and to
+    permit persons to whom the Software is furnished to do so, subject to
+    the following conditions:
+
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+  All individual files without an explicit exception below are released
+  under this license.  Some files may have additional copyright holders as
+  noted in those files.  There is detailed information about the licensing
+  of each file in the LICENSE file in this distribution.
+
+  Some files in this distribution are individually released under
+  different licenses, all of which are compatible with the above general
+  package license but which may require preservation of additional
+  notices.  All required notices are preserved in the LICENSE file.  Each
+  file intended for copying into other software packages contains a
+  copyright and license notice at the top or bottom of the file.  Please
+  take note of any attribution and notice requirements specified in that
+  license.

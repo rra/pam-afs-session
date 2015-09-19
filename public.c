@@ -5,7 +5,7 @@
  * pam_sm_close_session functions, plus whatever other stubs we need to
  * satisfy PAM.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2006, 2007, 2008, 2010
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -26,7 +26,7 @@
 
 /*
  * Open a new session.  Create a new PAG with k_setpag and then fork the aklog
- * binary as the user.  A Kerberos v5 PAM module should have previously run to
+ * binary as the user.  A Kerberos PAM module should have previously run to
  * obtain Kerberos tickets (or ticket forwarding should have already
  * happened).
  */
@@ -73,7 +73,7 @@ pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
 
     /* Get tokens. */
     if (!args->config->notokens)
-        pamret = pamafs_token_get(args);
+        pamret = pamafs_token_get(args, false);
 
     /* Error codes are returned for pam_setcred.  Map to pam_open_sesssion. */
     if (pamret != PAM_SUCCESS && pamret != PAM_IGNORE)
@@ -117,6 +117,7 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
     int status;
     int pamret = PAM_SUCCESS;
     const void *dummy;
+    bool reinitialize;
 
     args = pamafs_init(pamh, flags, argc, argv);
     if (args == NULL) {
@@ -163,7 +164,8 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
      * we're reinitializing, we may be running in a screen saver or the like
      * and should use the existing PAG, so don't create a new PAG.
      */
-    if (!(flags & (PAM_REINITIALIZE_CRED | PAM_REFRESH_CRED))) {
+    reinitialize = (flags & (PAM_REINITIALIZE_CRED | PAM_REFRESH_CRED));
+    if (!reinitialize) {
         status = pam_get_data(pamh, "pam_afs_session", &dummy);
         if (status == PAM_SUCCESS) {
             if (!k_haspag() && !args->config->nopag)
@@ -180,7 +182,7 @@ pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
         }
     }
     if (!args->config->notokens)
-        pamret = pamafs_token_get(args);
+        pamret = pamafs_token_get(args, reinitialize);
 
 done:
     EXIT(args, pamret);

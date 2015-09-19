@@ -1,7 +1,7 @@
 /*
  * Internal prototypes and structures for pam-afs-session.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2006, 2007, 2008, 2010, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -17,10 +17,12 @@
 #endif
 #include <portable/pam.h>
 #include <portable/macros.h>
+#include <portable/stdbool.h>
 
 #include <stdarg.h>
 
 /* Forward declarations to avoid unnecessary includes. */
+struct pam_args;
 struct passwd;
 struct vector;
 
@@ -58,8 +60,8 @@ struct pam_args *pamafs_init(pam_handle_t *, int flags, int argc,
 void pamafs_free(struct pam_args *);
 
 /* Token manipulation functions. */
-int pamafs_token_get(struct pam_args *args);
-int pamafs_token_delete(struct pam_args *args);
+int pamafs_token_get(struct pam_args *, bool reinitialize);
+int pamafs_token_delete(struct pam_args *);
 
 /* Undo default visibility change. */
 #pragma GCC visibility pop

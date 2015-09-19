@@ -7,6 +7,14 @@
 # from both the auth and session groups.  program could also be set while
 # building pam_afs_session or in /etc/krb5.conf (if built with Kerberos
 # support).
+#
+# Copyright 2008
+#     The Board of Trustees of the Leland Stanford Junior University
+#
+# Copying and distribution of this file, with or without modification, are
+# permitted in any medium without royalty provided the copyright notice
+# and this notice are preserved.  This file is offered as-is, without any
+# warranty.
 
 auth      required    /lib/security/$ISA/pam_env.so
 auth      sufficient  /lib/security/$ISA/pam_unix.so likeauth nullok

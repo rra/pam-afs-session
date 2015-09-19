@@ -1,0 +1,16 @@
+# Test pam_setcred credential reinitialization (debug).  -*- conf -*-
+#
+# Copyright 2015 Russ Allbery <eagle@eyrie.org>
+#
+# See LICENSE for licensing terms.
+
+[options]
+    auth = program=%0 debug
+
+[run]
+    setcred(REINITIALIZE_CRED) = PAM_SUCCESS
+
+[output]
+    DEBUG pam_sm_setcred: entry (reinit)
+    DEBUG running %0 as UID %1
+    DEBUG pam_sm_setcred: exit (success)

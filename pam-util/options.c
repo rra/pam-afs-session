@@ -8,8 +8,8 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008, 2010, 2011
+ * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2006, 2007, 2008, 2010, 2011, 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -32,7 +32,7 @@
  */
 
 #include <config.h>
-#ifdef HAVE_KERBEROS
+#ifdef HAVE_KRB5
 # include <portable/krb5.h>
 #endif
 #include <portable/system.h>
@@ -56,6 +56,16 @@
 #define CONF_NUMBER(c, o) (long *)          (void *)((char *) (c) + (o))
 #define CONF_STRING(c, o) (char **)         (void *)((char *) (c) + (o))
 #define CONF_LIST(c, o)   (struct vector **)(void *)((char *) (c) + (o))
+
+/*
+ * We can only process times properly if we have Kerberos.  If not, they fall
+ * back to longs and we convert them as numbers.
+ */
+#ifdef HAVE_KRB5
+# define CONF_TIME(c, o) (krb5_deltat *)(void *)((char *) (c) + (o))
+#else
+# define CONF_TIME(c, o) (long *)       (void *)((char *) (c) + (o))
+#endif
 
 
 /*
@@ -128,6 +138,11 @@ putil_args_defaults(struct pam_args *args, const struct option options[],
     for (opt = 0; opt < optlen; opt++) {
         bool *bp;
         long *lp;
+#ifdef HAVE_KRB5
+        krb5_deltat *tp;
+#else
+        long *tp;
+#endif
         char **sp;
         struct vector **vp;
 
@@ -139,6 +154,10 @@ putil_args_defaults(struct pam_args *args, const struct option options[],
         case TYPE_NUMBER:
             lp = CONF_NUMBER(args->config, options[opt].location);
             *lp = options[opt].defaults.number;
+            break;
+        case TYPE_TIME:
+            tp = CONF_TIME(args->config, options[opt].location);
+            *tp = options[opt].defaults.number;
             break;
         case TYPE_STRING:
             sp = CONF_STRING(args->config, options[opt].location);
@@ -169,7 +188,7 @@ putil_args_defaults(struct pam_args *args, const struct option options[],
 }
 
 
-#ifdef HAVE_KERBEROS
+#ifdef HAVE_KRB5
 /*
  * Load a boolean option from Kerberos appdefaults.  Takes the PAM argument
  * struct, the section name, the realm, the option, and the result location.
@@ -244,10 +263,52 @@ default_number(struct pam_args *args, const char *section, const char *realm,
         if (errno != 0 || *end != '\0')
             putil_err(args, "invalid number in krb5.conf setting for %s: %s",
                       opt, tmp);
-        *result = value;
+        else
+            *result = value;
     }
-    if (tmp != NULL)
-        free(tmp);
+    free(tmp);
+}
+
+
+/*
+ * Load a time option from Kerberos appdefaults.  Takes the PAM argument
+ * struct, the section name, the realm, the option, and the result location.
+ * The native interface doesn't support numbers, so we actually read a string
+ * and then convert using krb5_string_to_deltat.
+ */
+static void
+default_time(struct pam_args *args, const char *section, const char *realm,
+             const char *opt, krb5_deltat *result)
+{
+    char *tmp = NULL;
+    krb5_deltat value;
+    krb5_error_code retval;
+#ifdef HAVE_KRB5_REALM
+    krb5_const_realm rdata = realm;
+#else
+    krb5_data realm_struct;
+    const krb5_data *rdata;
+
+    if (realm == NULL)
+        rdata = NULL;
+    else {
+        rdata = &realm_struct;
+        realm_struct.magic = KV5M_DATA;
+        realm_struct.data = (void *) realm;
+        realm_struct.length = strlen(realm);
+    }
+#endif
+
+    krb5_appdefault_string(args->ctx, section, rdata, opt, "", &tmp);
+    if (tmp != NULL && tmp[0] != '\0') {
+        retval = krb5_string_to_deltat(tmp, &value);
+        if (retval != 0)
+            putil_err(args, "invalid time in krb5.conf setting for %s: %s",
+                      opt, tmp);
+        else
+            *result = value;
+    }
+    free(tmp);
 }
 
 
@@ -286,8 +347,11 @@ default_string(struct pam_args *args, const char *section, const char *realm,
     if (value != NULL) {
         if (value[0] == '\0')
             free(value);
-        else
+        else {
+            if (*result != NULL)
+                free(*result);
             *result = value;
+        }
     }
 }
 
@@ -310,10 +374,14 @@ default_list(struct pam_args *args, const char *section, const char *realm,
     if (tmp != NULL) {
         value = vector_split_multi(tmp, " \t,", NULL);
         if (value == NULL) {
+            free(tmp);
             putil_crit(args, "cannot allocate vector: %s", strerror(errno));
             return false;
         }
+        if (*result != NULL)
+            vector_free(*result);
         *result = value;
+        free(tmp);
     }
     return true;
 }
@@ -362,6 +430,10 @@ putil_args_krb5(struct pam_args *args, const char *section,
             default_number(args, section, realm, opt->name,
                            CONF_NUMBER(args->config, opt->location));
             break;
+        case TYPE_TIME:
+            default_time(args, section, realm, opt->name,
+                         CONF_TIME(args->config, opt->location));
+            break;
         case TYPE_STRING:
             default_string(args, section, realm, opt->name,
                            CONF_STRING(args->config, opt->location));
@@ -379,7 +451,7 @@ putil_args_krb5(struct pam_args *args, const char *section,
     return true;
 }
 
-#else /* !HAVE_KERBEROS */
+#else /* !HAVE_KRB5 */
 
 /*
  * Stub function for getting configuration information from krb5.conf used
@@ -393,7 +465,7 @@ putil_args_krb5(struct pam_args *args UNUSED, const char *section UNUSED,
     return true;
 }
 
-#endif /* !HAVE_KERBEROS */
+#endif /* !HAVE_KRB5 */
 
 
 /*
@@ -485,6 +557,43 @@ convert_number(struct pam_args *args, const char *arg, long *setting)
 
 
 /*
+ * Given a PAM argument, convert the value portion of the argument from a
+ * Kerberos time string to a krb5_deltat and store it in the provided
+ * location.  If the value is missing or isn't a number, report an error and
+ * leave the location unchanged.
+ */
+#ifdef HAVE_KRB5
+static void
+convert_time(struct pam_args *args, const char *arg, krb5_deltat *setting)
+{
+    const char *value;
+    krb5_deltat result;
+    krb5_error_code retval;
+
+    value = strchr(arg, '=');
+    if (value == NULL || value[1] == '\0') {
+        putil_err(args, "value missing for option %s", arg);
+        return;
+    }
+    retval = krb5_string_to_deltat((char *) value + 1, &result);
+    if (retval != 0)
+        putil_err(args, "bad time value in setting: %s", arg);
+    else
+        *setting = result;
+}
+
+#else /* HAVE_KRB5 */
+
+static void
+convert_time(struct pam_args *args, const char *arg, long *setting)
+{
+    convert_number(args, arg, setting);
+}
+
+#endif /* !HAVE_KRB5 */
+
+
+/*
  * Given a PAM argument, convert the value portion of the argument to a string
  * and store it in the provided location.  If the value is missing, report an
  * error and leave the location unchanged, returning true since that's a
@@ -507,6 +616,7 @@ convert_string(struct pam_args *args, const char *arg, char **setting)
         putil_crit(args, "cannot allocate memory: %s", strerror(errno));
         return false;
     }
+    free(*setting);
     *setting = result;
     return true;
 }
@@ -535,8 +645,7 @@ convert_list(struct pam_args *args, const char *arg, struct vector **setting)
         putil_crit(args, "cannot allocate vector: %s", strerror(errno));
         return false;
     }
-    if (*setting != NULL)
-        vector_free(*setting);
+    vector_free(*setting);
     *setting = result;
     return true;
 }
@@ -580,6 +689,10 @@ putil_args_parse(struct pam_args *args, int argc, const char *argv[],
         case TYPE_NUMBER:
             convert_number(args, argv[i],
                            CONF_NUMBER(args->config, option->location));
+            break;
+        case TYPE_TIME:
+            convert_time(args, argv[i],
+                         CONF_TIME(args->config, option->location));
             break;
         case TYPE_STRING:
             if (!convert_string(args, argv[i],

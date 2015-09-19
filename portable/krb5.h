@@ -19,7 +19,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  *
  * The authors hereby relinquish any claim to any copyright that they may have
  * in this work, whether granted under contract or by operation of law or
@@ -42,7 +42,13 @@
 #endif
 #include <portable/macros.h>
 
-#include <krb5.h>
+#if defined(HAVE_KRB5_H)
+# include <krb5.h>
+#elif defined(HAVE_KERBEROSV5_KRB5_H)
+# include <kerberosv5/krb5.h>
+#else
+# include <krb5/krb5.h>
+#endif
 #include <stdlib.h>
 
 BEGIN_DECLS
@@ -62,9 +68,13 @@ void krb5_appdefault_string(krb5_context, const char *, const krb5_data *,
                             const char *, const char *, char **);
 #endif
 
-/* MIT-specific.  The Heimdal documentation says to use free(). */
+/*
+ * MIT-specific.  The Heimdal documentation says to use free(), but that
+ * doesn't actually make sense since the memory is allocated inside the
+ * Kerberos library.  Use krb5_xfree instead.
+ */
 #ifndef HAVE_KRB5_FREE_DEFAULT_REALM
-# define krb5_free_default_realm(c, r) free(r)
+# define krb5_free_default_realm(c, r) krb5_xfree(r)
 #endif
 
 /*
@@ -93,5 +103,7 @@ void krb5_free_error_message(krb5_context, const char *);
 
 /* Undo default visibility change. */
 #pragma GCC visibility pop
+
+END_DECLS
 
 #endif /* !PORTABLE_KRB5_H */

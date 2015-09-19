@@ -9,7 +9,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  *
  * The authors hereby relinquish any claim to any copyright that they may have
  * in this work, whether granted under contract or by operation of law or
@@ -22,6 +22,7 @@
 
 #include <config.h>
 #include <portable/krb5.h>
+#include <portable/macros.h>
 #include <portable/system.h>
 
 #include <errno.h>
@@ -33,6 +34,8 @@
 #   include <ibm_svc/krb5_svc.h>
 #  elif defined(HAVE_ET_COM_ERR_H)
 #   include <et/com_err.h>
+#  elif defined(HAVE_KERBEROSV5_COM_ERR_H)
+#   include <kerberosv5/com_err.h>
 #  else
 #   include <com_err.h>
 #  endif

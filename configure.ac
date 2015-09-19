@@ -1,7 +1,8 @@
 dnl Autoconf configuration for pam-afs-session.
 dnl
-dnl Written by Russ Allbery <rra@stanford.edu>
-dnl Copyright 2006, 2007, 2008, 2010
+dnl Written by Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2015 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2006, 2007, 2008, 2010, 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
@@ -9,7 +10,7 @@ dnl and/or distribute it, with or without modifications, as long as this
 dnl notice is preserved.
 
 AC_PREREQ([2.64])
-AC_INIT([pam-afs-session], [2.5], [rra@stanford.edu])
+AC_INIT([pam-afs-session], [2.6], [eagle@eyrie.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([portable])
 AC_CONFIG_MACRO_DIR([m4])
@@ -17,9 +18,15 @@ AM_INIT_AUTOMAKE([1.11 check-news foreign silent-rules subdir-objects
     -Wall -Werror])
 AM_MAINTAINER_MODE
 
+dnl Detect unexpanded macros.
+m4_pattern_forbid([^_?RRA_])
+
 AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
+RRA_PROG_CC_CLANG
+AC_SYS_LARGEFILE
 AM_PROG_CC_C_O
+AM_PROG_AR
 AC_PROG_INSTALL
 LT_INIT([disable-static])
 AC_CANONICAL_HOST
@@ -30,14 +37,15 @@ dnl naming.  Mac OS X puts them in pam/* instead of security/*.
 AC_SEARCH_LIBS([pam_set_data], [pam])
 AC_CHECK_FUNCS([pam_getenv pam_getenvlist pam_modutil_getpwnam])
 AC_REPLACE_FUNCS([pam_syslog pam_vsyslog])
-AC_CHECK_HEADERS([security/pam_modutil.h], ,
+AC_CHECK_HEADERS([security/pam_modutil.h], [],
     [AC_CHECK_HEADERS([pam/pam_modutil.h])])
-AC_CHECK_HEADERS([security/pam_appl.h], ,
-    [AC_CHECK_HEADERS([pam/pam_appl.h], ,
+AC_CHECK_HEADERS([security/pam_appl.h], [],
+    [AC_CHECK_HEADERS([pam/pam_appl.h], [],
         [AC_MSG_ERROR([No PAM header files found])])])
-AC_CHECK_HEADERS([security/pam_ext.h], ,
+AC_CHECK_HEADERS([security/pam_ext.h], [],
     [AC_CHECK_HEADERS([pam/pam_ext.h])])
 RRA_HEADER_PAM_CONST
+RRA_HEADER_PAM_STRERROR_CONST
 
 dnl Needed for the pam_vsyslog replacement function.
 AC_DEFINE([MODULE_NAME], ["pam_afs_session"],
@@ -61,17 +69,17 @@ dnl We can optionally build with Kerberos libraries so that we can use
 dnl Kerberos calls to get configuration information.  Check this before
 dnl checking for libkafs.
 RRA_LIB_KRB5_OPTIONAL
-RRA_LIB_KRB5_SWITCH
 AS_IF([test x"$rra_use_kerberos" != xfalse],
-    [AC_CHECK_HEADERS([k5profile.h profile.h])
+    [RRA_LIB_KRB5_SWITCH
+     AC_CHECK_TYPES([krb5_realm], [], [], [RRA_INCLUDES_KRB5])
      AC_CHECK_FUNCS([krb5_free_default_realm \
          krb5_init_secure_context])
-     AC_CHECK_TYPES([krb5_realm], , , [#include <krb5.h>])
-     AC_CHECK_FUNCS([krb5_appdefault_string], ,
+     AC_CHECK_FUNCS([krb5_appdefault_string], [],
         [AC_CHECK_FUNCS([krb5_get_profile])
+         AC_CHECK_HEADERS([k5profile.h profile.h])
          AC_LIBOBJ([krb5-profile])])
-     AC_LIBOBJ([krb5-extra])])
-RRA_LIB_KRB5_RESTORE
+     AC_LIBOBJ([krb5-extra])
+     RRA_LIB_KRB5_RESTORE])
 RRA_LIB_KAFS
 RRA_LIB_KAFS_SWITCH
 AC_CHECK_FUNCS([krb5_afslog])
@@ -81,16 +89,16 @@ AM_CONDITIONAL([NEED_KAFS], [test x"$rra_build_kafs" = xtrue])
 dnl Other portability checks.
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([strings.h sys/bittypes.h])
-AC_CHECK_DECLS([snprintf, vsnprintf])
+AC_CHECK_DECLS([snprintf, strlcat, strlcpy, vsnprintf])
 AC_TYPE_LONG_LONG_INT
 AC_TYPE_UINT32_T
-AC_CHECK_TYPE([sig_atomic_t], ,
-    [AC_DEFINE([sig_atomic_t], [int],
-        [Define to int if <signal.h> does not define.])],
+AC_CHECK_TYPES([sig_atomic_t], [], [],
     [#include <sys/types.h>
      #include <signal.h>])
+AC_CHECK_TYPES([ssize_t], [], [],
+    [#include <sys/types.h>])
 RRA_FUNC_SNPRINTF
-AC_REPLACE_FUNCS([asprintf issetuidgid strlcat strlcpy strndup])
+AC_REPLACE_FUNCS([asprintf issetugid reallocarray strlcat strlcpy strndup])
 
 dnl Needed for correct handling of errno with threaded applications on
 dnl Solaris.
@@ -130,6 +138,10 @@ AS_CASE([$host],
     [AS_IF([test x"$GCC" = x"yes"],
         [AM_LDFLAGS="-Wl,-Bsymbolic $AM_LDFLAGS"],
         [AM_LDFLAGS="-Wl,-xldscope=symbolic $AM_LDFLAGS"])])
+
+dnl Enable appropriate warnings.
+AM_CONDITIONAL([WARNINGS_GCC], [test x"$GCC" = xyes && test x"$CLANG" != xyes])
+AM_CONDITIONAL([WARNINGS_CLANG], [test x"$CLANG" = xyes])
 
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_FILES([Makefile])
