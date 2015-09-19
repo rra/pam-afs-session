@@ -5,7 +5,9 @@ libpam-afs-session (2.6-1) UNRELEASED; urgency=medium
       combination with opening a new session.  Fixes failure to isolate
       tokens when used with sudo.  (Closes: #782589)
   * Remove erroneous branch information from Vcs-Git.
-
+  * Add debian/gbp.conf reflecting the branch layout of the default
+    packaging repository.
+  
  -- Russ Allbery <rra@debian.org>  Sun, 03 Aug 2014 12:15:52 -0700
 
 libpam-afs-session (2.5-4) unstable; urgency=medium
