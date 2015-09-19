@@ -1,6 +1,7 @@
 dnl Autoconf configuration for pam-afs-session.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2015 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2007, 2008, 2010, 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
@@ -9,7 +10,7 @@ dnl and/or distribute it, with or without modifications, as long as this
 dnl notice is preserved.
 
 AC_PREREQ([2.64])
-AC_INIT([pam-afs-session], [2.5], [eagle@eyrie.org])
+AC_INIT([pam-afs-session], [2.6], [eagle@eyrie.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_LIBOBJ_DIR([portable])
 AC_CONFIG_MACRO_DIR([m4])
