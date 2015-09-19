@@ -1,31 +1,37 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Contact: Russ Allbery <eagle@eyrie.org>
 Source: http://www.eyrie.org/~eagle/software/pam-afs-session/
-Copyright: 2007-2008, 2010-2014
+Copyright: 2000-2001, 2004, 2006-2015 Russ Allbery <eagle@eyrie.org>
+  2001-2002, 2004-2014
     The Board of Trustees of the Leland Stanford Junior University
 License: Expat
 
 Files: *
-Copyright: 2000-2001, 2004, 2006-2011 Russ Allbery <rra@stanford.edu>
-  2001-2002, 2004-2011
+Copyright: 2000-2001, 2004, 2006-2015 Russ Allbery <eagle@eyrie.org>
+  2001-2002, 2004-2014
     The Board of Trustees of the Leland Stanford Junior University
 License: Expat
 
 Files: Makefile.in
-Copyright: 1994-2009 Free Software Foundation, Inc.
+Copyright: 1994-2014 Free Software Foundation, Inc.
   2006-2007, 2010-2011
     The Board of Trustees of the Leland Stanford Junior University
+  2015 Russ Allbery <eagle@eyrie.org>
 License: FSF-unlimited and Expat
 
 Files: aclocal.m4 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4
  m4/lt~obsolete.m4
-Copyright: 1996-2010 Free Software Foundation, Inc.
+Copyright: 1996-2015 Free Software Foundation, Inc.
 License: FSF-unlimited
 
-Files: build-aux/compile build-aux/config.guess build-aux/config.sub
- build-aux/depcomp build-aux/missing
-Copyright: 1992-2011 Free Software Foundation, Inc.
+Files: build-aux/ar-lib build-aux/compile build-aux/depcomp
+ build-aux/missing
+Copyright: 1996-2014 Free Software Foundation, Inc.
 License: GPL-2+ with Autoconf exception or Expat
+
+Files: build-aux/config.guess build-aux/config.sub
+Copyright: 1992-2015 Free Software Foundation, Inc.
+License: GPL-3+ with Autoconf exception or Expat
 
 Files: build-aux/install-sh
 Copyright: 1994 X Consortium
@@ -55,18 +61,19 @@ License: X11
  Consortium.
 
 Files: build-aux/ltmain.sh
-Copyright: 1996-2001, 2003-2010 Free Software Foundation, Inc.
+Copyright: 1996-2001, 2003-2011 Free Software Foundation, Inc.
 License: GPL-2+ with Libtool exception or Expat
 
 Files: configure
-Copyright: 1992-2010 Free Software Foundation, Inc.
+Copyright: 1992-2012 Free Software Foundation, Inc.
 License: FSF-configure, and GPL-2+ with Libtool exception or Expat
 
-Files: configure.ac m4/kafs.m4 m4/krb5.m4 m4/ld-version.m4
- m4/lib-depends.m4 m4/lib-pathname.m4 m4/pam-const.m4 m4/snprintf.m4
-Copyright: 2005-2010, 2013
+Files: configure.ac m4/clang.m4 m4/kafs.m4 m4/krb5-config.m4 m4/krb5.m4
+ m4/ld-version.m4 m4/lib-depends.m4 m4/lib-pathname.m4 m4/pam-const.m4
+ m4/snprintf.m4
+Copyright: 2005-2014
     The Board of Trustees of the Leland Stanford Junior University
-  2007 Russ Allbery <rra@stanford.edu>
+  2007, 2015 Russ Allbery <eagle@eyrie.org>
   2007-2008 Markus Moeller
   2008-2010 Free Software Foundation, Inc.
 License: unlimited
@@ -74,12 +81,23 @@ License: unlimited
  and/or distribute it, with or without modifications, as long as this
  notice is preserved.
 
+Files: examples/redhat/system-auth examples/solaris/pam.conf
+ pam_afs_session.5 pam_afs_session.pod tests/README tests/fakepam/README
+Copyright: 2005-2011
+    The Board of Trustees of the Leland Stanford Junior University
+  2010-2012, 2015 Russ Allbery <eagle@eyrie.org>
+License: all-permissive
+ Copying and distribution of this file, with or without modification, are
+ permitted in any medium without royalty provided the copyright notice and
+ this notice are preserved.  This file is offered as-is, without any
+ warranty.
+
 Files: kafs/sys-syscall.c pam-util/vector.c pam-util/vector.h
- portable/asprintf.c portable/dummy.c portable/issetuidgid.c
+ portable/asprintf.c portable/dummy.c portable/issetugid.c
  portable/k_haspag.c portable/krb5-extra.c portable/krb5.h
  portable/macros.h portable/pam.h portable/pam_syslog.c
- portable/pam_vsyslog.c portable/stdbool.h portable/strlcat.c
- portable/strlcpy.c portable/strndup.c portable/system.h
+ portable/pam_vsyslog.c portable/reallocarray.c portable/stdbool.h
+ portable/strlcat.c portable/strlcpy.c portable/strndup.c portable/system.h
  tests/pam-util/vector-t.c tests/portable/asprintf-t.c
  tests/portable/strlcat-t.c tests/portable/strlcpy-t.c
  tests/portable/strndup-t.c
@@ -94,7 +112,7 @@ License: rra-public-domain
  works of this work.
 
 Files: m4/libtool.m4
-Copyright: 1996-2001, 2003-2010 Free Software Foundation, Inc.
+Copyright: 1996-2001, 2003-2011 Free Software Foundation, Inc.
 License: FSF-unlimited, and GPL-2+ with Libtool exception or Expat
 
 Files: portable/krb5-profile.c
@@ -138,21 +156,13 @@ License: MIT-Kerberos
 
 Files: portable/snprintf.c tests/portable/snprintf-t.c
 Copyright: 1995 Patrick Powell
-  2000-2006 Russ Allbery <rra@stanford.edu>
+  2000-2006 Russ Allbery <eagle@eyrie.org>
   2001 Hrvoje Niksic
   2009-2010 The Board of Trustees of the Leland Stanford Junior University
 License: Powell-snprintf
  This code is based on code written by Patrick Powell (papowell@astart.com)
  It may be used for any purpose as long as this notice remains intact
  on all source code distributions
-
-Files: tests/README
-Copyright: 2010 Russ Allbery <rra@stanford.edu>
-License: all-permissive
- Copying and distribution of this file, with or without modification, are
- permitted in any medium without royalty provided the copyright notice and
- this notice are preserved.  This file is offered as-is, without any
- warranty.
 
 License: Expat
  Permission is hereby granted, free of charge, to any person obtaining a
@@ -231,4 +241,29 @@ Comment: The option described in the license has been accepted and these
  files are distributed under the same terms as the package as a whole, as
  described at the top of this file.  You can find the GPL version 2 in
  /usr/share/common-licenses/GPL-2 on Debian systems.
+
+License: GPL-3+ with Autoconf exception
+ This file is free software; you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the
+ Free Software Foundation; either version 3 of the License, or (at your
+ option) any later version.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+ Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, see <http://www.gnu.org/licenses/>.
+ .
+ As a special exception to the GNU General Public License, if you
+ distribute this file as part of a program that contains a configuration
+ script generated by Autoconf, you may include it under the same
+ distribution terms that you use for the rest of that program.  This
+ Exception is an additional permission under section 7 of the GNU General
+ Public License, version 3 ("GPLv3").
+Comment: The option described in the license has been accepted and these
+ files are distributed under the same terms as the package as a whole, as
+ described at the top of this file.  You can find the GPL version 3 in
+ /usr/share/common-licenses/GPL-3 on Debian systems.
 
