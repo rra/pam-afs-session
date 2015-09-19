@@ -3,7 +3,7 @@ Section: admin
 Priority: optional
 Maintainer: Russ Allbery <rra@debian.org>
 Uploaders: Sam Hartman <hartmans@debian.org>
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Build-Depends: debhelper (>= 9), comerr-dev, dh-autoreconf, libkrb5-dev,
  libpam0g-dev, libtest-pod-perl
 Homepage: http://www.eyrie.org/~eagle/software/pam-afs-session/
