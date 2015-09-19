@@ -317,6 +317,18 @@ to the [appdefaults] section of their F<krb5.conf> files to disable use of
 the krb524 service.  See the Heimdal kafs(3) man page for more
 information.
 
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2015 Russ Allbery <eagle@eyrie.org>
+
+Copyright 2005, 2006, 2007, 2008, 2009, 2010, 2011 The Board of Trustees
+of the Leland Stanford Junior University
+
+Copying and distribution of this file, with or without modification, are
+permitted in any medium without royalty provided the copyright notice and
+this notice are preserved.  This file is offered as-is, without any
+warranty.
+
 =head1 SEE ALSO
 
 aklog(1), kafs(3), pam(7), syslog(3), unlog(1)
