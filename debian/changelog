@@ -1,4 +1,4 @@
-libpam-afs-session (2.6-1) UNRELEASED; urgency=medium
+libpam-afs-session (2.6-1) unstable; urgency=medium
 
   * New upstream release.
     - Fix PAM_REINITIALIZE_CRED and PAM_REFRESH_CRED handling in
@@ -11,7 +11,7 @@ libpam-afs-session (2.6-1) UNRELEASED; urgency=medium
   * Refresh upstream signing key.
   * Update standards version to 3.6.0 (no changes required).
 
- -- Russ Allbery <rra@debian.org>  Sun, 03 Aug 2014 12:15:52 -0700
+ -- Russ Allbery <rra@debian.org>  Sat, 19 Sep 2015 11:45:52 -0700
 
 libpam-afs-session (2.5-4) unstable; urgency=medium
 
