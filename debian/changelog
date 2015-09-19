@@ -1,5 +1,9 @@
-libpam-afs-session (2.5-5) UNRELEASED; urgency=medium
+libpam-afs-session (2.6-1) UNRELEASED; urgency=medium
 
+  * New upstream release.
+    - Fix PAM_REINITIALIZE_CRED and PAM_REFRESH_CRED handling in
+      combination with opening a new session.  Fixes failure to isolate
+      tokens when used with sudo.  (Closes: #782589)
   * Remove erroneous branch information from Vcs-Git.
 
  -- Russ Allbery <rra@debian.org>  Sun, 03 Aug 2014 12:15:52 -0700
