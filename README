@@ -127,6 +127,10 @@ REQUIREMENTS
 
 COMPILING AND INSTALLING
 
+  If starting from a Git clone instead of a release tarball, first run:
+
+      ./autogen
+
   To build the module, just run:
 
       ./configure
@@ -208,6 +212,12 @@ TESTING
   building pam-afs-session with:
 
       make check
+
+  Don't run the tests themselves inside AFS, or use a world-writable AFS
+  directory (not generally recommended).  The test suite manipulates AFS
+  tokens and creates PAGs, so it will temporarily not have access to your
+  personal AFS tokens and won't be able to write its results to AFS build
+  directories that aren't world-writable.
 
   If a test case fails, please run the that individual test case with
   verbose output using:
