@@ -1,4 +1,4 @@
-libpam-afs-session (2.6-2) UNRELEASED; urgency=medium
+libpam-afs-session (2.6-2) unstable; urgency=medium
 
   * Orphan the package (see #907361).
   * Move the packaging repository to Salsa from Alioth and update Vcs-*.
@@ -18,7 +18,7 @@ libpam-afs-session (2.6-2) UNRELEASED; urgency=medium
   * Refresh upstream signing key.
   * Run wrap-and-sort -ast.
 
- -- Russ Allbery <rra@debian.org>  Sun, 26 Aug 2018 15:34:16 -0700
+ -- Russ Allbery <rra@debian.org>  Sun, 26 Aug 2018 16:08:34 -0700
 
 libpam-afs-session (2.6-1) unstable; urgency=medium
 
