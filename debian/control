@@ -22,8 +22,8 @@ Multi-Arch: same
 Pre-Depends:
  ${misc:Pre-Depends},
 Depends:
- libpam-runtime (>= 1.0.1-6~),
- libpam0g (>= 1.1.3-2~),
+ libpam-runtime,
+ libpam0g,
  ${misc:Depends},
  ${shlibs:Depends},
 Recommends:

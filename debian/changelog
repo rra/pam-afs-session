@@ -10,6 +10,8 @@ libpam-afs-session (2.6-2) UNRELEASED; urgency=medium
     - Add Rules-Requires-Root: no.
     - Use https for URLs in debian/control and debian/copyright.
   * Bump watch file version to 4 and use https for URL.
+  * Remove version qualifications on libpam-runtime and libpam0g
+    dependencies, which were older than oldoldstable.
   * Switch to the DEP-14 branch layout and update debian/gbp.conf
     accordingly.
   * Refresh upstream signing key.
