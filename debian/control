@@ -2,10 +2,15 @@ Source: libpam-afs-session
 Section: admin
 Priority: optional
 Maintainer: Russ Allbery <rra@debian.org>
-Uploaders: Sam Hartman <hartmans@debian.org>
+Uploaders:
+ Sam Hartman <hartmans@debian.org>,
 Standards-Version: 4.2.1
-Build-Depends: debhelper (>= 11), comerr-dev, libkrb5-dev,
- libpam0g-dev, libtest-pod-perl
+Build-Depends:
+ comerr-dev,
+ debhelper (>= 11),
+ libkrb5-dev,
+ libpam0g-dev,
+ libtest-pod-perl,
 Rules-Requires-Root: no
 Homepage: https://www.eyrie.org/~eagle/software/pam-afs-session/
 Vcs-Git: https://salsa.debian.org/debian/libpam-afs-session.git -b debian/master
@@ -14,11 +19,17 @@ Vcs-Browser: https://salsa.debian.org/debian/libpam-afs-session
 Package: libpam-afs-session
 Architecture: linux-any
 Multi-Arch: same
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${shlibs:Depends}, ${misc:Depends}, libpam-runtime (>= 1.0.1-6~),
- libpam0g (>= 1.1.3-2~)
-Recommends: openafs-client, openafs-krb5 | heimdal-clients,
- libpam-krb5 | libpam-heimdal
+Pre-Depends:
+ ${misc:Pre-Depends},
+Depends:
+ libpam-runtime (>= 1.0.1-6~),
+ libpam0g (>= 1.1.3-2~),
+ ${misc:Depends},
+ ${shlibs:Depends},
+Recommends:
+ libpam-krb5 | libpam-heimdal,
+ openafs-client,
+ openafs-krb5 | heimdal-clients,
 Description: PAM module to set up a PAG and obtain AFS tokens
  AFS is a distributed network file system.  It uses in-kernel credentials
  (AFS tokens) obtained from Kerberos tickets for authentication and access
