@@ -9,10 +9,10 @@ export C_TAP_VERBOSE = 1
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 %:
-	dh $@ --parallel --with autoreconf
+	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure --parallel -- --enable-reduced-depends \
+	dh_auto_configure -- --enable-reduced-depends \
 	    --libdir=/lib/$(DEB_HOST_MULTIARCH) --with-krb5 \
 	    --without-libkafs --with-aklog=/usr/bin/aklog
 
