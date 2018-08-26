@@ -22,7 +22,7 @@ libpam-afs-session (2.6-2) unstable; urgency=medium
   * Refresh upstream signing key.
   * Run wrap-and-sort -ast.
 
- -- Russ Allbery <rra@debian.org>  Sun, 26 Aug 2018 16:08:34 -0700
+ -- Russ Allbery <rra@debian.org>  Sun, 26 Aug 2018 16:11:10 -0700
 
 libpam-afs-session (2.6-1) unstable; urgency=medium
 
