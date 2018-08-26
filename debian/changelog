@@ -1,5 +1,6 @@
 libpam-afs-session (2.6-2) UNRELEASED; urgency=medium
 
+  * Orphan the package (see #907361).
   * Move the packaging repository to Salsa from Alioth and update Vcs-*.
   * Update to debhelper compatibility level V11.
     - Remove --parallel flags, no longer needed.

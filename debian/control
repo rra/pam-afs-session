@@ -1,9 +1,7 @@
 Source: libpam-afs-session
 Section: admin
 Priority: optional
-Maintainer: Russ Allbery <rra@debian.org>
-Uploaders:
- Sam Hartman <hartmans@debian.org>,
+Maintainer: Debian QA Group <packages@qa.debian.org>
 Standards-Version: 4.2.1
 Build-Depends:
  comerr-dev,
