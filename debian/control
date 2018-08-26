@@ -3,7 +3,7 @@ Section: admin
 Priority: optional
 Maintainer: Russ Allbery <rra@debian.org>
 Uploaders: Sam Hartman <hartmans@debian.org>
-Standards-Version: 3.9.6
+Standards-Version: 4.2.1
 Build-Depends: debhelper (>= 11), comerr-dev, libkrb5-dev,
  libpam0g-dev, libtest-pod-perl
 Rules-Requires-Root: no
