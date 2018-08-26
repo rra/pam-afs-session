@@ -9,7 +9,7 @@ libpam-afs-session (2.6-1) unstable; urgency=medium
   * Add debian/gbp.conf reflecting the branch layout of the default
     packaging repository.
   * Refresh upstream signing key.
-  * Update standards version to 3.6.6 (no changes required).
+  * Update standards version to 3.9.6 (no changes required).
 
  -- Russ Allbery <rra@debian.org>  Sat, 19 Sep 2015 11:45:52 -0700
 
