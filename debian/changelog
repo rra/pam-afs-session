@@ -10,6 +10,8 @@ libpam-afs-session (2.6-2) unstable; urgency=medium
     - Install the upstream release notes as NEWS.gz, not changelog.gz.
     - Add Rules-Requires-Root: no.
     - Use https for URLs in debian/control and debian/copyright.
+  * Delete debian/source/local-options and local-patch-header and use
+    standard patch handling.
   * Bump watch file version to 4 and use https for URL.
   * Remove version qualifications on libpam-runtime and libpam0g
     dependencies, which were older than oldoldstable.
